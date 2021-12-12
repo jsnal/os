@@ -8,13 +8,16 @@ CRTEND_OBJ=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 
 KERNEL_OBJS=\
 						api/string/strlen.o \
+						api/string/memset.o \
 						api/string.o \
+						cpu/gdt.o \
 						kernel.o \
 
 ASM_OBJS=\
 				 boot/boot.o \
 				 boot/crti.o \
 				 boot/crtn.o \
+				 cpu/lgdt.o \
 
 LINK_LIST=\
 					$(ASM_OBJS) \
@@ -22,7 +25,7 @@ LINK_LIST=\
 					$(CRTEND_OBJ) \
 					$(KERNEL_OBJS) \
 
-os.bin: $(KERNEL_OBJS) $(ASM_OBJS) linker.ld
+kernel.bin: $(KERNEL_OBJS) $(ASM_OBJS) linker.ld
 	$(CC) -T linker.ld -o $@ $(CFLAGS) $(LINK_LIST)
 
 .c.o:
@@ -32,5 +35,5 @@ os.bin: $(KERNEL_OBJS) $(ASM_OBJS) linker.ld
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f os.bin
+	rm -f kernel.bin
 	rm -f $(ASM_OBJS) $(KERNEL_OBJS)
