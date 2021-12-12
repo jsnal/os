@@ -1,4 +1,4 @@
-CC=i686-elf-gcc
+CC=i686-pc-os-gcc
 
 CFLAGS=-ffreestanding -nostdlib -Wall -Wextra -O2 -g
 LIBS=-nostdlib -lgcc
