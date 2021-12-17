@@ -1,4 +1,5 @@
 #include <api/string.h>
+#include <cpu/idt.h>
 #include <cpu/gdt.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -97,9 +98,12 @@ void kernel_main(void)
 {
   gdt_init();
 
+  idt_init();
+
   /* Initialize terminal interface */
   terminal_initialize();
 
   /* Newline support is left as an exercise. */
   terminal_writestring("Hello, kernel World!\n");
+
 }

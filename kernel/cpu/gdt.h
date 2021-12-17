@@ -27,4 +27,6 @@ void gdt_init();
 
 void gdt_flush(uint32_t base);
 
+void gdt_reload();
+
 #endif

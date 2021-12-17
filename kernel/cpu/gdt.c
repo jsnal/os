@@ -18,7 +18,7 @@ static void gdt_set_entry(uint32_t num, uint32_t base, uint32_t limit, uint8_t a
 
 void gdt_init()
 {
-  gdt.limit = (sizeof(gdt_pointer) * 5) - 1;
+  gdt.limit = (sizeof(gdt_pointer) * GDT_ENTRY_LIMIT) - 1;
   gdt.base = (uint32_t) &gdt_entries;
 
   gdt_set_entry(0, 0, 0, 0, 0);

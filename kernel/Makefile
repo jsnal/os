@@ -7,9 +7,8 @@ CRTBEGIN_OBJ=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 
 KERNEL_OBJS=\
-						api/string/strlen.o \
-						api/string/memset.o \
 						api/string.o \
+						cpu/idt.o \
 						cpu/gdt.o \
 						kernel.o \
 
@@ -18,6 +17,7 @@ ASM_OBJS=\
 				 boot/crti.o \
 				 boot/crtn.o \
 				 cpu/lgdt.o \
+				 cpu/lidt.o \
 
 LINK_LIST=\
 					$(ASM_OBJS) \
