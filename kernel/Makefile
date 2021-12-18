@@ -10,6 +10,7 @@ KERNEL_OBJS=\
 						api/string.o \
 						cpu/idt.o \
 						cpu/gdt.o \
+						devices/vga.o \
 						kernel.o \
 
 ASM_OBJS=\
