@@ -1,7 +1,6 @@
 #!/bin/sh
 
 PATH="$PATH:/sbin"
-
 DIR=$(dirname $(cd -P -- "$(dirname -- "$0")" && pwd -P))
 
 die() {
@@ -25,10 +24,16 @@ if [ -z "$GRUB_BIN" ]; then
 fi
 echo "using grub-install at ${GRUB_BIN}"
 
-DISK_SIZE=$(($(du -sm "$DIR/kernel/kernel.bin" | cut -f1) + 800))
+HEADS=16
+SECTORS=63
+BYTES_PER_SECTOR=512
+DISK_SIZE=10 # in MB
+
+BYTES=$(($HEADS*$SECTORS*$BYTES_PER_SECTOR))
+CYLINDERS=$((($DISK_SIZE*1000*1024)/$BYTES))
 
 echo "setting up disk image..."
-dd if=/dev/zero of=os_grub.img bs=1M count="${DISK_SIZE:-800}" status=none || die "unable to create disk image"
+dd if=/dev/zero of=os_grub.img bs=${BYTES}c count="${CYLINDERS:-50}" status=none || die "unable to create disk image"
 chown "$SUDO_UID":"$SUDO_GID" os_grub.img || die "couldn't adjust permissions on disk image"
 echo "done"
 
@@ -40,24 +45,24 @@ fi
 echo "loopback device is at ${LOOPBACK}"
 echo "done"
 
-# cleanup() {
-#   if [ -d mnt ]; then
-#     echo "unmounting filesystem..."
-#     umount mnt || ( sleep 1 && sync && umount mnt )
-#     rm -rf mnt
-#     echo "done"
-#   fi
-#
-#   if [ -e "${LOOPBACK}" ]; then
-#     echo "cleaning up loopback device..."
-#     losetup -d ${LOOPBACK}
-#     echo "done"
-#   fi
-# }
-# trap cleanup EXIT
+cleanup() {
+  if [ -d mnt ]; then
+    echo "unmounting filesystem..."
+    umount mnt || ( sleep 1 && sync && umount mnt )
+    rm -rf mnt
+    echo "done"
+  fi
+
+  if [ -e "${LOOPBACK}" ]; then
+    echo "cleaning up loopback device..."
+    losetup -d ${LOOPBACK}
+    echo "done"
+  fi
+}
+trap cleanup EXIT
 
 echo "creating partition table..."
-parted -s "${LOOPBACK}" mklabel gpt mkpart BIOSBOOT ext3 1MiB 8MiB mkpart OS ext2 8MiB 290MiB set 1 bios_grub || die "couldn't partition disk"
+parted -s "${LOOPBACK}" mklabel msdos mkpart primary ext2 32k 100% -a minimal set 1 boot on || die "couldn't partition disk"
 echo "done"
 
 echo "removing old filesystem... "
@@ -65,7 +70,7 @@ dd if=/dev/zero of="${LOOPBACK}p1" bs=1M count=1 status=none || die "couldn't de
 echo "done"
 
 echo "creating new filesystem... "
-mke2fs -q -I 128 "${LOOPBACK}p1" || die "couldn't create filesystem"
+mke2fs -q -I 128 -b 1024 "${LOOPBACK}p1" || die "couldn't create filesystem"
 echo "done"
 
 echo "mounting filesystem... "

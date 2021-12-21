@@ -3,9 +3,14 @@ display_library: x
 memory: host=1024, guest=1024
 romimage: file=$BXSHARE/BIOS-bochs-latest, address=0x00000, options=none
 vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
-ata0-master: type=disk, path="os_grub.img", mode=flat, cylinders=0, heads=0, spt=0, model="Generic 1234", biosdetect=auto, translation=auto
+ata0-master: type=disk, path="os_grub.img", mode=flat, cylinders=19, heads=16, spt=63, model="Generic 1234", biosdetect=auto, translation=auto
 boot: disk
-log: bochsout.txt
+log: -
+logprefix: %t%e%d
+debug: action=ignore
+info: action=report
+error: action=report
+panic: action=ask
 mouse: enabled=0
 clock: sync=realtime
 cpu: ips=5000000
