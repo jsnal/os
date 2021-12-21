@@ -1,30 +1,31 @@
 .global idt_flush
 .global _exception0
+.global _exception1
 .global isr_common
 
 isr_common:
+  add $12, %esp
   pusha
 
-  mov %ds, %ax
-  push %eax
-
-  mov $0x10, %ax
-  mov %ax, %ds
-  mov %ax, %es
-  mov %ax, %fs
-  mov %ax, %gs
+  # mov %ds, %ax
+  # push %eax
+  #
+  # mov $0x10, %ax
+  # mov %ax, %ds
+  # mov %ax, %es
+  # mov %ax, %fs
+  # mov %ax, %gs
 
   call isr_handler
 
-  pop %eax
-  mov %ax, %ds
-  mov %ax, %es
-  mov %ax, %fs
-  mov %ax, %gs
+  # pop %eax
+  # mov %ax, %ds
+  # mov %ax, %es
+  # mov %ax, %fs
+  # mov %ax, %gs
 
   popa
-  add $8, %esp
-  sti
+  # sti
   iret
 
 idt_flush:

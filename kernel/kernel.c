@@ -12,11 +12,11 @@
 
 void kernel_main(void)
 {
+  vga_init();
+
   gdt_init();
 
   idt_init();
 
-  vga_init();
-
-  vga_write("TEST!\n");
+  vga_write("Booted!\n");
 }

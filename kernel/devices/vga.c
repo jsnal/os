@@ -33,7 +33,14 @@ static void vga_putentryat(char c, uint8_t color, size_t x, size_t y)
 
 void vga_putchar(char c)
 {
+  if (c == '\n') {
+    terminal.row++;
+    terminal.column = 0;
+    return;
+  }
+
   vga_putentryat(c, terminal.color, terminal.column, terminal.row);
+
   if (++terminal.column == WIDTH) {
     terminal.column = 0;
     if (++terminal.row == HEIGHT) {
