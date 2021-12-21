@@ -4,3 +4,4 @@
 !gcc-10.2.0.patch
 !build.sh
 !build-qemu.sh
+!build-bochs.sh
