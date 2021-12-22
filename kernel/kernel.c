@@ -18,5 +18,7 @@ void kernel_main(void)
 
   idt_init();
 
+  __asm__("int $0x0");
+
   vga_write("Booted!\n");
 }

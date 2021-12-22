@@ -1,46 +1,84 @@
 .global idt_flush
-.global _exception0
-.global _exception1
 .global isr_common
 
 isr_common:
-  add $12, %esp
   pusha
 
-  # mov %ds, %ax
-  # push %eax
-  #
-  # mov $0x10, %ax
-  # mov %ax, %ds
-  # mov %ax, %es
-  # mov %ax, %fs
-  # mov %ax, %gs
+  mov %ds, %ax
+  push %eax
+
+  mov $0x10, %ax
+  mov %ax, %ds
+  mov %ax, %es
+  mov %ax, %fs
+  mov %ax, %gs
 
   call isr_handler
 
-  # pop %eax
-  # mov %ax, %ds
-  # mov %ax, %es
-  # mov %ax, %fs
-  # mov %ax, %gs
+  pop %eax
+  mov %ax, %ds
+  mov %ax, %es
+  mov %ax, %fs
+  mov %ax, %gs
 
   popa
-  # sti
+  add $8, %esp
+  sti
   iret
+
+.altmacro
+
+.macro isr_noerrcode num
+  .global _exception\num
+  _exception\num:
+    cli
+    push $0x0
+    push $0x\num
+    jmp isr_common
+.endm
+
+.macro isr_errcode num
+  .global _exception\num
+  _exception\num:
+    cli
+    push $0x\num
+    jmp isr_common
+.endm
 
 idt_flush:
   mov 4(%esp), %eax
   lidt (%eax)
   ret
 
-_exception0:
-  cli
-  push $0x0
-  push $0x0
-  jmp isr_common
-
-_exception1:
-  cli
-  push $0x0
-  push $0x1
-  jmp isr_common
+isr_noerrcode 0
+isr_noerrcode 1
+isr_noerrcode 2
+isr_noerrcode 3
+isr_noerrcode 4
+isr_noerrcode 5
+isr_noerrcode 6
+isr_noerrcode 7
+isr_errcode 8
+isr_noerrcode 9
+isr_errcode 10
+isr_errcode 11
+isr_errcode 12
+isr_errcode 13
+isr_errcode 14
+isr_noerrcode 15
+isr_noerrcode 16
+isr_noerrcode 17
+isr_noerrcode 18
+isr_noerrcode 19
+isr_noerrcode 20
+isr_noerrcode 21
+isr_noerrcode 22
+isr_noerrcode 23
+isr_noerrcode 24
+isr_noerrcode 25
+isr_noerrcode 26
+isr_noerrcode 27
+isr_noerrcode 28
+isr_noerrcode 29
+isr_noerrcode 30
+isr_noerrcode 31

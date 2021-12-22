@@ -46,5 +46,26 @@ void _exception7();
 void _exception8();
 void _exception9();
 void _exception10();
+void _exception11();
+void _exception12();
+void _exception13();
+void _exception14();
+void _exception15();
+void _exception16();
+void _exception17();
+void _exception18();
+void _exception19();
+void _exception20();
+void _exception21();
+void _exception22();
+void _exception23();
+void _exception24();
+void _exception25();
+void _exception26();
+void _exception27();
+void _exception28();
+void _exception29();
+void _exception30();
+void _exception31();
 
 #endif
