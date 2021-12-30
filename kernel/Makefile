@@ -7,9 +7,10 @@ CRTBEGIN_OBJ=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 
 KERNEL_OBJS=\
+						api/printf.o \
 						api/string.o \
-						cpu/idt.o \
 						cpu/gdt.o \
+						cpu/idt.o \
 						devices/vga.o \
 						kernel.o \
 

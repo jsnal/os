@@ -1,4 +1,5 @@
 #include <api/string.h>
+#include <api/printf.h>
 #include <cpu/idt.h>
 #include <cpu/gdt.h>
 #include <devices/vga.h>
@@ -24,5 +25,8 @@ void kernel_main(void)
   char b[64];
   itoa(b, 64, a, 10);
   vga_write(b);
+
+  vsprintf(vga_putchar, "string: %s\n", "string\0");
+
   vga_write("Booted!\n");
 }
