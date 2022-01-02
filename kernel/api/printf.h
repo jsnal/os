@@ -4,4 +4,7 @@
 #include <stdarg.h>
 
 int vsprintf(void (*write)(char), const char *format, va_list list);
+
+int printf_vga(const char *format, ...);
+
 #endif
