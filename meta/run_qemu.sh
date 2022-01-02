@@ -1,6 +1,7 @@
 #!/bin/sh
 
 DIR=$(dirname $(cd -P -- "$(dirname -- "$0")" && pwd -P))
+PATH="$PATH:$DIR/toolchain/local/bin"
 
 die() {
   echo "die: $*"
@@ -15,4 +16,6 @@ fi
 
 make -C "$DIR/kernel" || die "make failed"
 "$DIR/meta/build_grub.sh"
-$DIR/toolchain/bochs-*/bochs -f $DIR/meta/bochsrc.txt -q || die "unable to run bochs"
+$DIR/toolchain/qemu-*/qemu-system-i386 \
+  -drive file=os_grub.img,format=raw,index=0,media=disk \
+  || die "unable to run bochs"
