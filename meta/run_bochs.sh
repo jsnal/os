@@ -1,6 +1,7 @@
 #!/bin/sh
 
 DIR=$(dirname $(cd -P -- "$(dirname -- "$0")" && pwd -P))
+PATH="$PATH:$DIR/toolchain/local/bin"
 
 die() {
   echo "die: $*"
