@@ -1,10 +1,11 @@
+.section .text
 .global idt_flush
 .global isr_common
 
 isr_common:
   pusha
 
-  mov %ds, %ax
+  mov %ds, %eax
   push %eax
 
   mov $0x10, %ax
@@ -23,10 +24,7 @@ isr_common:
 
   popa
   add $8, %esp
-  sti
   iret
-
-.altmacro
 
 .macro isr_noerrcode num
   .global _exception\num
@@ -46,6 +44,7 @@ isr_common:
 .endm
 
 idt_flush:
+  cli
   mov 4(%esp), %eax
   lidt (%eax)
   ret
@@ -67,11 +66,11 @@ isr_errcode 13
 isr_errcode 14
 isr_noerrcode 15
 isr_noerrcode 16
-isr_noerrcode 17
+isr_errcode 17
 isr_noerrcode 18
 isr_noerrcode 19
 isr_noerrcode 20
-isr_noerrcode 21
+isr_errcode 21
 isr_noerrcode 22
 isr_noerrcode 23
 isr_noerrcode 24

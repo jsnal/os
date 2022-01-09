@@ -24,8 +24,8 @@ void gdt_init()
   gdt_set_entry(0, 0, 0, 0, 0);
   gdt_set_entry(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
   gdt_set_entry(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
-  gdt_set_entry(3, 0, 0xFFFFFFFF, 0xFA, 0xCF);
-  gdt_set_entry(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
+  /* gdt_set_entry(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); */
+  /* gdt_set_entry(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); */
   gdt_flush((uint32_t) &gdt);
 }
 

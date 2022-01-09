@@ -1,6 +1,7 @@
+#include <api/printf.h>
 #include <api/string.h>
-#include <cpu/idt.h>
 #include <devices/vga.h>
+#include <cpu/idt.h>
 
 static idt_entry idt_entries[IDT_ENTRY_LIMIT];
 static idt_pointer idt;
@@ -10,13 +11,15 @@ static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t
   idt_entries[num].base_low = base & 0xFFFF;
   idt_entries[num].base_high = (base >> 16) & 0xFFFF;
   idt_entries[num].selector = selector;
-  idt_entries[num].always0 = 0;
+  idt_entries[num].zero = 0;
   idt_entries[num].flags = flags;
 }
 
 void isr_handler(registers r)
 {
-  vga_write("Interupt found\n");
+  /* __asm__ volatile("mov $0xFF, %ebx"); */
+  /* vga_write("Interupt found:\n"); */
+  printf_vga("Interupt: %d\n", r.int_no);
 }
 
 void idt_init()
@@ -63,5 +66,4 @@ void idt_init()
   idt_set_entry(31, (uint32_t) _exception31, 0x08, 0x8E);
 
   idt_flush((uint32_t) &idt);
-
 }

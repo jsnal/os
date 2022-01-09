@@ -12,13 +12,13 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
   return (uint16_t) uc | (uint16_t) color << 8;
 }
 
-void vga_init()
+static void vga_putentryat(char c, uint8_t color, size_t x, size_t y)
 {
-  terminal.row = 0;
-  terminal.column = 0;
-  terminal.color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
-  terminal.buffer = (uint16_t*) 0xB8000;
+  terminal.buffer[y * WIDTH + x] = vga_entry(c, color);
+}
 
+void vga_clear()
+{
   for (int y = 0; y < HEIGHT; y++) {
     for (int x = 0; x < WIDTH; x++) {
       terminal.buffer[y * WIDTH + x] = vga_entry(' ', terminal.color);
@@ -26,9 +26,13 @@ void vga_init()
   }
 }
 
-static void vga_putentryat(char c, uint8_t color, size_t x, size_t y)
+void vga_init()
 {
-  terminal.buffer[y * WIDTH + x] = vga_entry(c, color);
+  terminal.row = 0;
+  terminal.column = 0;
+  terminal.color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+  terminal.buffer = (uint16_t*) 0xB8000;
+  vga_clear();
 }
 
 void vga_putchar(char c)

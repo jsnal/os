@@ -36,6 +36,8 @@ typedef struct vga_terminal_struct {
 
 void vga_init();
 
+void vga_clear();
+
 void vga_putchar(char c);
 
 void vga_nwrite(const char* data, size_t size);

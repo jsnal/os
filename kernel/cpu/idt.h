@@ -8,7 +8,7 @@
 struct idt_entry_struct {
   uint16_t base_low;  // Lower 16 bits of address to jump to
   uint16_t selector;  // Kernel segment selector
-  uint8_t always0;
+  uint8_t zero;
   uint8_t flags;
   uint16_t base_high; // Upper 16 bits of address to jump to
 } __attribute__ ((packed));
