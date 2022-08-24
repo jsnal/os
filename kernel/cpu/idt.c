@@ -3,8 +3,10 @@
 #include <devices/vga.h>
 #include <cpu/idt.h>
 
-static idt_entry idt_entries[IDT_ENTRY_LIMIT];
-static idt_pointer idt;
+__attribute__((aligned(0x10)))
+static idt_entry_t idt_entries[IDT_ENTRY_LIMIT];
+
+static idtr_t idtr;
 
 static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t flags)
 {
@@ -17,19 +19,16 @@ static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t
 
 void isr_handler(registers r)
 {
-  /* __asm__ volatile("mov $0xFF, %ebx"); */
-  /* vga_write("Interupt found:\n"); */
   printf_vga("Interupt: %d\n", r.int_no);
+  __asm__ volatile ("cli");
 }
 
 void idt_init()
 {
-  vga_write("Hello from idt init!\n");
+  idtr.limit = (sizeof(idtr_t) * IDT_ENTRY_LIMIT) - 1;
+  idtr.base = (uint32_t) &idt_entries;
 
-  idt.limit = (sizeof(idt_pointer) * IDT_ENTRY_LIMIT) - 1;
-  idt.base = (uint32_t) &idt_entries;
-
-  memset(&idt_entries, 0, sizeof(idt_entry) * IDT_ENTRY_LIMIT);
+  memset(&idt_entries, 0, sizeof(idt_entry_t) * IDT_ENTRY_LIMIT);
 
   // TODO: make this better
   idt_set_entry(0, (uint32_t) _exception0, 0x08, 0x8E);
@@ -65,5 +64,5 @@ void idt_init()
   idt_set_entry(30, (uint32_t) _exception30, 0x08, 0x8E);
   idt_set_entry(31, (uint32_t) _exception31, 0x08, 0x8E);
 
-  idt_flush((uint32_t) &idt);
+  idt_flush((uint32_t) &idtr);
 }

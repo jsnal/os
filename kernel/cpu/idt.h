@@ -5,22 +5,18 @@
 
 #define IDT_ENTRY_LIMIT 256
 
-struct idt_entry_struct {
+typedef struct idt_entry_struct {
   uint16_t base_low;  // Lower 16 bits of address to jump to
   uint16_t selector;  // Kernel segment selector
   uint8_t zero;
   uint8_t flags;
   uint16_t base_high; // Upper 16 bits of address to jump to
-} __attribute__ ((packed));
+} __attribute__ ((packed)) idt_entry_t;
 
-typedef struct idt_entry_struct idt_entry;
-
-struct idt_pointer_struct {
+typedef struct idtr_struct {
   uint16_t limit;
   uint32_t base;
-} __attribute__ ((packed));
-
-typedef struct idt_pointer_struct idt_pointer;
+} __attribute__ ((packed)) idtr_t;
 
 typedef struct registers_struct {
   uint32_t ds;

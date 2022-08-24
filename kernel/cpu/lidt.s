@@ -29,7 +29,6 @@ isr_common:
 .macro isr_noerrcode num
   .global _exception\num
   _exception\num:
-    cli
     push $0x0
     push $0x\num
     jmp isr_common
@@ -38,13 +37,11 @@ isr_common:
 .macro isr_errcode num
   .global _exception\num
   _exception\num:
-    cli
     push $0x\num
     jmp isr_common
 .endm
 
 idt_flush:
-  cli
   mov 4(%esp), %eax
   lidt (%eax)
   ret

@@ -1,5 +1,4 @@
 CC=i686-pc-os-gcc
-
 CFLAGS=-ffreestanding -nostdlib -Wall -Wextra -O2 -g
 LIBS=-lgcc -I.
 
@@ -26,6 +25,8 @@ LINK_LIST=\
 					$(CRTBEGIN_OBJ) \
 					$(CRTEND_OBJ) \
 					$(KERNEL_OBJS) \
+
+all: kernel.bin
 
 kernel.bin: $(KERNEL_OBJS) $(ASM_OBJS) linker.ld
 	$(CC) -T linker.ld -o $@ $(CFLAGS) $(LINK_LIST)

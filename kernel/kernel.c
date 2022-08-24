@@ -21,9 +21,8 @@ void kernel_main(void)
 
   /* printf_vga("number: %d\nstring: %s\n", 847358, "really long string thing"); */
 
-  /* __asm__ __volatile__("sti"); */
-  __asm__ __volatile__("int $2");
-  __asm__ __volatile__("int $3");
+  __asm__ __volatile__("int $0");
+//  __asm__ __volatile__("int $3");
 
   printf_vga("Booted!!\n");
 
