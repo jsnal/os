@@ -10,6 +10,7 @@ KERNEL_OBJS=\
 						api/string.o \
 						cpu/gdt.o \
 						cpu/idt.o \
+						devices/console.o \
 						devices/vga.o \
 						kernel.o \
 
