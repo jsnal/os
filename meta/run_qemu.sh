@@ -17,5 +17,5 @@ fi
 make -C "$DIR/kernel" || die "make failed"
 "$DIR/meta/build_grub.sh"
 $DIR/toolchain/qemu-*/qemu-system-i386 \
-  -drive file=os_grub.img,format=raw,index=0,media=disk \
+  -serial stdio -drive file=os_grub.img,format=raw,index=0,media=disk \
   || die "unable to run bochs"
