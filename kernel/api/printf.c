@@ -1,76 +1,140 @@
 #include "api/printf.h"
 #include <api/string.h>
+#include <devices/console.h>
 #include <devices/vga.h>
 #include <stddef.h>
 
-static size_t intlen(const long num)
+static int convert(int value, char* buf, size_t size, int base, int caps)
 {
-  if (num == 0) {
-    return 1;
-  }
+    const char* digits = caps ? "0123456789ABCDEF" : "0123456789abcdef";
+    size_t pos = 0;
 
-  long n = num;
-  size_t len = 0;
+    /* We return an unterminated buffer with the digits in reverse order. */
+    do {
+        buf[pos++] = digits[value % base];
+        value /= base;
+    } while (value != 0 && pos < size);
 
-  if (n < 0) {
-    len++;
-    n *= -1;
-  }
-
-  for (; n > 0; len++) {
-    n = n / 10;
-  }
-
-  return len;
+    return (int)pos;
 }
 
-int vsprintf(void (*write)(char), const char *format, va_list list)
+static int print_string(void (*write)(char), const char* str)
 {
-  size_t length;
-  long num;
-  const char *str;
-
-  for (; *format; ++format) {
-    if (*format == '%') {
-      ++format;
-
-      switch (*format) {
-        case '%':
-          write('%');
-          break;
-        case 's':
-          str = va_arg(list, char*);
-          length = strlen(str);
-
-          for (int i = 0; i < length; i++) {
-            write(str[i]);
-          }
-
-          break;
-        case 'd':
-          num = va_arg(list, int);
-          length = intlen(num) + 1;
-
-          char b[length];
-          itoa(b, length, num, 10);
-
-          for (int i = 0; i < length - 1; i++) {
-            write(b[i]);
-          }
-      }
-    } else {
-      write(*format);
+    int length = 0;
+    while (*str) {
+        write(*str++);
+        length++;
     }
-  }
+
+    return length;
 }
 
-int printf_vga(const char *format, ...)
+static int print_int(void (*write)(char), uint32_t number, uint16_t base)
 {
-  va_list list;
-  int i;
+    int length = 0;
 
-  va_start(list, format);
-  i = vsprintf(vga_putchar, format, list);
-  va_end(list);
-  return i;
+    // Remember if negative
+    bool negative = false;
+    if (base == 10) {
+        negative = ((int32_t)number) < 0;
+
+        if (negative) {
+            number = -number;
+        }
+    }
+
+    // Write chars in reverse order, not nullterminated
+    char revbuf[32];
+
+    char* cbufp = revbuf;
+    int len = 0;
+    do {
+        *cbufp++ = "0123456789abcdef"[number % base];
+        ++len;
+        number /= base;
+    } while (number);
+
+    // If base is 16, write 0's until 8
+    if (base == 16) {
+        while (len < 8) {
+            *cbufp++ = '0';
+            ++len;
+        }
+    }
+
+    // Reverse buffer
+    char buf[len + 1];
+    for (int i = 0; i < len; i++) {
+        buf[i] = revbuf[len - i - 1];
+    }
+    buf[len] = 0;
+
+    // Print number
+    if (negative) {
+        write('-');
+        length++;
+    }
+    length += print_string(write, buf);
+
+    return length;
+}
+
+int vsprintf(void (*write)(char), const char* format, va_list list)
+{
+    int length = 0;
+    int base = 10;
+    long num;
+    char ch;
+    const char* str;
+
+    for (; *format; ++format) {
+        if (*format == '%') {
+            ++format;
+
+            switch (*format) {
+                case '%':
+                    write('%');
+                    break;
+                case 'c':
+                    ch = va_arg(list, int);
+                    write(ch);
+                    length++;
+                    break;
+                case 's':
+                    str = va_arg(list, char*);
+                    length += print_string(write, str);
+                    break;
+                case 'b':
+                case 'x':
+                case 'd':
+                    num = va_arg(list, int);
+                    if (*format == 'b') {
+                        base = 2;
+                    } else if (*format == 'x') {
+                        base = 16;
+                    } else {
+                        base = 10;
+                    }
+
+                    length += print_int(write, num, base);
+                    break;
+            }
+        } else {
+            write(*format);
+            length++;
+        }
+    }
+
+    return length;
+}
+
+int printf_vga(const char* format, ...)
+{
+    va_list list;
+    int i;
+
+    va_start(list, format);
+    i = vsprintf(vga_putchar, format, list);
+    va_end(list);
+    return i;
 }

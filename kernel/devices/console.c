@@ -1,7 +1,16 @@
 #include "console.h"
+#include "api/printf.h"
+#include "api/sys/io.h"
+#include <stdarg.h>
 
-bool console_enable()
+static bool console_enabled;
+
+bool console_enable_com_port()
 {
+    if (console_enabled) {
+        return true;
+    }
+
     outb(0x00, COM1 + 1);
     outb(0x80, COM1 + 3);
     outb(0x03, COM1 + 0);
@@ -21,12 +30,22 @@ bool console_enable()
     return true;
 }
 
-bool console_putchar(char c)
+void console_putchar(char c)
 {
     if (!console_enabled) {
-        return false;
+        return;
     }
 
     outb(c, COM1);
-    return true;
+}
+
+int console_printf(const char* format, ...)
+{
+    va_list list;
+    int i;
+
+    va_start(list, format);
+    i = vsprintf(console_putchar, format, list);
+    va_end(list);
+    return i;
 }

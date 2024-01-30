@@ -3,12 +3,16 @@
 
 #include <stddef.h>
 
-size_t strlen(const char *str);
+#define MAX_ITOA_LEN 64
 
-void *memset(void *s, int c, size_t n);
+size_t strlen(const char* str);
 
-void *memcpy(void *dest, const void *src, size_t n);
+void* memset(void* s, int c, size_t n);
 
-char *itoa(char *dest, size_t size, int a, int base);
+void* memcpy(void* dest, const void* src, size_t n);
+
+size_t intlen(const long num);
+
+char* itoa(char* dest, size_t size, int a, int base);
 
 #endif

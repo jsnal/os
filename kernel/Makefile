@@ -1,5 +1,5 @@
 CC=i686-pc-os-gcc
-CFLAGS=-ffreestanding -nostdlib -Wall -Wextra -O2 -g
+CFLAGS=-ffreestanding -nostdlib -Wall -Wextra -O2 -std=gnu11 -g
 LIBS=-lgcc -I.
 
 CRTBEGIN_OBJ=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
@@ -13,6 +13,7 @@ KERNEL_OBJS=\
 						devices/console.o \
 						devices/vga.o \
 						kernel.o \
+						logger/logger.o \
 
 ASM_OBJS=\
 				 boot/boot.o \

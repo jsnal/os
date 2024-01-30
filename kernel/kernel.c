@@ -3,6 +3,8 @@
 #include <cpu/idt.h>
 #include <devices/console.h>
 #include <devices/vga.h>
+#include <logger/logger.h>
+#include <multiboot/multiboot.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -11,7 +13,7 @@
 #    error "Compiling with incorrect toolchain."
 #endif
 
-void kernel_main(void)
+void kernel_main(multiboot_information_t* multiboot)
 {
     gdt_init();
 
@@ -19,18 +21,43 @@ void kernel_main(void)
 
     vga_init();
 
-    printf_vga("Return %d\n", console_enable());
-    console_putchar('T');
+    if (!(multiboot->flags & MULTIBOOT_FLAGS_MMAP)) {
+        errln("invalid memory map given by GRUB bootloader");
+    }
 
-    /* printf_vga("number: %d\nstring: %s\n", 847358, "really long string thing"); */
+    dbgln("System Memory Map:\n");
+    for (uint32_t position = 0, i = 0;
+         position < multiboot->memory_map_length;
+         position += sizeof(multiboot_mmap_t), i++) {
+        multiboot_mmap_t* mmap = multiboot->memory_map + i;
 
-    __asm__ __volatile__("int $0");
-    //  __asm__ __volatile__("int $3");
+        /* if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) { */
+        dbgln("  size=%x base_address=%x%x, length=%x%x, type=%x\n",
+            mmap->size, mmap->base_address_high, mmap->base_address_low, mmap->length_high, mmap->length_low, mmap->type);
+        /* } */
+    }
+
+    dbgln("memory_lower=%d KiB, memory_upper=%d KiB\n", multiboot->memory_lower, multiboot->memory_upper);
+
+    asm volatile("int $0");
 
     printf_vga("Booted!!\n");
 
     for (;;)
-        ;
+        asm("hlt");
+}
 
-    /* __asm__ volatile("mov $0xFF, %eax"); */
+void bootloader_entry(multiboot_information_t* multiboot, uint32_t magicNumber)
+{
+    console_enable_com_port();
+
+    if (magicNumber != MULTIBOOT_BOOTLOADER_MAGIC) {
+        asm("hlt");
+    }
+
+    if (multiboot->flags & MULTIBOOT_FLAGS_BOOTLOADER_NAME) {
+        dbgln("Loaded by: %s\n", multiboot->bootloader_name);
+    }
+
+    kernel_main(multiboot);
 }

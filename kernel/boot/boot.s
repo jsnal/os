@@ -19,7 +19,12 @@
 .type _start, @function
 _start:
 	mov $stack_top, %esp
-	call kernel_main
+        mov %esp, %ebp
+
+        # Load multiboot pointers
+        push %eax
+        push %ebx
+	call bootloader_entry
 
 	cli
 	hang:

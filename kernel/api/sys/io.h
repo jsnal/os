@@ -4,17 +4,17 @@
 static inline unsigned char inb(unsigned short port)
 {
     unsigned char v;
-    __asm__ volatile("inb %w1, %0"
-                     : "=a"(v)
-                     : "Nd"(port));
+    asm volatile("inb %w1, %0"
+                 : "=a"(v)
+                 : "Nd"(port));
     return v;
 }
 
 static inline void outb(unsigned char value, unsigned short port)
 {
-    __asm__ volatile("outb %b0, %w1"
-                     :
-                     : "a"(value), "Nd"(port));
+    asm volatile("outb %b0, %w1"
+                 :
+                 : "a"(value), "Nd"(port));
 }
 
 #endif

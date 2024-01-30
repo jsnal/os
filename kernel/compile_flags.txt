@@ -1,0 +1,10 @@
+-D__os__
+-ffreestanding
+-nostdlib
+-Wall
+-Wextra
+-O2
+-std=gnu11
+-g
+-lgcc
+-I.

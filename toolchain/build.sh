@@ -32,13 +32,14 @@ if [ ! -d ${BINUTILS_NAME} ]; then
     pushd $BINUTILS_NAME
       patch -p1 < ../../binutils-2.32.patch
       pushd ld
+        autoreconf
         automake
       popd
     popd
 
     echo "Building binutils"
     ${BINUTILS_NAME}/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
-    make -j
+    make all -j4
     make install
   popd
 fi
@@ -57,13 +58,16 @@ if [ ! -d ${GCC_NAME} ]; then
     echo "Patching gcc"
     pushd $GCC_NAME
       patch -p1 < ../../gcc-10.2.0.patch
+
+      echo "Downloading dependencies"
+      ./contrib/download_prerequisites
     popd
 
     echo "Building gcc"
     ${GCC_NAME}/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c --without-headers
-    make all-gcc
-    make all-target-libgcc
-    make install-gcc
-    make install-target-libgcc
+    make all-gcc -j4
+    make all-target-libgcc -j4
+    make install-gcc -j4
+    make install-target-libgcc -j4
   popd
 fi
