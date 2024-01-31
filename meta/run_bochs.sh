@@ -16,4 +16,4 @@ fi
 
 make -C "$DIR/kernel" || die "make failed"
 "$DIR/meta/build_grub.sh"
-$DIR/toolchain/bochs-*/bochs -f $DIR/meta/bochsrc.txt -q || die "unable to run bochs"
+$DIR/toolchain/bochs-*/bochs-*/bochs -f $DIR/meta/bochsrc.txt -q || die "unable to run bochs"

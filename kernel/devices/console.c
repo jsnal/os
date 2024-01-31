@@ -1,6 +1,6 @@
 #include "console.h"
 #include "api/printf.h"
-#include "api/sys/io.h"
+#include <api/sys/io.h>
 #include <stdarg.h>
 
 static bool console_enabled;

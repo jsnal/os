@@ -1,6 +1,6 @@
 #include "logger.h"
-#include "api/printf.h"
-#include "devices/console.h"
+#include <api/printf.h>
+#include <devices/console.h>
 
 void debug_line(log_level_t log_level, const char* format, ...)
 {

@@ -1,6 +1,7 @@
 #include <api/printf.h>
 #include <cpu/gdt.h>
 #include <cpu/idt.h>
+#include <cpu/pic.h>
 #include <devices/console.h>
 #include <devices/vga.h>
 #include <logger/logger.h>
@@ -8,6 +9,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include <api/sys/io.h>
 
 #if !defined(__os__)
 #    error "Compiling with incorrect toolchain."
@@ -18,6 +21,8 @@ void kernel_main(multiboot_information_t* multiboot)
     gdt_init();
 
     idt_init();
+
+    /* pic_init(); */
 
     vga_init();
 
@@ -39,7 +44,10 @@ void kernel_main(multiboot_information_t* multiboot)
 
     dbgln("memory_lower=%d KiB, memory_upper=%d KiB\n", multiboot->memory_lower, multiboot->memory_upper);
 
-    asm volatile("int $0");
+    /* asm volatile("int $0"); */
+    /* asm volatile("int $2"); */
+    /* asm volatile("int $3"); */
+    /* asm volatile("int $34"); */
 
     printf_vga("Booted!!\n");
 

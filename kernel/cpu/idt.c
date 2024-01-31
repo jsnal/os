@@ -18,7 +18,7 @@ static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t
 
 void isr_handler(registers r)
 {
-    printf_vga("Interupt: %d\n", r.int_no);
+    printf_vga("Interupt: %x\n", r.int_no);
     asm volatile("cli");
 }
 

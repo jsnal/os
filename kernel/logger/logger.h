@@ -1,3 +1,6 @@
+#ifndef LOGGER_LOGGER_H
+#define LOGGER_LOGGER_H
+
 #include <stdarg.h>
 
 #define ENABLE_COLOR true
@@ -39,3 +42,5 @@ typedef enum log_level_enum {
 } log_level_t;
 
 void debug_line(log_level_t, const char* format, ...);
+
+#endif
