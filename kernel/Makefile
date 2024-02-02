@@ -4,19 +4,20 @@ CC = i686-pc-os-gcc
 LD = i686-pc-os-ld
 AS = i686-pc-os-as
 
-STANDARD_FLAGS = -std=gnu11 -nostdlib -ffreestanding -masm=intel
+STANDARD_FLAGS = -g -std=gnu11 -nostdinc -nostdlib -nodefaultlibs -ffreestanding -masm=intel
 WARNING_FLAGS = -Wall -Wextra -Wundef -Wcast-qual
 
 CCFLAGS = -MMD -MP $(STANDARD_FLAGS) $(WARNING_FLAGS)
 LDFLAGS = -Map kernel.bin.map
-LIBS = -lgcc -I.
+LIBS = -lgcc -I. -I../libc/include
 
 CRTBEGIN_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 
+LIBC = ../libc/libc.a
+
 CC_OBJS = \
 	api/printf.o \
-	api/string.o \
 	cpu/gdt.o \
 	cpu/idt.o \
 	cpu/lgdt.o \
@@ -25,8 +26,12 @@ CC_OBJS = \
 	cpu/pic.o \
 	devices/console.o \
 	devices/vga.o \
+	kprintf.o \
 	kernel.o \
 	logger/logger.o \
+
+LIBC_OBJS = \
+	../libc/src/string/memcpy.o
 
 BOOT_OBJS = \
 	boot/boot.o \
@@ -34,17 +39,21 @@ BOOT_OBJS = \
 	boot/crtn.o \
 
 OBJS = $(CC_OBJS) $(BOOT_OBJS)
+DEPS = $(OBJS:%.o=%.d)
 
 LINK_LIST = \
 	$(CRTBEGIN_OBJ) \
 	$(CRTEND_OBJ) \
 	$(OBJS) \
+	$(LIBC) \
 
 all: $(NAME)
 
-$(NAME): $(OBJS) linker.ld
-	@echo "LD $@";
-	$(LD) $(LDFLAGS) -T linker.ld -o $@ $(LINK_LIST)
+$(NAME): $(OBJS) $(LIBC) linker.ld
+	@echo "LD $@"; $(LD) $(LDFLAGS) -T linker.ld -o $@ $(LINK_LIST)
+
+$(LIBC):
+	@echo "MAKE libc"; $(MAKE) -C ../libc
 
 %.o: %.c
 	@echo "CC $<"; $(CC) $(CCFLAGS) $(LIBS) -c -o $@ $<
@@ -52,8 +61,8 @@ $(NAME): $(OBJS) linker.ld
 %.o: %.S
 	@echo "AS $@"; $(AS) -o $@ $<
 
--include $(OBJS:%.o=%.d)
+-include $(DEPS)
 
 .PHONY: clean
 clean:
-	@echo "CLEAN kernel.bin $(OBJS) $(DEPS)"; rm -f kernel.bin *.d **/*.d $(OBJS) $(DEPS)
+	@echo "CLEAN $(NAME) $(OBJS) $(DEPS)"; rm -f $(NAME) $(OBJS) $(DEPS)

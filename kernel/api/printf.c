@@ -1,8 +1,8 @@
 #include "printf.h"
-#include <api/string.h>
 #include <devices/console.h>
 #include <devices/vga.h>
 #include <stddef.h>
+#include <string.h>
 
 static int convert(int value, char* buf, size_t size, int base, int caps)
 {

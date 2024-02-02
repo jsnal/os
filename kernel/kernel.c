@@ -5,6 +5,7 @@
 #include <cpu/pic.h>
 #include <devices/console.h>
 #include <devices/vga.h>
+#include <kprintf.h>
 #include <logger/logger.h>
 #include <multiboot/multiboot.h>
 #include <stdbool.h>
@@ -28,6 +29,8 @@ void kernel_main(multiboot_information_t* multiboot)
     if (!(multiboot->flags & MULTIBOOT_FLAGS_MMAP)) {
         errln("invalid memory map given by GRUB bootloader");
     }
+
+    kprintf("Testing\n");
 
     dbgln("System Memory Map:\n");
     dbgln("  Lower mem: %d KiB\n", multiboot->memory_lower);

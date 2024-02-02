@@ -1,5 +1,11 @@
-#ifndef API_STRING_H
-#define API_STRING_H
+/*
+ * Copyright (c) 2024, Jason Long <jasonlongball@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#ifndef _STRING_H_
+#define _STRING_H_
 
 #include <stddef.h>
 
@@ -14,7 +20,5 @@ void* memcpy(void* dest, const void* src, size_t n);
 void* memmove(void* dest, const void* src, size_t n);
 
 size_t intlen(const long num);
-
-char* itoa(char* dest, size_t size, int a, int base);
 
 #endif

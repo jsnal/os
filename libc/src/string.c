@@ -1,6 +1,11 @@
-#include <api/string.h>
+/*
+ * Copyright (c) 2024, Jason Long <jasonlongball@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #include <limits.h>
-#include <stdint.h>
+#include <string.h>
 
 void* memset(void* dest, int val, size_t length)
 {
@@ -30,7 +35,7 @@ void* memcpy(void* dest, const void* src, size_t n)
 
 void* memmove(void* dest, const void* src, size_t n)
 {
-    uint8_t* from = (uint8_t*)src;
+    const uint8_t* from = (const uint8_t*)src;
     uint8_t* to = (uint8_t*)dest;
 
     if (from == to || n == 0) {

@@ -1,10 +1,10 @@
 #include <api/printf.h>
-#include <api/string.h>
 #include <cpu/idt.h>
 #include <cpu/panic.h>
 #include <cpu/pic.h>
 #include <devices/vga.h>
 #include <logger/logger.h>
+#include <string.h>
 
 __attribute__((aligned(0x10))) static idt_entry_t idt_entries[IDT_ENTRY_LIMIT];
 

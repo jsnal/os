@@ -1,7 +1,7 @@
 #include "pic.h"
-#include <api/sys/io.h>
 #include <cpu/idt.h>
 #include <logger/logger.h>
+#include <sys/io.h>
 
 void pic_mask(uint32_t mask)
 {

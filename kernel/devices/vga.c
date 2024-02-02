@@ -1,6 +1,6 @@
 #include "vga.h"
-#include <api/string.h>
 #include <logger/logger.h>
+#include <string.h>
 
 static vga_terminal terminal;
 
