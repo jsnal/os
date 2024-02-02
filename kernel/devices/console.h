@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #define COM1 0x3f8
+#define LINE_STATUS 0x3FD
 
 /**
  * @brief if the console serial connection is currently enabled

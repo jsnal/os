@@ -1,18 +1,22 @@
-CC=i686-pc-os-gcc
-LD=i686-pc-os-ld
-CFLAGS=-ffreestanding -nostdlib -Wall -Wextra -std=gnu11 -masm=intel -g
-LDFLAGS=-Map kernel.bin.map
-LIBS=-lgcc -I.
+NAME = os.kernel
 
-CRTBEGIN_OBJ=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
-CRTEND_OBJ=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
+CC = i686-pc-os-gcc
+LD = i686-pc-os-ld
+AS = i686-pc-os-as
 
-OBJS=\
+STANDARD_FLAGS = -std=gnu11 -nostdlib -ffreestanding -masm=intel
+WARNING_FLAGS = -Wall -Wextra -Wundef -Wcast-qual
+
+CCFLAGS = -MMD -MP $(STANDARD_FLAGS) $(WARNING_FLAGS)
+LDFLAGS = -Map kernel.bin.map
+LIBS = -lgcc -I.
+
+CRTBEGIN_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
+CRTEND_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
+
+CC_OBJS = \
 	api/printf.o \
 	api/string.o \
-	boot/boot.o \
-	boot/crti.o \
-	boot/crtn.o \
 	cpu/gdt.o \
 	cpu/idt.o \
 	cpu/lgdt.o \
@@ -24,28 +28,32 @@ OBJS=\
 	kernel.o \
 	logger/logger.o \
 
-HEADERS=$(wildcard **/*.h)
+BOOT_OBJS = \
+	boot/boot.o \
+	boot/crti.o \
+	boot/crtn.o \
 
-LINK_LIST=\
+OBJS = $(CC_OBJS) $(BOOT_OBJS)
+
+LINK_LIST = \
 	$(CRTBEGIN_OBJ) \
 	$(CRTEND_OBJ) \
 	$(OBJS) \
 
-all: kernel.bin
+all: $(NAME)
 
-kernel.bin: $(OBJS) linker.ld
-	$(LD) -T linker.ld -o $@ $(LINK_LIST)
+$(NAME): $(OBJS) linker.ld
+	@echo "LD $@";
+	$(LD) $(LDFLAGS) -T linker.ld -o $@ $(LINK_LIST)
 
-%.o: %.c $(HEADERS)
-	$(CC) $(CFLAGS) $(LIBS) -c -o $@ $<
+%.o: %.c
+	@echo "CC $<"; $(CC) $(CCFLAGS) $(LIBS) -c -o $@ $<
 
 %.o: %.S
-	$(CC) $(CFLAGS) $(LIBS) -c -o $@ $<
+	@echo "AS $@"; $(AS) -o $@ $<
 
-%.o: %.s
-	$(CC) $(CFLAGS) $(LIBS) -c -o $@ $<
+-include $(OBJS:%.o=%.d)
 
 .PHONY: clean
 clean:
-	rm -f kernel.bin
-	rm -f $(OBJS) $(DEPS)
+	@echo "CLEAN kernel.bin $(OBJS) $(DEPS)"; rm -f kernel.bin *.d **/*.d $(OBJS) $(DEPS)

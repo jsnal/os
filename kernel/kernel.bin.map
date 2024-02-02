@@ -1,0 +1,253 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000000100000                . = 0x100000
+
+.text           0x0000000000100000     0x17fd
+ *(.multiboot)
+ .multiboot     0x0000000000100000        0xc boot/boot.o
+ *(.text)
+ *fill*         0x000000000010000c        0x4 
+ .text          0x0000000000100010      0x145 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+ *fill*         0x0000000000100155        0xb 
+ .text          0x0000000000100160       0x41 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtend.o
+ .text          0x00000000001001a1      0x357 api/printf.o
+                0x000000000010037e                vsprintf
+                0x00000000001004cd                printf_vga
+ .text          0x00000000001004f8      0x262 api/string.o
+                0x00000000001004f8                memset
+                0x0000000000100526                memcpy
+                0x000000000010056c                memmove
+                0x0000000000100636                intlen
+                0x000000000010068f                strlen
+                0x00000000001006b6                itoa
+ .text          0x000000000010075a      0x10d cpu/gdt.o
+                0x00000000001007f8                gdt_init
+ .text          0x0000000000100867      0x554 cpu/idt.o
+                0x00000000001008d3                isr_handler
+                0x0000000000100927                idt_init
+ .text          0x0000000000100dbb       0x19 cpu/lgdt.o
+                0x0000000000100dbb                gdt_load
+ .text          0x0000000000100dd4      0x1d3 cpu/lidt.o
+                0x0000000000100dd4                idt_load
+                0x0000000000100dd8                isr_common
+                0x0000000000100dfd                isr_0
+                0x0000000000100e04                isr_1
+                0x0000000000100e0b                isr_2
+                0x0000000000100e12                isr_3
+                0x0000000000100e19                isr_4
+                0x0000000000100e20                isr_5
+                0x0000000000100e27                isr_6
+                0x0000000000100e2e                isr_7
+                0x0000000000100e35                isr_8
+                0x0000000000100e3a                isr_9
+                0x0000000000100e41                isr_10
+                0x0000000000100e46                isr_11
+                0x0000000000100e4b                isr_12
+                0x0000000000100e50                isr_13
+                0x0000000000100e55                isr_14
+                0x0000000000100e5d                isr_15
+                0x0000000000100e67                isr_16
+                0x0000000000100e71                isr_17
+                0x0000000000100e7b                isr_18
+                0x0000000000100e85                isr_19
+                0x0000000000100e8f                isr_20
+                0x0000000000100e99                isr_21
+                0x0000000000100ea3                isr_22
+                0x0000000000100ead                isr_23
+                0x0000000000100eb7                isr_24
+                0x0000000000100ec1                isr_25
+                0x0000000000100ecb                isr_26
+                0x0000000000100ed5                isr_27
+                0x0000000000100edf                isr_28
+                0x0000000000100ee9                isr_29
+                0x0000000000100ef3                isr_30
+                0x0000000000100efd                isr_31
+                0x0000000000100f07                isr_32
+                0x0000000000100f11                isr_33
+                0x0000000000100f1b                isr_34
+                0x0000000000100f25                isr_35
+                0x0000000000100f2f                isr_36
+                0x0000000000100f39                isr_37
+                0x0000000000100f43                isr_38
+                0x0000000000100f4d                isr_39
+                0x0000000000100f57                isr_40
+                0x0000000000100f61                isr_41
+                0x0000000000100f6b                isr_42
+                0x0000000000100f75                isr_43
+                0x0000000000100f7f                isr_44
+                0x0000000000100f89                isr_45
+                0x0000000000100f93                isr_46
+                0x0000000000100f9d                isr_47
+ .text          0x0000000000100fa7       0x3e cpu/panic.o
+                0x0000000000100faf                panic
+ .text          0x0000000000100fe5      0x228 cpu/pic.o
+                0x000000000010102a                pic_mask
+                0x0000000000101083                pic_unmask
+                0x00000000001010de                pic_eoi
+                0x000000000010110e                pic_init
+                0x00000000001011e6                pic_disable
+ .text          0x000000000010120d      0x192 devices/console.o
+                0x000000000010124b                console_enable_com_port
+                0x0000000000101328                console_putchar
+                0x0000000000101374                console_printf
+ .text          0x000000000010139f      0x247 devices/vga.o
+                0x0000000000101425                vga_clear
+                0x000000000010148f                vga_init
+                0x00000000001014c9                vga_putchar
+                0x0000000000101587                vga_nwrite
+                0x00000000001015c0                vga_write
+ .text          0x00000000001015e6      0x172 kernel.o
+                0x00000000001015e6                kernel_main
+                0x00000000001016fc                bootloader_entry
+ .text          0x0000000000101758       0x93 logger/logger.o
+                0x0000000000101758                debug_line
+ .text          0x00000000001017eb       0x12 boot/boot.o
+                0x00000000001017eb                _start
+ .text          0x00000000001017fd        0x0 boot/crti.o
+ .text          0x00000000001017fd        0x0 boot/crtn.o
+
+.fini           0x00000000001017fd        0xa
+ .fini          0x00000000001017fd        0x5 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+ .fini          0x0000000000101802        0x3 boot/crti.o
+                0x0000000000101802                _fini
+ .fini          0x0000000000101805        0x2 boot/crtn.o
+
+.init           0x0000000000101807        0xf
+ .init          0x0000000000101807        0x5 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+ .init          0x000000000010180c        0x5 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtend.o
+ .init          0x0000000000101811        0x3 boot/crti.o
+                0x0000000000101811                _init
+ .init          0x0000000000101814        0x2 boot/crtn.o
+
+.iplt           0x0000000000101816        0x0
+ .iplt          0x0000000000101816        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+
+.rodata         0x0000000000102000      0x22f
+ *(.rodata)
+ .rodata        0x0000000000102000       0x80 api/printf.o
+ .rodata        0x0000000000102080       0x24 api/string.o
+ .rodata        0x00000000001020a4       0x37 cpu/idt.o
+ .rodata        0x00000000001020db       0x11 cpu/panic.o
+ .rodata        0x00000000001020ec       0x16 cpu/pic.o
+ *fill*         0x0000000000102102        0x2 
+ .rodata        0x0000000000102104       0xc9 kernel.o
+ .rodata        0x00000000001021cd       0x62 logger/logger.o
+
+.eh_frame       0x0000000000102230        0x4
+ .eh_frame      0x0000000000102230        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+ .eh_frame      0x0000000000102230        0x4 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtend.o
+
+.rel.dyn        0x0000000000102234        0x0
+ .rel.got       0x0000000000102234        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+ .rel.iplt      0x0000000000102234        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+ .rel.text      0x0000000000102234        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+
+.data           0x0000000000103000        0x4
+ *(.data)
+ .data          0x0000000000103000        0x4 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+                0x0000000000103000                __dso_handle
+ .data          0x0000000000103004        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtend.o
+ .data          0x0000000000103004        0x0 api/printf.o
+ .data          0x0000000000103004        0x0 api/string.o
+ .data          0x0000000000103004        0x0 cpu/gdt.o
+ .data          0x0000000000103004        0x0 cpu/idt.o
+ .data          0x0000000000103004        0x0 cpu/lgdt.o
+ .data          0x0000000000103004        0x0 cpu/lidt.o
+ .data          0x0000000000103004        0x0 cpu/panic.o
+ .data          0x0000000000103004        0x0 cpu/pic.o
+ .data          0x0000000000103004        0x0 devices/console.o
+ .data          0x0000000000103004        0x0 devices/vga.o
+ .data          0x0000000000103004        0x0 kernel.o
+ .data          0x0000000000103004        0x0 logger/logger.o
+ .data          0x0000000000103004        0x0 boot/boot.o
+ .data          0x0000000000103004        0x0 boot/crti.o
+ .data          0x0000000000103004        0x0 boot/crtn.o
+
+.ctors          0x0000000000103004        0x8
+ .ctors         0x0000000000103004        0x4 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+ .ctors         0x0000000000103008        0x4 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtend.o
+
+.dtors          0x000000000010300c        0x8
+ .dtors         0x000000000010300c        0x4 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+ .dtors         0x0000000000103010        0x4 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtend.o
+                0x0000000000103010                __DTOR_END__
+
+.tm_clone_table
+                0x0000000000103014        0x0
+ .tm_clone_table
+                0x0000000000103014        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+ .tm_clone_table
+                0x0000000000103014        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtend.o
+
+.got            0x0000000000103014        0x0
+ .got           0x0000000000103014        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+
+.got.plt        0x0000000000103014        0x0
+ .got.plt       0x0000000000103014        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+
+.igot.plt       0x0000000000103014        0x0
+ .igot.plt      0x0000000000103014        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+
+.bss            0x0000000000104000     0x4870
+ *(COMMON)
+ *(.bss)
+ .bss           0x0000000000104000       0x20 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+ .bss           0x0000000000104020        0x0 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtend.o
+ .bss           0x0000000000104020        0x1 api/printf.o
+ .bss           0x0000000000104021        0x0 api/string.o
+ *fill*         0x0000000000104021        0x3 
+ .bss           0x0000000000104024       0x1e cpu/gdt.o
+ *fill*         0x0000000000104042        0xe 
+ .bss           0x0000000000104050      0x806 cpu/idt.o
+ .bss           0x0000000000104856        0x0 cpu/lgdt.o
+ .bss           0x0000000000104856        0x0 cpu/lidt.o
+ .bss           0x0000000000104856        0x0 cpu/panic.o
+ .bss           0x0000000000104856        0x0 cpu/pic.o
+ .bss           0x0000000000104856        0x1 devices/console.o
+ *fill*         0x0000000000104857        0x1 
+ .bss           0x0000000000104858       0x10 devices/vga.o
+ .bss           0x0000000000104868        0x1 kernel.o
+ .bss           0x0000000000104869        0x1 logger/logger.o
+ *fill*         0x000000000010486a        0x6 
+ .bss           0x0000000000104870     0x4000 boot/boot.o
+ .bss           0x0000000000108870        0x0 boot/crti.o
+ .bss           0x0000000000108870        0x0 boot/crtn.o
+LOAD /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+LOAD /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtend.o
+LOAD api/printf.o
+LOAD api/string.o
+LOAD cpu/gdt.o
+LOAD cpu/idt.o
+LOAD cpu/lgdt.o
+LOAD cpu/lidt.o
+LOAD cpu/panic.o
+LOAD cpu/pic.o
+LOAD devices/console.o
+LOAD devices/vga.o
+LOAD kernel.o
+LOAD logger/logger.o
+LOAD boot/boot.o
+LOAD boot/crti.o
+LOAD boot/crtn.o
+OUTPUT(os.kernel elf32-i386)
+
+.comment        0x0000000000000000       0x12
+ .comment       0x0000000000000000       0x12 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtbegin.o
+                                         0x13 (size before relaxing)
+ .comment       0x0000000000000012       0x13 /home/jason/code/os/toolchain/local/lib/gcc/i686-pc-os/10.2.0/crtend.o
+ .comment       0x0000000000000012       0x13 api/printf.o
+ .comment       0x0000000000000012       0x13 api/string.o
+ .comment       0x0000000000000012       0x13 cpu/gdt.o
+ .comment       0x0000000000000012       0x13 cpu/idt.o
+ .comment       0x0000000000000012       0x13 cpu/panic.o
+ .comment       0x0000000000000012       0x13 cpu/pic.o
+ .comment       0x0000000000000012       0x13 devices/console.o
+ .comment       0x0000000000000012       0x13 devices/vga.o
+ .comment       0x0000000000000012       0x13 kernel.o
+ .comment       0x0000000000000012       0x13 logger/logger.o

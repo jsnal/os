@@ -1,10 +1,10 @@
 .intel_syntax noprefix
 
-#define MAGIC           0x1BADB002
-#define PAGE_ALIGN      (1 << 0)
-#define MEMORY_INFO     (1 << 1)
-#define FLAGS           (PAGE_ALIGN | MEMORY_INFO)
-#define CHECKSUM        -(MAGIC+FLAGS)
+.set MAGIC, 0x1BADB002
+.set PAGE_ALIGN, (1 << 0)
+.set MEMORY_INFO, (1 << 1)
+.set FLAGS, (PAGE_ALIGN | MEMORY_INFO)
+.set CHECKSUM, -(MAGIC+FLAGS)
 
 .section .multiboot
     .align 4

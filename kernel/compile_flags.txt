@@ -1,10 +1,11 @@
 -D__os__
--ffreestanding
+-std=gnu11
 -nostdlib
+-ffreestanding
+-masm=intel
 -Wall
 -Wextra
--O2
--std=gnu11
--g
+-Wundef
+-Wcast-qual
 -lgcc
 -I.

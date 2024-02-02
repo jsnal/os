@@ -36,9 +36,10 @@ void console_putchar(char c)
         return;
     }
 
-    while ((inb(0x3FD) & 0x20) == 0)
+    while ((inb(LINE_STATUS) & 0x20) == 0)
         ;
 
+    // outb(0xe9, c);
     outb(COM1, c);
 }
 

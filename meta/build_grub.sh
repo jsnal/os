@@ -14,6 +14,9 @@ else
   : "${SUDO_UID:=0}" "${SUDO_GID:=0}"
 fi
 
+. "$DIR/meta/env.sh"
+echo $PATH
+
 GRUB_BIN=$(command -v grub-install 2>/dev/null) || true
 if [ -z "$GRUB_BIN" ]; then
     GRUB_BIN=$(command -v grub2-install 2>/dev/null) || true
@@ -27,7 +30,7 @@ echo "using grub-install at ${GRUB_BIN}"
 HEADS=16
 SECTORS=63
 BYTES_PER_SECTOR=512
-DISK_SIZE=10 # in MB
+DISK_SIZE=30 # in MB
 
 BYTES=$(($HEADS*$SECTORS*$BYTES_PER_SECTOR))
 CYLINDERS=$((($DISK_SIZE*1000*1024)/$BYTES))
@@ -70,7 +73,7 @@ dd if=/dev/zero of="${LOOPBACK}p1" bs=1M count=1 status=none || die "couldn't de
 echo "done"
 
 echo "creating new filesystem... "
-mke2fs -q -I 128 -b 1024 "${LOOPBACK}p1" || die "couldn't create filesystem"
+mke2fs -q -I 128 -b 1024 "${LOOPBACK}p1" 10M || die "couldn't create filesystem"
 echo "done"
 
 echo "mounting filesystem... "
@@ -80,7 +83,7 @@ mkdir -p mnt/boot
 echo "done"
 
 echo "building filesystem..."
-sudo cp -v "$DIR/kernel/kernel.bin" mnt/boot/kernel
+sudo cp -v "$DIR/kernel/os.kernel" mnt/boot/kernel
 echo "done"
 
 echo "installing grub..."
