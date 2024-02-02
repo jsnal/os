@@ -18,13 +18,11 @@ static void gdt_set_entry(uint32_t num, uint32_t base, uint32_t limit, uint8_t a
 
 void gdt_init()
 {
-    gdt.limit = (sizeof(gdt_pointer_t) * GDT_ENTRY_LIMIT) - 1;
+    gdt.limit = (sizeof(gdt_entry_t) * GDT_ENTRY_LIMIT) - 1;
     gdt.base = (uintptr_t)&gdt_entries;
 
-    gdt_set_entry(0, 0, 0, 0, 0);
-    gdt_set_entry(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
-    gdt_set_entry(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
-    /* gdt_set_entry(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); */
-    /* gdt_set_entry(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); */
+    gdt_set_entry(0, 0, 0, 0, 0);                // Null segment
+    gdt_set_entry(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); // Kernel mode code segment
+    gdt_set_entry(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Kernel mode data segment
     gdt_load((uintptr_t)&gdt);
 }

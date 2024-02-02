@@ -1,7 +1,9 @@
 #ifndef SYS_IO_H
 #define SYS_IO_H
 
-static inline unsigned char inb(unsigned short port)
+#include <stdint.h>
+
+static inline unsigned char inb(uint16_t port)
 {
     unsigned char v;
     asm volatile("inb %b0, %w1"
@@ -10,9 +12,9 @@ static inline unsigned char inb(unsigned short port)
     return v;
 }
 
-static inline void outb(unsigned char value, unsigned short port)
+static inline void outb(uint16_t port, uint8_t value)
 {
-    asm volatile("outb %w1, %b0"
+    asm volatile("out %w1, %b0"
                  :
                  : "a"(value), "Nd"(port));
 }

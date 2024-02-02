@@ -9,6 +9,7 @@
 #define PIC2_DATA 0x00A1
 #define PIC1_OFFSET 0x20
 #define PIC2_OFFSET 0x28
+#define PIC_EOI 0x20
 
 /**
  * @brief mask off a specific IRQ. This can be used to disable an IRQ from firing.
@@ -23,6 +24,8 @@ void pic_mask(uint32_t mask);
  * @param mask the mask
  */
 void pic_unmask(uint32_t mask);
+
+void pic_eoi(uint8_t);
 
 /*
  * @brief initialize the programmable interrupt controller. Maps to IRQ 32 to 47.

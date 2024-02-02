@@ -1,5 +1,7 @@
 .intel_syntax noprefix
 
+.section .text
+
 .global gdt_load
 
 gdt_load:

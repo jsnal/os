@@ -22,7 +22,7 @@ void kernel_main(multiboot_information_t* multiboot)
 
     idt_init();
 
-    /* pic_init(); */
+    pic_init();
 
     vga_init();
 
@@ -43,11 +43,6 @@ void kernel_main(multiboot_information_t* multiboot)
     }
 
     dbgln("memory_lower=%d KiB, memory_upper=%d KiB\n", multiboot->memory_lower, multiboot->memory_upper);
-
-    /* asm volatile("int $0"); */
-    /* asm volatile("int $2"); */
-    /* asm volatile("int $3"); */
-    /* asm volatile("int $34"); */
 
     printf_vga("Booted!!\n");
 

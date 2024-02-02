@@ -1,6 +1,7 @@
 CC=i686-pc-os-gcc
+LD=i686-pc-os-ld
 CFLAGS=-ffreestanding -nostdlib -Wall -Wextra -std=gnu11 -masm=intel -g
-LDFLAGS=-ffreestanding -nostdlib
+LDFLAGS=-Map kernel.bin.map
 LIBS=-lgcc -I.
 
 CRTBEGIN_OBJ=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
@@ -16,6 +17,7 @@ OBJS=\
 	cpu/idt.o \
 	cpu/lgdt.o \
 	cpu/lidt.o \
+	cpu/panic.o \
 	cpu/pic.o \
 	devices/console.o \
 	devices/vga.o \
@@ -32,7 +34,7 @@ LINK_LIST=\
 all: kernel.bin
 
 kernel.bin: $(OBJS) linker.ld
-	$(CC) -T linker.ld -o $@ $(LDFLAGS) $(LINK_LIST)
+	$(LD) -T linker.ld -o $@ $(LINK_LIST)
 
 %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) $(LIBS) -c -o $@ $<

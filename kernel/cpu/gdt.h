@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define GDT_ENTRY_LIMIT 5
+#define GDT_ENTRY_LIMIT 3
 
 typedef struct gdt_entry_struct {
     uint16_t limit_low;  // Lower 16 bits of limit

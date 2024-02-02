@@ -11,21 +11,21 @@ bool console_enable_com_port()
         return true;
     }
 
-    outb(0x00, COM1 + 1);
-    outb(0x80, COM1 + 3);
-    outb(0x03, COM1 + 0);
-    outb(0x00, COM1 + 1);
-    outb(0x03, COM1 + 3);
-    outb(0xC7, COM1 + 2);
-    outb(0x0B, COM1 + 4);
-    outb(0x1E, COM1 + 4);
-    outb(0xAE, COM1 + 0);
+    outb(COM1 + 1, 0x00);
+    outb(COM1 + 3, 0x80);
+    outb(COM1 + 0, 0x03);
+    outb(COM1 + 1, 0x00);
+    outb(COM1 + 3, 0x03);
+    outb(COM1 + 2, 0xC7);
+    outb(COM1 + 4, 0x0B);
+    outb(COM1 + 4, 0x1E);
+    outb(COM1 + 0, 0xAE);
 
     if (inb(COM1 + 0) != 0xAE) {
         return false;
     }
 
-    outb(0x0F, COM1 + 4);
+    outb(COM1 + 4, 0x0F);
     console_enabled = true;
     return true;
 }
@@ -36,7 +36,10 @@ void console_putchar(char c)
         return;
     }
 
-    outb(c, COM1);
+    while ((inb(0x3FD) & 0x20) == 0)
+        ;
+
+    outb(COM1, c);
 }
 
 int console_printf(const char* format, ...)
