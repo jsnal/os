@@ -9,6 +9,8 @@
 
 #include <stddef.h>
 
+int abs(int j);
+
 char* itoa(char* dest, size_t size, int a, int base);
 
 #endif

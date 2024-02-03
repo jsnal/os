@@ -7,11 +7,6 @@
 #define LINE_STATUS 0x3FD
 
 /**
- * @brief if the console serial connection is currently enabled
- */
-static bool console_enabled = false;
-
-/**
  * @brief enable the console device serial connection
  *
  * @return true if successful, false otherwise
@@ -26,10 +21,11 @@ bool console_enable_com_port();
 void console_putchar(char c);
 
 /**
- * @brief print a formatted string to the console
+ * @brief write a string of characters to the console
  *
- * @return the number of characters printed
+ * @param str the string to write
+ * @param length the length of the string to write
  */
-int console_printf(const char* format, ...);
+void console_write(const char* str, int length);
 
 #endif

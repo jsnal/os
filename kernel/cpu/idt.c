@@ -1,9 +1,8 @@
-#include <api/printf.h>
 #include <cpu/idt.h>
 #include <cpu/panic.h>
 #include <cpu/pic.h>
 #include <devices/vga.h>
-#include <logger/logger.h>
+#include <logger.h>
 #include <string.h>
 
 __attribute__((aligned(0x10))) static idt_entry_t idt_entries[IDT_ENTRY_LIMIT];
@@ -22,11 +21,11 @@ static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t
 void isr_handler(isr_frame_t* isr_frame)
 {
     if (isr_frame->int_no == 33) {
-        dbgln("Keyboard!\n");
+        dbgprintf("Keyboard!\n");
         return;
     }
 
-    dbgln("Interrupt fired: %d:%x\n", isr_frame->int_no, isr_frame->int_no);
+    dbgprintf("Interrupt fired: %d:%x\n", isr_frame->int_no, isr_frame->int_no);
     panic("Unhandled interrupt");
 }
 

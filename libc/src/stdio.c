@@ -4,12 +4,93 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-static size_t write_string(const char* string, char* buffer)
+#define CONVERT_BUFFER_SIZE 64
+
+static size_t convert_unsigned_number(unsigned long number, char* buffer, size_t size, int base, bool caps)
 {
-    size_t string_length = strlen(string);
+    const char* digits = caps ? "0123456789ABCDEF" : "0123456789abcdef";
+    size_t pos = 0;
+
+    do {
+        buffer[pos++] = digits[number % base];
+        number /= base;
+    } while (number != 0 && pos < size);
+
+    return pos;
+}
+
+static size_t convert_signed_number(long number, char* buffer, size_t size, int base, bool caps)
+{
+    bool negative = false;
+    size_t pos = 0;
+
+    if (number < 0) {
+        number = -number;
+        negative = true;
+    }
+
+    pos = convert_unsigned_number(number, buffer, size, base, caps);
+
+    if (negative) {
+        buffer[pos++] = '-';
+    }
+    return pos;
+}
+
+static size_t write_unsigned_number(unsigned long number, char* buffer, int base, bool caps, int width, int max)
+{
+    size_t written = 0;
+    size_t convert_size;
+    char convert_buffer[CONVERT_BUFFER_SIZE];
+
+    convert_size = convert_unsigned_number(number, convert_buffer, CONVERT_BUFFER_SIZE, base, caps);
+
+    int number_size = convert_size;
+    int spaces_size = width - number_size;
+    convert_size--;
+
+    for (int i = 0; i < spaces_size && max > 0; i++, max--) {
+        *(buffer + written++) = '0';
+    }
+
+    for (int i = 0; i < number_size && max > 0; i++, max--) {
+        *(buffer + written++) = convert_buffer[convert_size--];
+    }
+
+    return written;
+}
+
+static size_t write_signed_number(long number, char* buffer, int max)
+{
+    size_t written = 0;
+    int convert_size;
+    char convert_buffer[CONVERT_BUFFER_SIZE];
+
+    convert_size = convert_signed_number(number, convert_buffer, CONVERT_BUFFER_SIZE, 10, false) - 1;
+
+    for (; convert_size >= 0 && max > 0; convert_size--, max--) {
+        *(buffer + written++) = convert_buffer[convert_size];
+    }
+
+    return written;
+}
+
+static size_t write_string(const char* string, char* buffer, int max)
+{
+    int string_length = strlen(string);
+
+    if (buffer == NULL) {
+        return 1;
+    }
+
+    if (string_length > max) {
+        string_length = max;
+    }
 
     memcpy(buffer, string, string_length);
     buffer[string_length] = '\0';
@@ -20,12 +101,11 @@ int vsnprintf(char* str, size_t size, const char* format, va_list ap)
 {
     int length = 0;
     int remaining = size;
-    int base = 10;
-    long num;
-    unsigned int value_ui;
+    unsigned long value_ui;
+    signed long value_i;
     char* value_cp;
 
-    for (; *format; ++format) {
+    for (; *format && remaining > 0; ++format) {
         if (*format == '%') {
             ++format;
 
@@ -39,21 +119,24 @@ int vsnprintf(char* str, size_t size, const char* format, va_list ap)
                     break;
                 case 's':
                     value_cp = va_arg(ap, char*);
-                    length += write_string(value_cp, &str[length]);
+                    length += write_string(value_cp, &str[length], remaining);
                     break;
+                // TODO: Add width specifier (%08x)
                 case 'b':
+                    value_ui = va_arg(ap, unsigned int);
+                    length += write_unsigned_number(value_ui, &str[length], 2, false, 0, remaining);
+                    break;
                 case 'x':
+                    value_ui = va_arg(ap, unsigned int);
+                    length += write_unsigned_number(value_ui, &str[length], 16, false, 8, remaining);
+                    break;
+                case 'X':
+                    value_ui = va_arg(ap, unsigned int);
+                    length += write_unsigned_number(value_ui, &str[length], 16, true, 8, remaining);
+                    break;
                 case 'd':
-                    /* num = va_arg(list, int); */
-                    /* if (*format == 'b') { */
-                    /*     base = 2; */
-                    /* } else if (*format == 'x') { */
-                    /*     base = 16; */
-                    /* } else { */
-                    /*     base = 10; */
-                    /* } */
-                    /*  */
-                    /* length += print_int(write, num, base); */
+                    value_i = va_arg(ap, signed int);
+                    length += write_signed_number(value_i, &str[length], remaining);
                     break;
             }
         } else {

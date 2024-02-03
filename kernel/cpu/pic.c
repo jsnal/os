@@ -1,6 +1,6 @@
-#include "pic.h"
 #include <cpu/idt.h>
-#include <logger/logger.h>
+#include <cpu/pic.h>
+#include <logger.h>
 #include <sys/io.h>
 
 void pic_mask(uint32_t mask)
@@ -46,7 +46,7 @@ void pic_eoi(uint8_t irq)
 
 void pic_init()
 {
-    dbgln("Initializing the PIC\n");
+    dbgprintf("Initializing the PIC\n");
     outb(PIC1_COMMAND, 0x11);
     outb(PIC2_COMMAND, 0x11);
     outb(PIC1_DATA, PIC1_OFFSET);

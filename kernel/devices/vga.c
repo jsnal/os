@@ -1,5 +1,6 @@
-#include "vga.h"
-#include <logger/logger.h>
+#include <devices/vga.h>
+#include <logger.h>
+#include <stdio.h>
 #include <string.h>
 
 static vga_terminal terminal;
@@ -69,4 +70,17 @@ void vga_nwrite(const char* data, size_t size)
 void vga_write(const char* data)
 {
     vga_nwrite(data, strlen(data));
+}
+
+void vga_printf(const char* format, ...)
+{
+    char msg[VGA_BUFFER_SIZE];
+    int length;
+    va_list ap;
+
+    va_start(ap, format);
+    length = vsnprintf(msg, VGA_BUFFER_SIZE, format, ap);
+    va_end(ap);
+
+    vga_nwrite(msg, length);
 }

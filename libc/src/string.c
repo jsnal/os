@@ -60,27 +60,6 @@ void* memmove(void* dest, const void* src, size_t n)
     return dest;
 }
 
-size_t intlen(const long num)
-{
-    if (num == 0) {
-        return 1;
-    }
-
-    long n = num;
-    size_t len = 0;
-
-    if (n < 0) {
-        len++;
-        n *= -1;
-    }
-
-    for (; n > 0; len++) {
-        n = n / 10;
-    }
-
-    return len;
-}
-
 size_t strlen(const char* str)
 {
     size_t length = 0;

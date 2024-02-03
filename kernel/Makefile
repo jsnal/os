@@ -8,7 +8,7 @@ STANDARD_FLAGS = -g -std=gnu11 -nostdinc -nostdlib -nodefaultlibs -ffreestanding
 WARNING_FLAGS = -Wall -Wextra -Wundef -Wcast-qual
 
 CCFLAGS = -MMD -MP $(STANDARD_FLAGS) $(WARNING_FLAGS)
-LDFLAGS = -Map kernel.bin.map
+LDFLAGS = # -Map kernel.bin.map
 LIBS = -lgcc -I. -I../libc/include
 
 CRTBEGIN_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
@@ -17,7 +17,6 @@ CRTEND_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 LIBC = ../libc/libc.a
 
 CC_OBJS = \
-	api/printf.o \
 	cpu/gdt.o \
 	cpu/idt.o \
 	cpu/lgdt.o \
@@ -28,7 +27,6 @@ CC_OBJS = \
 	devices/vga.o \
 	kprintf.o \
 	kernel.o \
-	logger/logger.o \
 
 LIBC_OBJS = \
 	../libc/src/string/memcpy.o

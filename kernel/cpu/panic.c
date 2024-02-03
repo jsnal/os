@@ -1,10 +1,10 @@
-#include <api/printf.h>
 #include <cpu/panic.h>
-#include <logger/logger.h>
+#include <devices/vga.h>
+#include <logger.h>
 
 void panic(const char* message)
 {
-    printf_vga("*** PANIC ***\n%s", message);
-    errln("*** PANIC ***\n%s", message);
+    vga_printf("*** PANIC ***\n%s", message);
+    errprintf("*** PANIC ***\n%s", message);
     freeze();
 }

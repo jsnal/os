@@ -14,6 +14,7 @@ CRTEND_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 
 OBJS = \
 	src/stdio.o \
+	src/stdlib.o \
 	src/string.o \
 
 DEPS = $(OBJS:%.o=%.d)

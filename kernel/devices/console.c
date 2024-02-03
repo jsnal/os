@@ -1,5 +1,4 @@
 #include "console.h"
-#include "api/printf.h"
 #include <stdarg.h>
 #include <sys/io.h>
 
@@ -43,13 +42,9 @@ void console_putchar(char c)
     outb(COM1, c);
 }
 
-int console_printf(const char* format, ...)
+void console_write(const char* str, int length)
 {
-    va_list list;
-    int i;
-
-    va_start(list, format);
-    i = vsprintf(console_putchar, format, list);
-    va_end(list);
-    return i;
+    for (int i = 0; i < length; i++) {
+        console_putchar(str[i]);
+    }
 }

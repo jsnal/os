@@ -7,6 +7,7 @@
 
 #define WIDTH 80
 #define HEIGHT 25
+#define VGA_BUFFER_SIZE 128
 
 typedef enum vga_color_enum {
     VGA_COLOR_BLACK = 0,
@@ -43,5 +44,7 @@ void vga_putchar(char c);
 void vga_nwrite(const char* data, size_t size);
 
 void vga_write(const char* data);
+
+void vga_printf(const char* format, ...);
 
 #endif

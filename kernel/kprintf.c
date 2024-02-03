@@ -1,3 +1,4 @@
+#include <devices/console.h>
 #include <kprintf.h>
 #include <stdio.h>
 
@@ -6,7 +7,12 @@
 void kvprintf(const char* format, va_list ag)
 {
     char msg[KPRINTF_BUFFER_SIZE];
-    vsnprintf(msg, KPRINTF_BUFFER_SIZE, format, ag);
+    int length;
+
+    length = vsnprintf(msg, KPRINTF_BUFFER_SIZE, format, ag);
+    if (length > 0) {
+        console_write(msg, length);
+    }
 }
 
 void kprintf(const char* format, ...)
