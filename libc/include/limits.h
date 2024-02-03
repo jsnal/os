@@ -8,5 +8,6 @@
 #define _LIMITS_H_
 
 #define CHAR_BIT 8
+#define LONG_BIT 64
 
 #endif

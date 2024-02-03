@@ -5,6 +5,8 @@
 #include <logger.h>
 #include <string.h>
 
+static isr_handler_t isr_handlers[IDT_ENTRY_COUNT];
+
 __attribute__((aligned(0x10))) static idt_entry_t idt_entries[IDT_ENTRY_LIMIT];
 
 static idtr_t idtr;
@@ -20,13 +22,36 @@ static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t
 
 void isr_handler(isr_frame_t* isr_frame)
 {
-    if (isr_frame->int_no == 33) {
-        dbgprintf("Keyboard!\n");
+    if (isr_frame->int_no > IDT_ENTRY_COUNT || isr_handlers[isr_frame->int_no] == NULL) {
+        panic("Unhandled interrupt!");
+    }
+
+    isr_handlers[isr_frame->int_no]();
+
+    if (isr_frame->int_no >= 32 && isr_frame->int_no <= 47) {
+        pic_eoi(isr_frame->int_no - 32);
         return;
     }
 
     dbgprintf("Interrupt fired: %d:%x\n", isr_frame->int_no, isr_frame->int_no);
-    panic("Unhandled interrupt");
+}
+
+void isr_register_handler(uint32_t int_no, isr_handler_t handler)
+{
+    if (int_no < IDT_ENTRY_COUNT) {
+        isr_handlers[int_no] = handler;
+
+        if (int_no >= 32 && int_no <= 47) {
+            pic_unmask(int_no - 32);
+        }
+    } else {
+        errprintf("Unable to register %d, out of bounds\n", int_no);
+    }
+}
+
+static void divide_by_zero_handler()
+{
+    errprintf("Divide by zero detected!\n");
 }
 
 void idt_init()
@@ -89,4 +114,8 @@ void idt_init()
     idt_set_entry(47, (uintptr_t)isr_47, 0x08, 0x8E);
 
     idt_load((uintptr_t)&idtr);
+
+    dbgprintf("Initialized IDT: 0x%x\n", &idtr);
+
+    isr_register_handler(0, divide_by_zero_handler);
 }

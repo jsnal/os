@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define CONVERT_BUFFER_SIZE 64
+#define CONVERT_BUFFER_SIZE LONG_BIT
 
 static size_t convert_unsigned_number(unsigned long number, char* buffer, size_t size, int base, bool caps)
 {
@@ -133,6 +134,10 @@ int vsnprintf(char* str, size_t size, const char* format, va_list ap)
                 case 'X':
                     value_ui = va_arg(ap, unsigned int);
                     length += write_unsigned_number(value_ui, &str[length], 16, true, 8, remaining);
+                    break;
+                case 'u':
+                    value_ui = va_arg(ap, unsigned long);
+                    length += write_unsigned_number(value_ui, &str[length], 10, false, 0, remaining);
                     break;
                 case 'd':
                     value_i = va_arg(ap, signed int);

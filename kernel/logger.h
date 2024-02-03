@@ -1,6 +1,7 @@
 #ifndef LOGGER_LOGGER_H
 #define LOGGER_LOGGER_H
 
+#include <devices/pit.h>
 #include <kprintf.h>
 #include <stdarg.h>
 
@@ -8,10 +9,10 @@
 #define DEBUG
 
 #ifdef DEBUG
-#    define dbgprintf(format, ...)                               \
-        do {                                                     \
-            kprintf(FORMAT_DEBUG "%s: " FORMAT_RESET, __FILE__); \
-            kprintf(format, ##__VA_ARGS__);                      \
+#    define dbgprintf(format, ...)                                                           \
+        do {                                                                                 \
+            kprintf(FORMAT_DEBUG "%u:%s: " FORMAT_RESET, milliseconds_since_boot, __FILE__); \
+            kprintf(format, ##__VA_ARGS__);                                                  \
         } while (0)
 #else
 #    define dbgprintf(format, ...) \
@@ -24,11 +25,13 @@
         kprintf(FORMAT_INFO "%s: " FORMAT_RESET, __FILE__); \
         kprintf(format, ##__VA_ARGS__);                     \
     } while (0)
+
 #define warnprintf(format, ...)                             \
     do {                                                    \
         kprintf(FORMAT_WARN "%s: " FORMAT_RESET, __FILE__); \
         kprintf(format, ##__VA_ARGS__);                     \
     } while (0)
+
 #define errprintf(format, ...)                             \
     do {                                                   \
         kprintf(FORMAT_ERR "%s: " FORMAT_RESET, __FILE__); \

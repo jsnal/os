@@ -1,4 +1,5 @@
 #include <cpu/gdt.h>
+#include <logger.h>
 
 static gdt_entry_t gdt_entries[GDT_ENTRY_LIMIT];
 static gdt_pointer_t gdt;
@@ -25,4 +26,6 @@ void gdt_init()
     gdt_set_entry(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); // Kernel mode code segment
     gdt_set_entry(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Kernel mode data segment
     gdt_load((uintptr_t)&gdt);
+
+    dbgprintf("Initialized GDT: 0x%x\n", &gdt);
 }

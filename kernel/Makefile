@@ -24,9 +24,10 @@ CC_OBJS = \
 	cpu/panic.o \
 	cpu/pic.o \
 	devices/console.o \
+	devices/pit.o \
 	devices/vga.o \
-	kprintf.o \
 	kernel.o \
+	kprintf.o \
 
 LIBC_OBJS = \
 	../libc/src/string/memcpy.o

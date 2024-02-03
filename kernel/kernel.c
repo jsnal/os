@@ -3,6 +3,7 @@
 #include <cpu/panic.h>
 #include <cpu/pic.h>
 #include <devices/console.h>
+#include <devices/pit.h>
 #include <devices/vga.h>
 #include <logger.h>
 #include <multiboot/multiboot.h>
@@ -23,6 +24,8 @@ void kernel_main(multiboot_information_t* multiboot)
     idt_init();
 
     vga_init();
+
+    pit_init();
 
     if (!(multiboot->flags & MULTIBOOT_FLAGS_MMAP)) {
         errprintf("invalid memory map given by GRUB bootloader");
@@ -51,8 +54,6 @@ void kernel_main(multiboot_information_t* multiboot)
 void bootloader_entry(multiboot_information_t* multiboot, uint32_t magicNumber)
 {
     console_enable_com_port();
-
-    dbgprintf("weird? %d\n", 4294705152);
 
     if (magicNumber != MULTIBOOT_BOOTLOADER_MAGIC) {
         panic("Multiboot header is malformed");

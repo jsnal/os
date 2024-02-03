@@ -4,6 +4,11 @@
 #include <stdint.h>
 
 #define IDT_ENTRY_LIMIT 256
+#define IDT_ENTRY_COUNT 48
+
+#define ISR_PIT 32
+
+typedef void (*isr_handler_t)(void);
 
 typedef struct idt_entry_struct {
     uint16_t base_low; // Lower 16 bits of address to jump to
@@ -44,14 +49,16 @@ static inline void sti()
 
 static inline void cli()
 {
-    asm volatile("sti");
+    asm volatile("cli");
 }
 
-void idt_init();
+void idt_load(uint32_t base);
 
 void isr_handler(isr_frame_t*);
 
-void idt_load(uint32_t base);
+void isr_register_handler(uint32_t int_no, isr_handler_t);
+
+void idt_init();
 
 void isr_0();
 void isr_1();

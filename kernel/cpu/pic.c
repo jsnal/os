@@ -46,7 +46,6 @@ void pic_eoi(uint8_t irq)
 
 void pic_init()
 {
-    dbgprintf("Initializing the PIC\n");
     outb(PIC1_COMMAND, 0x11);
     outb(PIC2_COMMAND, 0x11);
     outb(PIC1_DATA, PIC1_OFFSET);
@@ -60,8 +59,7 @@ void pic_init()
     outb(PIC1_DATA, 0xFB);
     outb(PIC2_DATA, 0xFF);
 
-    // Enable keyboard TODO: move this to it's own file
-    pic_unmask(1);
+    dbgprintf("Initialized PIC: offset1=0x%x offset2=0x%x\n", PIC1_OFFSET, PIC2_OFFSET);
 
     sti();
 }
