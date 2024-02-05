@@ -6,6 +6,7 @@
 #define IDT_ENTRY_LIMIT 256
 #define IDT_ENTRY_COUNT 48
 
+#define ISR_PAGE_FAULT 14
 #define ISR_PIT 32
 
 typedef void (*isr_handler_t)(void);

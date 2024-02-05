@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef _DEVICES_PIT_
-#define _DEVICES_PIT_
+#ifndef _DEVICES_PIT_H_
+#define _DEVICES_PIT_H_
 
 #include <stdint.h>
 

@@ -1,8 +1,8 @@
 #include <cpu/idt.h>
-#include <cpu/panic.h>
 #include <cpu/pic.h>
 #include <devices/vga.h>
 #include <logger.h>
+#include <panic.h>
 #include <string.h>
 
 static isr_handler_t isr_handlers[IDT_ENTRY_COUNT];
@@ -51,7 +51,7 @@ void isr_register_handler(uint32_t int_no, isr_handler_t handler)
 
 static void divide_by_zero_handler()
 {
-    errprintf("Divide by zero detected!\n");
+    panic("Divide by zero detected!\n");
 }
 
 void idt_init()

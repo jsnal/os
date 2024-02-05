@@ -29,6 +29,7 @@ else
     fi
 
     qemu-system-i386 $extra_arguments \
+        -m 128M \
         -serial stdio \
         -drive file=$DIR/os_grub.img,format=raw,index=0,media=disk \
         || die "unable to run qemu"

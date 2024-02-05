@@ -1,12 +1,13 @@
 #include <cpu/gdt.h>
 #include <cpu/idt.h>
-#include <cpu/panic.h>
 #include <cpu/pic.h>
 #include <devices/console.h>
 #include <devices/pit.h>
 #include <devices/vga.h>
 #include <logger.h>
+#include <memory/memory_manager.h>
 #include <multiboot/multiboot.h>
+#include <panic.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -27,13 +28,15 @@ void kernel_main(multiboot_information_t* multiboot)
 
     pit_init();
 
+    memory_manager_init();
+
     if (!(multiboot->flags & MULTIBOOT_FLAGS_MMAP)) {
         errprintf("invalid memory map given by GRUB bootloader");
     }
 
     dbgprintf("System Memory Map:\n");
     dbgprintf("  Lower mem: %d KiB\n", multiboot->memory_lower);
-    dbgprintf("  Upper mem: %d KiB\n", multiboot->memory_upper);
+    dbgprintf("  Upper mem: %d MiB\n", multiboot->memory_upper / 1024);
     for (uint32_t position = 0, i = 0;
          position < multiboot->memory_map_length;
          position += sizeof(multiboot_mmap_t), i++) {
@@ -51,7 +54,7 @@ void kernel_main(multiboot_information_t* multiboot)
         asm("hlt");
 }
 
-void bootloader_entry(multiboot_information_t* multiboot, uint32_t magicNumber)
+void kernel_entry(multiboot_information_t* multiboot, uint32_t magicNumber)
 {
     console_enable_com_port();
 

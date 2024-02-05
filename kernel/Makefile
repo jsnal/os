@@ -8,8 +8,8 @@ STANDARD_FLAGS = -g -std=gnu11 -nostdinc -nostdlib -nodefaultlibs -ffreestanding
 WARNING_FLAGS = -Wall -Wextra -Wundef -Wcast-qual
 
 CCFLAGS = -MMD -MP $(STANDARD_FLAGS) $(WARNING_FLAGS)
-LDFLAGS = # -Map kernel.bin.map
-LIBS = -lgcc -I. -I../libc/include
+LDFLAGS = -Map os.kernel.map --build-id=none
+LIBS = -I. -I../libc/include
 
 CRTBEGIN_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
@@ -21,13 +21,13 @@ CC_OBJS = \
 	cpu/idt.o \
 	cpu/lgdt.o \
 	cpu/lidt.o \
-	cpu/panic.o \
 	cpu/pic.o \
 	devices/console.o \
 	devices/pit.o \
 	devices/vga.o \
 	kernel.o \
 	kprintf.o \
+	memory/memory_manager.o \
 
 LIBC_OBJS = \
 	../libc/src/string/memcpy.o
@@ -49,7 +49,8 @@ LINK_LIST = \
 all: $(NAME)
 
 $(NAME): $(OBJS) $(LIBC) linker.ld
-	@echo "LD $@"; $(LD) $(LDFLAGS) -T linker.ld -o $@ $(LINK_LIST)
+	@echo "LD $@";
+	$(LD) $(LDFLAGS) -T linker.ld -o $@ $(LINK_LIST)
 
 $(LIBC):
 	@echo "MAKE libc"; $(MAKE) -C ../libc
