@@ -3,6 +3,8 @@
 #include <logger.h>
 #include <sys/io.h>
 
+#define DEBUG_TAG "PIC"
+
 void pic_mask(uint32_t mask)
 {
     uint8_t val;

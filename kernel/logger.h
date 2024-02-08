@@ -9,10 +9,9 @@
 #define DEBUG
 
 #ifdef DEBUG
-#    define dbgprintf(format, ...)                                                           \
-        do {                                                                                 \
-            kprintf(FORMAT_DEBUG "%u:%s: " FORMAT_RESET, milliseconds_since_boot, __FILE__); \
-            kprintf(format, ##__VA_ARGS__);                                                  \
+#    define dbgprintf(format, ...)                                                                                  \
+        do {                                                                                                        \
+            kprintf(FORMAT_DEBUG "%u:%s: " FORMAT_RESET format, milliseconds_since_boot, DEBUG_TAG, ##__VA_ARGS__); \
         } while (0)
 #else
 #    define dbgprintf(format, ...) \
@@ -20,22 +19,19 @@
         } while (0)
 #endif
 
-#define infoprintf(format, ...)                             \
-    do {                                                    \
-        kprintf(FORMAT_INFO "%s: " FORMAT_RESET, __FILE__); \
-        kprintf(format, ##__VA_ARGS__);                     \
+#define infoprintf(format, ...)                                                   \
+    do {                                                                          \
+        kprintf(FORMAT_INFO "%s: " FORMAT_RESET format, __FILE__, ##__VA_ARGS__); \
     } while (0)
 
-#define warnprintf(format, ...)                             \
-    do {                                                    \
-        kprintf(FORMAT_WARN "%s: " FORMAT_RESET, __FILE__); \
-        kprintf(format, ##__VA_ARGS__);                     \
+#define warnprintf(format, ...)                                                   \
+    do {                                                                          \
+        kprintf(FORMAT_WARN "%s: " FORMAT_RESET format, __FILE__, ##__VA_ARGS__); \
     } while (0)
 
-#define errprintf(format, ...)                             \
-    do {                                                   \
-        kprintf(FORMAT_ERR "%s: " FORMAT_RESET, __FILE__); \
-        kprintf(format, ##__VA_ARGS__);                    \
+#define errprintf(format, ...)                                                   \
+    do {                                                                         \
+        kprintf(FORMAT_ERR "%s: " FORMAT_RESET format, __FILE__, ##__VA_ARGS__); \
     } while (0)
 
 #ifdef ENABLE_COLOR

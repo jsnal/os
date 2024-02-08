@@ -6,7 +6,8 @@
 #include <devices/vga.h>
 #include <logger.h>
 #include <memory/memory_manager.h>
-#include <multiboot/multiboot.h>
+#include <memory/paging.h>
+#include <multiboot.h>
 #include <panic.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -16,37 +17,11 @@
 #    error "Compiling with incorrect toolchain."
 #endif
 
-void kernel_main(multiboot_information_t* multiboot)
+#define DEBUG_TAG "Kernel"
+
+void kernel_main()
 {
-    gdt_init();
-
-    pic_init();
-
-    idt_init();
-
-    vga_init();
-
-    pit_init();
-
     memory_manager_init();
-
-    if (!(multiboot->flags & MULTIBOOT_FLAGS_MMAP)) {
-        errprintf("invalid memory map given by GRUB bootloader");
-    }
-
-    dbgprintf("System Memory Map:\n");
-    dbgprintf("  Lower mem: %d KiB\n", multiboot->memory_lower);
-    dbgprintf("  Upper mem: %d MiB\n", multiboot->memory_upper / 1024);
-    for (uint32_t position = 0, i = 0;
-         position < multiboot->memory_map_length;
-         position += sizeof(multiboot_mmap_t), i++) {
-        multiboot_mmap_t* mmap = multiboot->memory_map + i;
-
-        /* if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) { */
-        dbgprintf("  %x%x:%x%x %d (%s)\n", mmap->base_address_high, mmap->base_address_low,
-            mmap->length_high, mmap->length_low, mmap->type, mmap->type == 1 ? "available" : "reserved");
-        /* } */
-    }
 
     vga_printf("System booted!!\n");
 
@@ -54,7 +29,7 @@ void kernel_main(multiboot_information_t* multiboot)
         asm("hlt");
 }
 
-void kernel_entry(multiboot_information_t* multiboot, uint32_t magicNumber)
+void kernel_entry(uint32_t* boot_page_directory, const multiboot_information_t* multiboot, const uint32_t magicNumber)
 {
     console_enable_com_port();
 
@@ -66,5 +41,17 @@ void kernel_entry(multiboot_information_t* multiboot, uint32_t magicNumber)
         dbgprintf("Loaded by: %s\n", multiboot->bootloader_name);
     }
 
-    kernel_main(multiboot);
+    gdt_init();
+
+    pic_init();
+
+    idt_init();
+
+    vga_init();
+
+    pit_init();
+
+    init_paging(boot_page_directory, multiboot);
+
+    kernel_main();
 }

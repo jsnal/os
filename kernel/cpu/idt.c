@@ -5,6 +5,8 @@
 #include <panic.h>
 #include <string.h>
 
+#define DEBUG_TAG "IDT"
+
 static isr_handler_t isr_handlers[IDT_ENTRY_COUNT];
 
 __attribute__((aligned(0x10))) static idt_entry_t idt_entries[IDT_ENTRY_LIMIT];

@@ -1,6 +1,8 @@
 #include <cpu/gdt.h>
 #include <logger.h>
 
+#define DEBUG_TAG "GDT"
+
 static gdt_entry_t gdt_entries[GDT_ENTRY_LIMIT];
 static gdt_pointer_t gdt;
 

@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2024, Jason Long <jasonlongball@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#ifndef _MULTIBOOT_H_
+#define _MULTIBOOT_H_
+
 #include <stdint.h>
 
 #define MULTIBOOT_MEMORY_AVAILABLE 1
@@ -9,7 +18,7 @@
 /**
  * Structure of a multiboot module.
  */
-typedef struct multiboot_module_struct {
+typedef struct multiboot_module {
     uint32_t module_start;
     uint32_t module_end;
     char* path;
@@ -19,7 +28,7 @@ typedef struct multiboot_module_struct {
 /**
  * a.out symbol table
  */
-typedef struct multiboot_aout_symbol_table_struct {
+typedef struct multiboot_aout_symbol_table {
     uint32_t tab_size;
     uint32_t str_size;
     uint32_t address;
@@ -29,7 +38,7 @@ typedef struct multiboot_aout_symbol_table_struct {
 /**
  * ELF section header
  */
-typedef struct multiboot_elf_section_header_table_struct {
+typedef struct multiboot_elf_section_header_table {
     uint32_t num;
     uint32_t size;
     uint32_t address;
@@ -39,19 +48,17 @@ typedef struct multiboot_elf_section_header_table_struct {
 /**
  * Structure of one entry in the memory map.
  */
-typedef struct multiboot_mmap_struct {
+typedef struct multiboot_mmap {
     uint32_t size;
-    uint32_t base_address_low;
-    uint32_t base_address_high;
-    uint32_t length_low;
-    uint32_t length_high;
+    uint64_t base_address;
+    uint64_t length;
     uint32_t type;
 } __attribute__((packed)) multiboot_mmap_t;
 
 /**
  * Structure of one entry in the drive table.
  */
-typedef struct multiboot_drives_struct {
+typedef struct multiboot_drives {
     uint32_t size;
     uint8_t number;
     uint8_t mode;
@@ -64,7 +71,7 @@ typedef struct multiboot_drives_struct {
 /**
  * Structure of one entry in the APM table.
  */
-typedef struct multiboot_apm_struct {
+typedef struct multiboot_apm {
     uint16_t version;
     uint16_t cseg;
     uint32_t offset;
@@ -79,7 +86,7 @@ typedef struct multiboot_apm_struct {
 /**
  * Structure that follows the multiboot standard.
  */
-typedef struct multiboot_information_struct {
+typedef struct multiboot_information {
     uint32_t flags;
     uint32_t memory_lower;
     uint32_t memory_upper;
@@ -105,3 +112,5 @@ typedef struct multiboot_information_struct {
 
     // Followed by VBE and Framebuffer structures
 } __attribute__((packed)) multiboot_information_t;
+
+#endif

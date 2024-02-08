@@ -125,7 +125,7 @@ int vsnprintf(char* str, size_t size, const char* format, va_list ap)
                 // TODO: Add width specifier (%08x)
                 case 'b':
                     value_ui = va_arg(ap, unsigned int);
-                    length += write_unsigned_number(value_ui, &str[length], 2, false, 0, remaining);
+                    length += write_unsigned_number(value_ui, &str[length], 2, false, 8, remaining);
                     break;
                 case 'x':
                     value_ui = va_arg(ap, unsigned int);

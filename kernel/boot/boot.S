@@ -20,7 +20,7 @@
     .skip 16384
     stack_top:
 
-    # Allocate aligned page structures
+    # Allocate page table and 2 pages
     .align 4096
     boot_page_directory:
     .skip 4096
@@ -36,7 +36,7 @@ boot:
 
     # Prepare to populate the page table
     mov edi, offset (boot_page_table - 0xC0000000)
-    mov esi, 0x3
+    mov esi, 0x3 #0x00100000 + 0x300
     mov ecx, 1024
 
     paging_setup:
@@ -44,21 +44,22 @@ boot:
         # times to allocate a full page table.
         mov [edi], esi
         add edi, 4
-        add esi, 4096
+        add esi, 4096 # 0x00100000
         loop paging_setup
 
         # Map the page table into virtual address space 0x00000000-0x003fffff
-        mov ecx, offset ((boot_page_table - 0xC0000000) + 0x3)
+        mov ecx, offset ((boot_page_table - 0xC0000000) + 3)
         mov [boot_page_directory - 0xC0000000], ecx
 
-
         # Map the same page table into virtual address space 0xc0000000-0xc03fffff
-        mov ecx, offset ((boot_page_table - 0xC0000000) + 0x3)
+        mov ecx, offset ((boot_page_table - 0xC0000000) + 3)
         mov [boot_page_directory - 0xC0000000 + 768 * 4], ecx
 
         # Load the page directory
         mov ecx, offset (boot_page_directory - 0xC0000000)
         mov cr3, ecx
+
+        # xchg bx,bx
 
         # Enable paging
         mov ecx, cr0
@@ -79,6 +80,11 @@ kernel:
     # Push the multiboot headers
     push eax
     push ebx
+
+    # Push the address of the boot page table
+    push offset boot_page_directory
+
+    mov ecx, boot_page_directory
 
     # Call the C code entry point
     call kernel_entry

@@ -38,7 +38,7 @@ void console_putchar(char c)
     while ((inb(LINE_STATUS) & 0x20) == 0)
         ;
 
-    /* outb(0xe9, c); */
+    outb(0xe9, c);
     outb(COM1, c);
 }
 

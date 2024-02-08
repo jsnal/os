@@ -28,6 +28,8 @@ CC_OBJS = \
 	kernel.o \
 	kprintf.o \
 	memory/memory_manager.o \
+	memory/paging.o \
+	memory/pmm.o \
 
 LIBC_OBJS = \
 	../libc/src/string/memcpy.o
