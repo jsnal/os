@@ -34,7 +34,7 @@ void vga_init()
     terminal.row = 0;
     terminal.column = 0;
     terminal.color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
-    terminal.buffer = (uint16_t*)0xB8000;
+    terminal.buffer = (uint16_t*)VGA_BUFFER_LOCATION;
     vga_clear();
 }
 

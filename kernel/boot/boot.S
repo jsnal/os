@@ -20,7 +20,7 @@
     .skip 16384
     stack_top:
 
-    # Allocate page table and 2 pages
+    # Allocate page table and 1 page
     .align 4096
     boot_page_directory:
     .skip 4096
@@ -59,8 +59,6 @@ boot:
         mov ecx, offset (boot_page_directory - 0xC0000000)
         mov cr3, ecx
 
-        # xchg bx,bx
-
         # Enable paging
         mov ecx, cr0
         or ecx, 0x80000001
@@ -83,8 +81,6 @@ kernel:
 
     # Push the address of the boot page table
     push offset boot_page_directory
-
-    mov ecx, boot_page_directory
 
     # Call the C code entry point
     call kernel_entry

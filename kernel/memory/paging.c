@@ -15,12 +15,25 @@ static void page_fault_isr_handler()
     panic("Page fault!\n");
 }
 
+void paging_flush_entire_tlb()
+{
+    asm volatile("mov eax, cr3; \
+                  mov cr3, eax");
+}
+
+void paging_flush_tlb(const virtual_address_t address)
+{
+    asm volatile("invlpg [%0]"
+                 :
+                 : "r"(address));
+}
+
 void init_paging(uint32_t* boot_page_directory, const multiboot_information_t* multiboot)
 {
     isr_register_handler(14, page_fault_isr_handler);
 
     kernel_page_directory = boot_page_directory;
-    kernel_page_table = kernel_page_directory + 1024;
+    kernel_page_table = (uint32_t*)((uint8_t*)kernel_page_directory + PAGE_SIZE);
 
     dbgprintf("Initializing paging:\n");
     dbgprintf("  kernel_page_directory=%x\n", kernel_page_directory);
@@ -37,42 +50,11 @@ void init_paging(uint32_t* boot_page_directory, const multiboot_information_t* m
 
     init_pmm(multiboot);
 
-    pmm_allocate_frame(0x00100000, 8);
-    pmm_allocate_frame_first();
-    pmm_allocate_frame_first();
-    pmm_allocate_frame_first();
-    pmm_allocate_frame_first();
-    pmm_allocate_frame_first();
-    pmm_free_frame(0x00100000);
-    pmm_allocate_frame_first();
-    pmm_allocate_frame_first();
+    // Unmap the identity mapped region used during boot
+    kernel_page_directory[0] = 0;
 
-    for (uint32_t position = 0, i = 0; position < multiboot->memory_map_length; position += sizeof(multiboot_mmap_t), i++) {
-        multiboot_mmap_t* mmap = multiboot->memory_map + i;
+    // Map the VGA buffer to 0xC0FF3000
+    kernel_page_table[1023] = 0x000B8000 | PAGE_PRESENT | PAGE_WRITABLE;
 
-        // TODO: Take advantage of the first MB of "low memory"
-        if (mmap->type != MULTIBOOT_MEMORY_AVAILABLE || mmap->base_address < (1 * MB)) {
-            continue;
-        }
-
-        uint32_t address_remainder = (uint32_t)(mmap->base_address % PAGE_SIZE);
-        uint32_t length_remainder = (uint32_t)(mmap->length % PAGE_SIZE);
-
-        if (address_remainder != 0) {
-            dbgprintf("  Region does not start on page boundary, correcting by %d bytes\n", address_remainder);
-            address_remainder = PAGE_SIZE - address_remainder;
-            mmap->base_address += address_remainder;
-            mmap->length -= address_remainder;
-        }
-
-        if (length_remainder != 0) {
-            dbgprintf("  Region does not end on page boundary, correcting by %d bytes\n", length_remainder);
-            mmap->length -= length_remainder;
-        }
-
-        if (mmap->length < PAGE_SIZE) {
-            dbgprintf("  Region is smaller than a page... skipping");
-            continue;
-        }
-    }
+    paging_flush_entire_tlb();
 }

@@ -8,6 +8,7 @@
 #define WIDTH 80
 #define HEIGHT 25
 #define VGA_BUFFER_SIZE 128
+#define VGA_BUFFER_LOCATION 0xC03FF000
 
 typedef enum vga_color_enum {
     VGA_COLOR_BLACK = 0,

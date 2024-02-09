@@ -22,6 +22,8 @@ extern uint32_t kernel_end;
 
 typedef struct physical_region {
     uint32_t base_address;
+    uint32_t frames_left;
+    uint32_t last_allocated_frame_index;
     uint32_t length;
     uint8_t* bitmap;
 } physical_region_t;
