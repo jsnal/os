@@ -6,17 +6,18 @@
 
 #define DEBUG_TAG "PMM"
 
-static physical_region_t physical_region;
+static physical_zone_t kernel_zone;
+static physical_zone_t user_zone;
 
-void init_pmm(const multiboot_information_t* multiboot)
+void init_pmm(paging_kernel_information_t* paging_kernel_information, const multiboot_information_t* multiboot)
 {
     if ((uint32_t)&kernel_end < 0xC0000000) {
         panic("Kernel is not in high-half\n");
     }
 
-    uint32_t bitmap_length_in_bytes = 0;
-
-    physical_region.bitmap = (uint8_t*)PAGE_ROUND_UP((uint32_t)&kernel_end);
+    uint32_t physical_region_base = 0;
+    uint32_t physical_region_length = 0;
+    uint32_t number_of_pages = 0;
 
     dbgprintf("System Memory Map: lower_mem=%d KiB upper_mem=%d MiB\n", multiboot->memory_lower, multiboot->memory_upper / 1024);
     for (uint32_t position = 0, i = 0; position < multiboot->memory_map_length; position += sizeof(multiboot_mmap_t), i++) {
@@ -54,115 +55,70 @@ void init_pmm(const multiboot_information_t* multiboot)
             continue;
         }
 
-        physical_region.base_address = (uint32_t)(mmap->base_address & 0xffffffff);
-        physical_region.length = (uint32_t)(mmap->length & 0xffffffff);
+        physical_region_base = (uint32_t)(mmap->base_address & 0xffffffff);
+        physical_region_length = (uint32_t)(mmap->length & 0xffffffff);
 
-        bitmap_length_in_bytes = physical_region.length / PAGE_SIZE / 8;
-        memset(physical_region.bitmap, 0, bitmap_length_in_bytes);
-
-        // TODO: There may be multiple non-contiguous regions that should be mapped. physical_region_t should
-        //       be a linked-list of regions that are created in this function.
+        // TODO: There may be multiple non-contiguous regions that should be mapped.
         break;
     }
 
-    if (bitmap_length_in_bytes == 0) {
+    if (physical_region_length == 0) {
         panic("Unable to find any regions to allocate\n");
     }
 
-    physical_region.frames_left = physical_region.length / PAGE_SIZE;
-    physical_region.last_allocated_frame_index = 0;
+    if (physical_region_length < KERNEL_ZONE_LENGTH) {
+        panic("Unable to find region big enough to allocate the Kernel\n");
+    }
 
-    dbgprintf("Initialized PMM: base=0x%x length=%d bitmap=0x%x\n", physical_region.base_address, physical_region.length, physical_region.bitmap);
+    kernel_zone.base_address = physical_region_base;
+    kernel_zone.length = KERNEL_ZONE_LENGTH;
+    kernel_zone.bitmap = (uint8_t*)PAGE_ROUND_UP((uint32_t)&kernel_end);
+    kernel_zone.bitmap_length = KERNEL_ZONE_LENGTH / PAGE_SIZE / 8;
+    kernel_zone.frames_left = KERNEL_ZONE_LENGTH / PAGE_SIZE;
+    kernel_zone.last_allocated_frame_index = 0;
+    memset(kernel_zone.bitmap, 0, kernel_zone.bitmap_length);
 
-    // Mark the pages used for the bitmap as used
-    pmm_allocate_frame(virtual_to_physical((virtual_address_t)physical_region.bitmap), (bitmap_length_in_bytes + PAGE_SIZE - 1) / PAGE_SIZE);
+    user_zone.base_address = kernel_zone.base_address + KERNEL_ZONE_LENGTH;
+    user_zone.length = physical_region_length - KERNEL_ZONE_LENGTH;
+    user_zone.bitmap = kernel_zone.bitmap + kernel_zone.bitmap_length;
+    user_zone.bitmap_length = user_zone.length / PAGE_SIZE / 8;
+    user_zone.frames_left = user_zone.length / PAGE_SIZE;
+    user_zone.last_allocated_frame_index = 0;
+    memset(user_zone.bitmap, 0, user_zone.bitmap_length);
+
+    zone_dump(&kernel_zone, ZONE_KERNEL);
+    zone_dump(&user_zone, ZONE_USER);
+
+    number_of_pages = ((kernel_zone.bitmap_length + user_zone.bitmap_length) + PAGE_SIZE - 1) / PAGE_SIZE;
+    pmm_allocate_frame(ZONE_KERNEL, virtual_to_physical((virtual_address_t)kernel_zone.bitmap), number_of_pages);
+
+    paging_kernel_information->bitmap = (virtual_address_t)(kernel_zone.bitmap);
+    paging_kernel_information->heap = (virtual_address_t)(kernel_zone.bitmap + (number_of_pages * PAGE_SIZE));
 }
 
-physical_address_t pmm_allocate_frame(const physical_address_t address, const uint32_t count)
+physical_address_t pmm_allocate_frame(physical_zone_type_e zone_type, const physical_address_t address, const uint32_t count)
 {
-    if (address < physical_region.base_address || address > physical_region.base_address + physical_region.length) {
-        return PMM_ERROR;
+    if (zone_type == ZONE_USER) {
+        return zone_allocate_frame(&user_zone, address, count);
     }
 
-    if (address % PAGE_SIZE != 0) {
-        dbgprintf("Physical address is not page aligned\n");
-        return PMM_ERROR;
-    }
-
-    uint32_t address_location = 0;
-    uint32_t bitmap_index = 0;
-    uint32_t bit_index = 0;
-
-    for (uint32_t i = 0; i < count; i++) {
-        address_location = ((address + (PAGE_SIZE * i)) - physical_region.base_address) / PAGE_SIZE;
-        bitmap_index = address_location / 8;
-        bit_index = address_location % 8;
-
-        if (IS_SET(physical_region.bitmap[bitmap_index], bit_index)) {
-            dbgprintf("Unable to allocate page at 0x%x\n", address + (PAGE_SIZE * i));
-            // TODO: Unset the bits that were already set if it fails in the middle. This isn't
-            //       a important right now because it is only used for initial Kernel memory.
-            return PMM_ERROR;
-        }
-
-        SET_BIT(physical_region.bitmap[bitmap_index], bit_index);
-    }
-
-    physical_region.frames_left -= count;
-
-    dbgprintf("Allocated %d physical pages starting at 0x%x\n", count, address);
-    return address;
+    return zone_allocate_frame(&kernel_zone, address, count);
 }
 
-physical_address_t pmm_allocate_frame_first()
+physical_address_t pmm_allocate_frame_first(physical_zone_type_e zone_type)
 {
-    uint32_t pages_in_space = physical_region.length / PAGE_SIZE;
-    uint32_t address;
-    uint32_t bitmap_index;
-    uint32_t bit_index;
-
-    for (uint32_t i = physical_region.last_allocated_frame_index; i < pages_in_space; i++) {
-        bitmap_index = i / 8;
-        bit_index = i % 8;
-
-        if (!IS_SET(physical_region.bitmap[bitmap_index], bit_index)) {
-            SET_BIT(physical_region.bitmap[bitmap_index], bit_index);
-            address = physical_region.base_address + (PAGE_SIZE * i);
-            physical_region.frames_left--;
-            dbgprintf("Allocated physical page at 0x%x\n", address);
-            return address;
-        }
-
-        if (i >= pages_in_space) {
-            i = 0;
-        } else if (i == physical_region.last_allocated_frame_index - 1) {
-            dbgprintf("No free pages left!\n");
-            return PMM_ERROR;
-        }
+    if (zone_type == ZONE_USER) {
+        return zone_allocate_frame_first(&user_zone);
     }
 
-    dbgprintf("No free pages left!\n");
-    return PMM_ERROR;
+    return zone_allocate_frame_first(&kernel_zone);
 }
 
-uint32_t pmm_free_frame(const physical_address_t address)
+uint32_t pmm_free_frame(physical_zone_type_e zone_type, const physical_address_t address)
 {
-    if (address < physical_region.base_address || address > physical_region.base_address + physical_region.length) {
-        return PMM_ERROR;
+    if (zone_type == ZONE_USER) {
+        return zone_free_frame(&user_zone, address);
     }
 
-    if (address % PAGE_SIZE != 0) {
-        dbgprintf("Physical address is not page aligned\n");
-        return PMM_ERROR;
-    }
-
-    uint32_t address_location = (address - physical_region.base_address) / PAGE_SIZE;
-    uint32_t bitmap_index = address_location / 8;
-    uint32_t bit_index = address_location % 8;
-
-    CLEAR_BIT(physical_region.bitmap[bitmap_index], bit_index);
-    physical_region.frames_left++;
-
-    dbgprintf("Freed physical page at 0x%x\n", address);
-    return 0;
+    return zone_free_frame(&kernel_zone, address);
 }

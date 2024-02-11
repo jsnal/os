@@ -6,12 +6,12 @@
 
 void kvprintf(const char* format, va_list ag)
 {
-    char msg[KPRINTF_BUFFER_SIZE];
-    int length;
+    char message[KPRINTF_BUFFER_SIZE];
+    size_t length;
 
-    length = vsnprintf(msg, KPRINTF_BUFFER_SIZE, format, ag);
+    length = vsnprintf(message, KPRINTF_BUFFER_SIZE, format, ag);
     if (length > 0) {
-        console_write(msg, length);
+        console_write(message, length);
     }
 }
 

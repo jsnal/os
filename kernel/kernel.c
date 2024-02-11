@@ -5,7 +5,6 @@
 #include <devices/pit.h>
 #include <devices/vga.h>
 #include <logger.h>
-#include <memory/memory_manager.h>
 #include <memory/paging.h>
 #include <multiboot.h>
 #include <panic.h>
@@ -21,8 +20,6 @@
 
 void kernel_main()
 {
-    memory_manager_init();
-
     vga_printf("System booted!!\n");
 
     for (;;)

@@ -24,7 +24,7 @@ static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t
 
 void isr_handler(isr_frame_t* isr_frame)
 {
-    if (isr_frame->int_no > IDT_ENTRY_COUNT || isr_handlers[isr_frame->int_no] == NULL) {
+    if (isr_frame == NULL || isr_frame->int_no > IDT_ENTRY_COUNT || isr_handlers[isr_frame->int_no] == NULL) {
         panic("Unhandled interrupt!");
     }
 
@@ -36,6 +36,7 @@ void isr_handler(isr_frame_t* isr_frame)
     }
 
     dbgprintf("Interrupt fired: %d:%x\n", isr_frame->int_no, isr_frame->int_no);
+    isr_dump_frame(isr_frame);
 }
 
 void isr_register_handler(uint32_t int_no, isr_handler_t handler)
@@ -49,6 +50,14 @@ void isr_register_handler(uint32_t int_no, isr_handler_t handler)
     } else {
         errprintf("Unable to register %d, out of bounds\n", int_no);
     }
+}
+
+void isr_dump_frame(const isr_frame_t* frame)
+{
+    errprintf("EAX=%x EBX=%x ECX=%x EDX=%x\n", frame->eax, frame->ebx, frame->ecx, frame->edx);
+    errprintf("ESI=%x EDI=%x EBP=%x ESP=%x\n", frame->esi, frame->edi, frame->ebp, frame->esp);
+    errprintf("DS=%x CS=%x SS=%x\n", frame->ds, frame->cs, frame->ss);
+    errprintf("EFLAGS=%x\n", frame->eflags);
 }
 
 static void divide_by_zero_handler()

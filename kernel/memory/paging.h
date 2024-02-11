@@ -12,8 +12,28 @@
 #include <multiboot.h>
 #include <stdint.h>
 
-void paging_flush_entire_tlb();
-void paging_flush_tlb(const virtual_address_t address);
+#define PAGE_DIRECTORY_INDEX(virtual_address) (((virtual_address_t)virtual_address) >> 22)
+#define PAGE_TABLE_INDEX(virtual_address) ((((virtual_address_t)virtual_address) & 0x3fffff) >> 12)
+#define PAGE_FRAME_INDEX(virtual_address) (((virtual_address_t)virtual_address) & (0xfff))
+
+#define PAGE_DIRECTORY_LENGTH 1024
+#define PAGE_TABLE_LENGTH 1024
+
+// Basic virtual memory map:
+//   [0xC0100000][kernel][PMM bitmap][heap][free pages][0xC0400000]
+typedef struct paging_kernel_information {
+    virtual_address_t* page_directory;
+    virtual_address_t* page_table;
+    virtual_address_t bitmap;
+    virtual_address_t heap;
+    virtual_address_t free_pages;
+} paging_kernel_information_t;
+
+void paging_flush_tlb();
+
+void paging_invalidate_page(const virtual_address_t);
+
+void paging_map_kernel_page(virtual_address_t virtual_address, physical_address_t physical_address);
 
 void init_paging(uint32_t* kernel_page_directory, const multiboot_information_t* multiboot);
 

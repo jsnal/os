@@ -27,7 +27,7 @@ CC_OBJS = \
 	devices/vga.o \
 	kernel.o \
 	kprintf.o \
-	memory/memory_manager.o \
+	memory/zone.o \
 	memory/paging.o \
 	memory/pmm.o \
 

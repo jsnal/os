@@ -8,13 +8,11 @@
 #define _MEMORY_PMM_H_
 
 #include <limits.h>
+#include <memory/paging.h>
 #include <memory/types.h>
+#include <memory/zone.h>
 #include <multiboot.h>
 #include <stdint.h>
-
-#define SET_BIT(b, i) b = b | (1 << (i % CHAR_BIT))
-#define CLEAR_BIT(b, i) b = (b) & (~(1 << (i % CHAR_BIT)))
-#define IS_SET(b, i) ((b >> (i % CHAR_BIT)) & 1)
 
 #define PMM_ERROR 0xFFFFFFFF
 
@@ -28,12 +26,12 @@ typedef struct physical_region {
     uint8_t* bitmap;
 } physical_region_t;
 
-void init_pmm(const multiboot_information_t* multiboot);
+void init_pmm(paging_kernel_information_t*, const multiboot_information_t* multiboot);
 
-physical_address_t pmm_allocate_frame(const physical_address_t, const uint32_t count);
+physical_address_t pmm_allocate_frame(physical_zone_type_e zone_type, const physical_address_t address, const uint32_t count);
 
-physical_address_t pmm_allocate_frame_first();
+physical_address_t pmm_allocate_frame_first(physical_zone_type_e);
 
-uint32_t pmm_free_frame(const physical_address_t);
+uint32_t pmm_free_frame(physical_zone_type_e, const physical_address_t);
 
 #endif

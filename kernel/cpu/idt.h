@@ -9,9 +9,7 @@
 #define ISR_PAGE_FAULT 14
 #define ISR_PIT 32
 
-typedef void (*isr_handler_t)(void);
-
-typedef struct idt_entry_struct {
+typedef struct idt_entry {
     uint16_t base_low; // Lower 16 bits of address to jump to
     uint16_t selector; // Kernel segment selector
     uint8_t zero;
@@ -19,12 +17,12 @@ typedef struct idt_entry_struct {
     uint16_t base_high; // Upper 16 bits of address to jump to
 } __attribute__((packed)) idt_entry_t;
 
-typedef struct idtr_struct {
+typedef struct idtr {
     uint16_t limit;
     uint32_t base;
 } __attribute__((packed)) idtr_t;
 
-typedef struct isr_frame_struct {
+typedef struct isr_frame {
     uint32_t ds;
     uint32_t edi;
     uint32_t esi;
@@ -43,6 +41,8 @@ typedef struct isr_frame_struct {
     uint32_t ss;
 } __attribute__((packed)) isr_frame_t;
 
+typedef void (*isr_handler_t)();
+
 static inline void sti()
 {
     asm volatile("sti");
@@ -58,6 +58,8 @@ void idt_load(uint32_t base);
 void isr_handler(isr_frame_t*);
 
 void isr_register_handler(uint32_t int_no, isr_handler_t);
+
+void isr_dump_frame(const isr_frame_t*);
 
 void idt_init();
 
