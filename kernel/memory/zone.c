@@ -10,12 +10,13 @@
 physical_address_t zone_allocate_frame(physical_zone_t* zone, const physical_address_t address, const uint32_t count)
 {
     if (zone == NULL || address < zone->base_address || address > zone->base_address + zone->length) {
-        return ZONE_ERROR;
+        dbgprintf("base:%x\n", address);
+        return MEM_ERR_ADDRESS_OUT_OF_RANGE;
     }
 
     if (address % PAGE_SIZE != 0) {
         dbgprintf("Physical address is not page aligned\n");
-        return ZONE_ERROR;
+        return MEM_ERR_NOT_PAGE_ALIGNED;
     }
 
     uint32_t address_location = 0;
@@ -31,7 +32,7 @@ physical_address_t zone_allocate_frame(physical_zone_t* zone, const physical_add
             dbgprintf("Unable to allocate page at 0x%x\n", address + (PAGE_SIZE * i));
             // TODO: Unset the bits that were already set if it fails in the middle. This isn't
             //       a important right now because it is only used for initial Kernel memory.
-            return ZONE_ERROR;
+            return MEM_ERR_PAGE_ALREADY_PRESENT;
         }
 
         SET_BIT(zone->bitmap[bitmap_index], bit_index);
@@ -46,7 +47,7 @@ physical_address_t zone_allocate_frame(physical_zone_t* zone, const physical_add
 physical_address_t zone_allocate_frame_first(physical_zone_t* zone)
 {
     if (zone == NULL) {
-        return ZONE_ERROR;
+        return MEM_ERR_GENERAL;
     }
 
     uint32_t pages_in_space = zone->length / PAGE_SIZE;
@@ -70,23 +71,23 @@ physical_address_t zone_allocate_frame_first(physical_zone_t* zone)
             i = 0;
         } else if (i == zone->last_allocated_frame_index - 1) {
             dbgprintf("No free pages left!\n");
-            return ZONE_ERROR;
+            return MEM_ERR_OUT_OF_MEMORY;
         }
     }
 
     dbgprintf("No free pages left!\n");
-    return ZONE_ERROR;
+    return MEM_ERR_OUT_OF_MEMORY;
 }
 
 uint32_t zone_free_frame(physical_zone_t* zone, const physical_address_t address)
 {
     if (zone == NULL || address < zone->base_address || address > zone->base_address + zone->length) {
-        return ZONE_ERROR;
+        return MEM_ERR_ADDRESS_OUT_OF_RANGE;
     }
 
     if (address % PAGE_SIZE != 0) {
         dbgprintf("Physical address is not page aligned\n");
-        return ZONE_ERROR;
+        return MEM_ERR_NOT_PAGE_ALIGNED;
     }
 
     uint32_t address_location = (address - zone->base_address) / PAGE_SIZE;
@@ -97,7 +98,7 @@ uint32_t zone_free_frame(physical_zone_t* zone, const physical_address_t address
     zone->frames_left++;
 
     dbgprintf("Freed physical page at 0x%x\n", address);
-    return 0;
+    return MEM_ERR_NONE;
 }
 
 void zone_dump(physical_zone_t* zone, physical_zone_type_e zone_type)

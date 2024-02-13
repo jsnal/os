@@ -9,7 +9,7 @@
 static physical_zone_t kernel_zone;
 static physical_zone_t user_zone;
 
-void init_pmm(paging_kernel_information_t* paging_kernel_information, const multiboot_information_t* multiboot)
+void init_pmm(memory_kernel_information_t* memory_kernel_information, const multiboot_information_t* multiboot)
 {
     if ((uint32_t)&kernel_end < 0xC0000000) {
         panic("Kernel is not in high-half\n");
@@ -92,8 +92,8 @@ void init_pmm(paging_kernel_information_t* paging_kernel_information, const mult
     number_of_pages = ((kernel_zone.bitmap_length + user_zone.bitmap_length) + PAGE_SIZE - 1) / PAGE_SIZE;
     pmm_allocate_frame(ZONE_KERNEL, virtual_to_physical((virtual_address_t)kernel_zone.bitmap), number_of_pages);
 
-    paging_kernel_information->bitmap = (virtual_address_t)(kernel_zone.bitmap);
-    paging_kernel_information->heap = (virtual_address_t)(kernel_zone.bitmap + (number_of_pages * PAGE_SIZE));
+    memory_kernel_information->bitmap = (virtual_address_t)(kernel_zone.bitmap);
+    memory_kernel_information->heap = (virtual_address_t)(kernel_zone.bitmap + (number_of_pages * PAGE_SIZE));
 }
 
 physical_address_t pmm_allocate_frame(physical_zone_type_e zone_type, const physical_address_t address, const uint32_t count)

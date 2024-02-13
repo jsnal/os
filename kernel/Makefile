@@ -27,9 +27,11 @@ CC_OBJS = \
 	devices/vga.o \
 	kernel.o \
 	kprintf.o \
-	memory/zone.o \
+	memory/heap.o \
+	memory/memory.o \
 	memory/paging.o \
 	memory/pmm.o \
+	memory/zone.o \
 
 LIBC_OBJS = \
 	../libc/src/string/memcpy.o

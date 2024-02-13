@@ -8,13 +8,11 @@
 #define _MEMORY_PMM_H_
 
 #include <limits.h>
-#include <memory/paging.h>
+#include <memory/memory.h>
 #include <memory/types.h>
 #include <memory/zone.h>
 #include <multiboot.h>
 #include <stdint.h>
-
-#define PMM_ERROR 0xFFFFFFFF
 
 extern uint32_t kernel_end;
 
@@ -26,7 +24,7 @@ typedef struct physical_region {
     uint8_t* bitmap;
 } physical_region_t;
 
-void init_pmm(paging_kernel_information_t*, const multiboot_information_t* multiboot);
+void init_pmm(memory_kernel_information_t*, const multiboot_information_t* multiboot);
 
 physical_address_t pmm_allocate_frame(physical_zone_type_e zone_type, const physical_address_t address, const uint32_t count);
 

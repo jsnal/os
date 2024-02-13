@@ -11,7 +11,6 @@
 #include <memory/types.h>
 #include <stdint.h>
 
-#define ZONE_ERROR 0xffffffff
 #define KERNEL_ZONE_LENGTH (4 * MB)
 
 typedef enum physical_zone_type {

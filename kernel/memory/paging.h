@@ -15,6 +15,7 @@
 #define PAGE_DIRECTORY_INDEX(virtual_address) (((virtual_address_t)virtual_address) >> 22)
 #define PAGE_TABLE_INDEX(virtual_address) ((((virtual_address_t)virtual_address) & 0x3fffff) >> 12)
 #define PAGE_FRAME_INDEX(virtual_address) (((virtual_address_t)virtual_address) & (0xfff))
+#define PAGE_ENTRY_ADDR(page_entry) (page_entry & 0xfffff000)
 
 #define PAGE_DIRECTORY_LENGTH 1024
 #define PAGE_TABLE_LENGTH 1024
@@ -33,8 +34,8 @@ void paging_flush_tlb();
 
 void paging_invalidate_page(const virtual_address_t);
 
-void paging_map_kernel_page(virtual_address_t virtual_address, physical_address_t physical_address);
+uint32_t paging_map_kernel_page(virtual_address_t* page_directory, virtual_address_t virtual_address, physical_address_t physical_address);
 
-void init_paging(uint32_t* kernel_page_directory, const multiboot_information_t* multiboot);
+void init_paging(virtual_address_t* kernel_page_directory);
 
 #endif

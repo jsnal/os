@@ -5,6 +5,7 @@
 #include <devices/pit.h>
 #include <devices/vga.h>
 #include <logger.h>
+#include <memory/memory.h>
 #include <memory/paging.h>
 #include <multiboot.h>
 #include <panic.h>
@@ -48,7 +49,9 @@ void kernel_entry(uint32_t* boot_page_directory, const multiboot_information_t* 
 
     pit_init();
 
-    init_paging(boot_page_directory, multiboot);
+    init_memory(boot_page_directory, multiboot);
+
+    // init_paging(boot_page_directory, multiboot);
 
     kernel_main();
 }

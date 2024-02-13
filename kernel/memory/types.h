@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #define KERNEL_VIRTUAL_BASE 0xC0000000
+#define KERNEL_IMAGE_VIRTUAL_BASE 0xC0100000
 
 #define IS_PAGE_ALIGNED(address) (!(address & 0xFFF))
 #define PAGE_ALIGN(address) ((address & 0xFFFFF000) + PAGE_SIZE)
@@ -19,6 +20,14 @@
 #define PAGE_PRESENT 0x1
 #define PAGE_WRITABLE 0x2
 #define PAGE_USER 0x4
+
+#define MEM_ERR_CHECK(v) (!(IS_PAGE_ALIGNED(v)))
+#define MEM_ERR_NONE 0
+#define MEM_ERR_GENERAL 1
+#define MEM_ERR_OUT_OF_MEMORY 2
+#define MEM_ERR_ADDRESS_OUT_OF_RANGE 3
+#define MEM_ERR_NOT_PAGE_ALIGNED 4
+#define MEM_ERR_PAGE_ALREADY_PRESENT 5
 
 typedef uint32_t physical_address_t;
 typedef uint32_t virtual_address_t;
