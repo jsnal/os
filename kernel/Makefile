@@ -23,6 +23,7 @@ CC_OBJS = \
 	cpu/lidt.o \
 	cpu/pic.o \
 	devices/console.o \
+	devices/keyboard.o \
 	devices/pit.o \
 	devices/vga.o \
 	kernel.o \
@@ -63,7 +64,7 @@ $(LIBC):
 	@echo "CC $<"; $(CC) $(CCFLAGS) $(LIBS) -c -o $@ $<
 
 %.o: %.S
-	@echo "AS $@"; $(AS) -o $@ $<
+	@echo "AS $<"; $(AS) -o $@ $<
 
 -include $(DEPS)
 

@@ -2,6 +2,7 @@
 #include <cpu/idt.h>
 #include <cpu/pic.h>
 #include <devices/console.h>
+#include <devices/keyboard.h>
 #include <devices/pit.h>
 #include <devices/vga.h>
 #include <logger.h>
@@ -22,6 +23,8 @@
 void kernel_main()
 {
     vga_printf("System booted!!\n");
+
+    keyboard_init();
 
     for (;;)
         asm("hlt");

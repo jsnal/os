@@ -8,6 +8,7 @@
 
 #define ISR_PAGE_FAULT 14
 #define ISR_PIT 32
+#define ISR_KEYBOARD 33
 
 typedef struct idt_entry {
     uint16_t base_low; // Lower 16 bits of address to jump to

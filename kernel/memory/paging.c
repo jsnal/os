@@ -111,9 +111,5 @@ void init_paging(virtual_address_t* kernel_page_directory)
     // Map the VGA buffer to 0xC03FF000
     paging_map_kernel_page(kernel_page_directory, 0xC03FF000, 0x000B8000);
 
-    for (int i = 0; i < 100; i++) {
-        paging_map_kernel_page(kernel_page_directory, 0xC0600000 + (i * PAGE_SIZE), pmm_allocate_frame_first(ZONE_KERNEL));
-    }
-
     paging_flush_tlb();
 }
