@@ -48,4 +48,6 @@
 #    define FORMAT_RESET ""
 #endif
 
+// #define DEBUG_KEYBOARD
+
 #endif
