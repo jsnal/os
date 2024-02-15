@@ -1,7 +1,7 @@
 *
 !.gitignore
-!binutils-2.32.patch
-!gcc-10.2.0.patch
+!binutils
+!gcc
 !build.sh
 !build-qemu.sh
 !build-bochs.sh
