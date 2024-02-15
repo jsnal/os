@@ -1,5 +1,5 @@
-#include <devices/vga.h>
-#include <logger.h>
+#include <Devices/VGA.h>
+#include <Logger.h>
 #include <stdio.h>
 #include <string.h>
 

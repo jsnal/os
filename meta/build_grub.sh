@@ -83,7 +83,7 @@ mkdir -p mnt/boot
 echo "done"
 
 echo "building filesystem..."
-sudo cp -v "$DIR/kernel/os.kernel" mnt/boot/kernel
+sudo cp -v "$DIR/Kernel/os.kernel" mnt/boot/kernel
 echo "done"
 
 echo "installing grub..."

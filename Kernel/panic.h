@@ -1,7 +1,6 @@
-#ifndef CPU_PANIC_H
-#define CPU_PANIC_H
+#pragma once
 
-#include <devices/vga.h>
+#include <Devices/VGA.h>
 #include <kprintf.h>
 #include <stdio.h>
 
@@ -28,10 +27,8 @@ static inline void panic(const char* format, ...)
     vsnprintf(message, PANIC_BUFFER_SIZE, format, ap);
     va_end(ap);
 
-    vga_printf("*** PANIC ***\n%s", message);
+    // vga_printf("*** PANIC ***\n%s", message);
     kprintf("*** PANIC ***\n%s", message);
 
     hang();
 }
-
-#endif

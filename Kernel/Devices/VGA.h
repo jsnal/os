@@ -4,6 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 #define WIDTH 80
 #define HEIGHT 25
@@ -47,5 +50,7 @@ void vga_nwrite(const char* data, size_t size);
 void vga_write(const char* data);
 
 void vga_printf(const char* format, ...);
+
+__END_DECLS
 
 #endif

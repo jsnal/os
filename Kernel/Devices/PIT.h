@@ -11,9 +11,12 @@
 
 #define TICKS_PER_SECOND 1000
 
-extern uint32_t seconds_since_boot;
-extern uint32_t milliseconds_since_boot;
+namespace PIT {
 
-void pit_init();
+uint32_t milliseconds_since_boot();
+uint32_t seconds_since_boot();
+void init();
+
+}
 
 #endif

@@ -1,7 +1,6 @@
-#ifndef LOGGER_LOGGER_H
-#define LOGGER_LOGGER_H
+#pragma once
 
-#include <devices/pit.h>
+#include <Devices/PIT.h>
 #include <kprintf.h>
 #include <stdarg.h>
 
@@ -9,9 +8,9 @@
 #define DEBUG
 
 #ifdef DEBUG
-#    define dbgprintf(format, ...)                                                                                  \
-        do {                                                                                                        \
-            kprintf(FORMAT_DEBUG "%u:%s: " FORMAT_RESET format, milliseconds_since_boot, DEBUG_TAG, ##__VA_ARGS__); \
+#    define dbgprintf(format, ...)                                                                                         \
+        do {                                                                                                               \
+            kprintf(FORMAT_DEBUG "%u:%s: " FORMAT_RESET format, PIT::milliseconds_since_boot(), DEBUG_TAG, ##__VA_ARGS__); \
         } while (0)
 #else
 #    define dbgprintf(format, ...) \
@@ -49,5 +48,3 @@
 #endif
 
 // #define DEBUG_KEYBOARD
-
-#endif

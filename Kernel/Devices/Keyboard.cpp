@@ -1,9 +1,8 @@
-#include <cpu/idt.h>
-#include <devices/keyboard.h>
-#include <devices/vga.h>
-#include <logger.h>
-#include <stdbool.h>
-#include <sys/io.h>
+#include <CPU/IDT.h>
+#include <Devices/Keyboard.h>
+#include <Devices/VGA.h>
+#include <IO.h>
+#include <Logger.h>
 
 #define DEBUG_TAG "Keyboard"
 
@@ -29,9 +28,7 @@
 #define KEYBOARD_MODIFIER_ALT 0x04
 #define KEYBOARD_MODIFIER_CAPS_LOCK 0x08
 
-static uint32_t keyboard_modifier = 0;
-
-static const char keyboard_map_1[] = {
+static const uint8_t keyboard_map_1[] = {
     KEY_NULL,
     KEY_ESCAPE,
     '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=',
@@ -78,7 +75,7 @@ static const char keyboard_map_1[] = {
     KEY_NULL, KEY_NULL
 };
 
-static const char keyboard_map_2[] = {
+static const uint8_t keyboard_map_2[] = {
     KEY_NULL,
     KEY_ESCAPE,
     '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',
@@ -125,32 +122,37 @@ static const char keyboard_map_2[] = {
     KEY_NULL, KEY_NULL
 };
 
-static uint32_t get_scan_code()
+static Keyboard* s_the;
+
+Keyboard& Keyboard::the()
 {
-    uint32_t code = inb(KEYBOARD_PORT);
-    uint32_t value = inb(KEYBOARD_ACK);
-    outb(KEYBOARD_ACK, value | 0x80);
-    outb(KEYBOARD_ACK, value);
-    return code;
+    return *s_the;
 }
 
-static void update_modifier(uint8_t modifier, bool pressed)
+Keyboard::Keyboard()
 {
-    if (pressed) {
-        keyboard_modifier |= modifier;
-    } else {
-        keyboard_modifier &= ~modifier;
-    }
+    s_the = this;
 }
 
-static void keyboard_handler()
+static void keyboard_interrupt_handler()
 {
+    Keyboard::the().handle_interrupt();
+}
+
+void Keyboard::init()
+{
+    IDT::register_interrupt_handler(ISR_KEYBOARD, keyboard_interrupt_handler);
+}
+
+void Keyboard::handle_interrupt()
+{
+
     uint32_t scan_code = get_scan_code();
     bool pressed = (scan_code & 0x80) == 0;
-    char converted_character = 0;
+    // char converted_character = 0;
 
 #ifdef DEBUG_KEYBOARD
-    dbgprintf("Key pressed: modifier=%x scan_code=%d %s\n", keyboard_modifier, scan_code, pressed ? "down" : "up");
+    dbgprintf("Key pressed: modifier=%x scan_code=%d %s\n", m_modifier, scan_code, pressed ? "down" : "up");
 #endif
 
     switch (scan_code) {
@@ -169,21 +171,34 @@ static void keyboard_handler()
             update_modifier(KEYBOARD_MODIFIER_ALT, pressed);
             break;
         case 0x3A:
-            keyboard_modifier ^= KEYBOARD_MODIFIER_CAPS_LOCK;
+            m_modifier ^= KEYBOARD_MODIFIER_CAPS_LOCK;
             break;
         default:
             if (pressed) {
-                if (((keyboard_modifier & KEYBOARD_MODIFIER_SHIFT) ^ (keyboard_modifier & KEYBOARD_MODIFIER_CAPS_LOCK)) != 0) {
-                    converted_character = keyboard_map_2[scan_code];
+                if (((m_modifier & KEYBOARD_MODIFIER_SHIFT) ^ (m_modifier & KEYBOARD_MODIFIER_CAPS_LOCK)) != 0) {
+                    // converted_character = keyboard_map_2[scan_code];
                 } else {
-                    converted_character = keyboard_map_1[scan_code];
+                    // converted_character = keyboard_map_1[scan_code];
                 }
-                vga_putchar(converted_character);
+                // vga_putchar(converted_character);
             }
     }
 }
 
-void keyboard_init()
+uint32_t Keyboard::get_scan_code()
 {
-    isr_register_handler(ISR_KEYBOARD, keyboard_handler);
+    uint32_t code = IO::inb(KEYBOARD_PORT);
+    uint32_t value = IO::inb(KEYBOARD_ACK);
+    IO::outb(KEYBOARD_ACK, value | 0x80);
+    IO::outb(KEYBOARD_ACK, value);
+    return code;
+}
+
+void Keyboard::update_modifier(uint8_t modifier, bool pressed)
+{
+    if (pressed) {
+        m_modifier |= modifier;
+    } else {
+        m_modifier &= ~modifier;
+    }
 }

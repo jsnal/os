@@ -1,6 +1,9 @@
 -D__os__
--std=gnu11
+-D__cplusplus
+-xc++
+-std=c++17
 -nostdinc
+-nostdinc++
 -nostdlib
 -nodefaultlibs
 -ffreestanding

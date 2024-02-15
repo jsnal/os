@@ -1,13 +1,15 @@
 NAME = os.kernel
 
+CXX = i686-pc-os-g++
 CC = i686-pc-os-gcc
 LD = i686-pc-os-ld
 AS = i686-pc-os-as
 
-STANDARD_FLAGS = -g -std=gnu11 -nostdinc -nostdlib -nodefaultlibs -ffreestanding -masm=intel
+STANDARD_FLAGS = -g -std=c++17 -nostdinc -nostdlib -nostdinc++ -nodefaultlibs -ffreestanding -masm=intel
 WARNING_FLAGS = -Wall -Wextra -Wundef -Wcast-qual
+OTHER_FLAGS = -fno-exceptions -fno-rtti -xc++
 
-CCFLAGS = -MMD -MP $(STANDARD_FLAGS) $(WARNING_FLAGS)
+CXXFLAGS = -MMD -MP $(STANDARD_FLAGS) $(WARNING_FLAGS) $(OTHER_FLAGS)
 LDFLAGS = -Map os.kernel.map --build-id=none
 LIBS = -I. -I../libc/include
 
@@ -16,33 +18,33 @@ CRTEND_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 
 LIBC = ../libc/libc.a
 
-CC_OBJS = \
-	cpu/gdt.o \
-	cpu/idt.o \
-	cpu/lgdt.o \
-	cpu/lidt.o \
-	cpu/pic.o \
-	devices/console.o \
-	devices/keyboard.o \
-	devices/pit.o \
-	devices/vga.o \
-	kernel.o \
+CXX_OBJS = \
+	CPU/GDT.o \
+	CPU/IDT.o \
+	CPU/PIC.o \
+	CPU/lgdt.o \
+	CPU/lidt.o \
+	Devices/Console.o \
+	Devices/PIT.o \
+	Devices/VGA.o \
+	Devices/Keyboard.o \
+	Kernel.o \
 	kprintf.o \
-	memory/heap.o \
-	memory/memory.o \
-	memory/paging.o \
-	memory/pmm.o \
-	memory/zone.o \
+#	memory/heap.o \
+#	memory/memory.o \
+#	memory/paging.o \
+#	memory/pmm.o \
+#	memory/zone.o \
 
 LIBC_OBJS = \
 	../libc/src/string/memcpy.o
 
 BOOT_OBJS = \
-	boot/boot.o \
-	boot/crti.o \
-	boot/crtn.o \
+	Boot/boot.o \
+	Boot/crti.o \
+	Boot/crtn.o \
 
-OBJS = $(CC_OBJS) $(BOOT_OBJS)
+OBJS = $(CXX_OBJS) $(BOOT_OBJS)
 DEPS = $(OBJS:%.o=%.d)
 
 LINK_LIST = \
@@ -54,14 +56,13 @@ LINK_LIST = \
 all: $(NAME)
 
 $(NAME): $(OBJS) $(LIBC) linker.ld
-	@echo "LD $@";
-	$(LD) $(LDFLAGS) -T linker.ld -o $@ $(LINK_LIST)
+	@echo "LD $@"; $(LD) $(LDFLAGS) -T linker.ld -o $@ $(LINK_LIST)
 
 $(LIBC):
 	@echo "MAKE libc"; $(MAKE) -C ../libc
 
-%.o: %.c
-	@echo "CC $<"; $(CC) $(CCFLAGS) $(LIBS) -c -o $@ $<
+%.o: %.cpp
+	@echo "CXX $<"; $(CXX) $(CXXFLAGS) $(LIBS) -c -o $@ $<
 
 %.o: %.S
 	@echo "AS $<"; $(AS) -o $@ $<

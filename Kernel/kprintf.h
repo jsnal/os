@@ -4,13 +4,10 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef _KPRINTF_H_
-#define _KPRINTF_H_
+#pragma once
 
 #include <stdarg.h>
 
 void kvprintf(const char* format, va_list ag);
 
 void kprintf(const char* format, ...);
-
-#endif

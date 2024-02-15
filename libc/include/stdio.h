@@ -9,7 +9,12 @@
 
 #include <stdarg.h>
 #include <stddef.h>
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 int vsnprintf(char* str, size_t size, const char* format, va_list ap);
+
+__END_DECLS
 
 #endif

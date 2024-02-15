@@ -22,5 +22,6 @@ if [ ! -d ${QEMU_NAME} ]; then
 
     ${QEMU_NAME}/configure --prefix="$PREFIX" --target-list=i386-softmmu --disable-vnc --enable-sdl
     make -j
+    make install -j
   popd
 fi

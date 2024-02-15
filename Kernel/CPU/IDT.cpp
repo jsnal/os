@@ -1,63 +1,45 @@
-#include <cpu/idt.h>
-#include <cpu/pic.h>
-#include <devices/vga.h>
-#include <logger.h>
+#include <CPU/IDT.h>
+#include <CPU/PIC.h>
+// #include <devices/vga.h>
+#include <Logger.h>
 #include <panic.h>
 #include <string.h>
 
 #define DEBUG_TAG "IDT"
 
-static isr_handler_t isr_handlers[IDT_ENTRY_COUNT];
+#define IDT_ENTRY_LIMIT 256
+#define IDT_ENTRY_COUNT 48
 
-__attribute__((aligned(0x10))) static idt_entry_t idt_entries[IDT_ENTRY_LIMIT];
+static InterruptHandler s_interrupt_handlers[IDT_ENTRY_COUNT];
 
-static idtr_t idtr;
+__attribute__((aligned(0x10))) static IDTEntry s_idt_entries[IDT_ENTRY_LIMIT];
+
+static IDTPointer s_idt_pointer;
 
 static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t flags)
 {
-    idt_entries[num].base_low = base & 0xFFFF;
-    idt_entries[num].base_high = (base >> 16) & 0xFFFF;
-    idt_entries[num].selector = selector;
-    idt_entries[num].zero = 0;
-    idt_entries[num].flags = flags;
+    s_idt_entries[num].base_low = base & 0xFFFF;
+    s_idt_entries[num].base_high = (base >> 16) & 0xFFFF;
+    s_idt_entries[num].selector = selector;
+    s_idt_entries[num].zero = 0;
+    s_idt_entries[num].flags = flags;
 }
 
-void isr_handler(isr_frame_t* isr_frame)
+extern "C" void isr_handler(InterruptFrame* frame)
 {
-    if (isr_frame == NULL || isr_frame->int_no > IDT_ENTRY_COUNT || isr_handlers[isr_frame->int_no] == NULL) {
+    if (frame == NULL || frame->interrupt_number > IDT_ENTRY_COUNT || s_interrupt_handlers[frame->interrupt_number] == NULL) {
         panic("Unhandled interrupt!");
     }
 
-    isr_handlers[isr_frame->int_no]();
+    s_interrupt_handlers[frame->interrupt_number]();
 
-    if (isr_frame->int_no >= 32 && isr_frame->int_no <= 47) {
-        pic_eoi(isr_frame->int_no - 32);
+    if (frame->interrupt_number >= 32 && frame->interrupt_number <= 47) {
+        PIC::eoi(frame->interrupt_number - 32);
         return;
     }
 
-    dbgprintf("Interrupt fired: %d:%x\n", isr_frame->int_no, isr_frame->int_no);
-    isr_dump_frame(isr_frame);
-}
-
-void isr_register_handler(uint32_t int_no, isr_handler_t handler)
-{
-    if (int_no < IDT_ENTRY_COUNT) {
-        isr_handlers[int_no] = handler;
-
-        if (int_no >= 32 && int_no <= 47) {
-            pic_unmask(int_no - 32);
-        }
-    } else {
-        errprintf("Unable to register %d, out of bounds\n", int_no);
-    }
-}
-
-void isr_dump_frame(const isr_frame_t* frame)
-{
-    errprintf("EAX=%x EBX=%x ECX=%x EDX=%x\n", frame->eax, frame->ebx, frame->ecx, frame->edx);
-    errprintf("ESI=%x EDI=%x EBP=%x ESP=%x\n", frame->esi, frame->edi, frame->ebp, frame->esp);
-    errprintf("DS=%x CS=%x SS=%x\n", frame->ds, frame->cs, frame->ss);
-    errprintf("EFLAGS=%x\n", frame->eflags);
+    dbgprintf("Interrupt fired: %d:%x\n", frame->interrupt_number, frame->interrupt_number);
+    IDT::dump_interrupt_frame(*frame);
 }
 
 static void divide_by_zero_handler()
@@ -65,12 +47,35 @@ static void divide_by_zero_handler()
     panic("Divide by zero detected!\n");
 }
 
-void idt_init()
-{
-    idtr.limit = (sizeof(idtr_t) * IDT_ENTRY_LIMIT) - 1;
-    idtr.base = (uintptr_t)&idt_entries;
+namespace IDT {
 
-    memset(&idt_entries, 0, sizeof(idt_entry_t) * IDT_ENTRY_LIMIT);
+void register_interrupt_handler(uint32_t interrupt_number, InterruptHandler handler)
+{
+    if (interrupt_number < IDT_ENTRY_COUNT) {
+        s_interrupt_handlers[interrupt_number] = handler;
+
+        if (interrupt_number >= 32 && interrupt_number <= 47) {
+            PIC::unmask(interrupt_number - 32);
+        }
+    } else {
+        errprintf("Unable to register %d, out of bounds\n", interrupt_number);
+    }
+}
+
+void dump_interrupt_frame(const InterruptFrame& frame)
+{
+    errprintf("EAX=%x EBX=%x ECX=%x EDX=%x\n", frame.eax, frame.ebx, frame.ecx, frame.edx);
+    errprintf("ESI=%x EDI=%x EBP=%x ESP=%x\n", frame.esi, frame.edi, frame.ebp, frame.esp);
+    errprintf("DS=%x CS=%x SS=%x\n", frame.ds, frame.cs, frame.ss);
+    errprintf("EFLAGS=%x\n", frame.eflags);
+}
+
+void init()
+{
+    s_idt_pointer.limit = (sizeof(s_idt_pointer) * IDT_ENTRY_LIMIT) - 1;
+    s_idt_pointer.base = (uintptr_t)&s_idt_entries;
+
+    memset(&s_idt_entries, 0, sizeof(IDTEntry) * IDT_ENTRY_LIMIT);
 
     // CPU interrupts for exceptions
     idt_set_entry(0, (uintptr_t)isr_0, 0x08, 0x8E);
@@ -124,9 +129,11 @@ void idt_init()
     idt_set_entry(46, (uintptr_t)isr_46, 0x08, 0x8E);
     idt_set_entry(47, (uintptr_t)isr_47, 0x08, 0x8E);
 
-    idt_load((uintptr_t)&idtr);
+    idt_load((uintptr_t)&s_idt_pointer);
 
-    dbgprintf("Initialized IDT: 0x%x\n", &idtr);
+    dbgprintf("Initialized IDT: 0x%x\n", &s_idt_pointer);
 
-    isr_register_handler(0, divide_by_zero_handler);
+    register_interrupt_handler(0, divide_by_zero_handler);
+}
+
 }

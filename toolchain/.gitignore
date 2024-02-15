@@ -1,8 +1,6 @@
 *
 !.gitignore
 !README.md
-!binutils
-!gcc
 !build.sh
 !build_qemu.sh
 !build_bochs.sh

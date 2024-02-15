@@ -8,6 +8,9 @@
 #define _STRING_H_
 
 #include <stddef.h>
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 #define MAX_ITOA_LEN 64
 
@@ -19,4 +22,5 @@ void* memcpy(void* dest, const void* src, size_t n);
 
 void* memmove(void* dest, const void* src, size_t n);
 
+__END_DECLS
 #endif
