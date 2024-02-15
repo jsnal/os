@@ -4,5 +4,5 @@
 !binutils
 !gcc
 !build.sh
-!build-qemu.sh
-!build-bochs.sh
+!build_qemu.sh
+!build_bochs.sh
