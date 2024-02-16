@@ -14,10 +14,10 @@ else
   : "${SUDO_UID:=0}" "${SUDO_GID:=0}"
 fi
 
-. "$DIR/meta/env.sh"
+. "$DIR/Meta/env.sh"
 
 if [ "$1" = "bochs" ]; then
-    bochs -f $DIR/meta/bochsrc.txt -q || die "unable to run bochs"
+    bochs -f $DIR/Meta/bochsrc.txt -q || die "unable to run bochs"
 else
     if [ "$1" = "monitor" ]; then
         echo 'enabling qemu monitor...'

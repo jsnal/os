@@ -1,7 +1,8 @@
 #include <Devices/VGA.h>
+#include <LibA/Printf.h>
+#include <LibA/Stdlib.h>
 #include <Logger.h>
 #include <stdio.h>
-#include <string.h>
 
 static vga_terminal terminal;
 
@@ -79,7 +80,7 @@ void vga_printf(const char* format, ...)
     va_list ap;
 
     va_start(ap, format);
-    length = vsnprintf(msg, VGA_BUFFER_SIZE, format, ap);
+    length = printf_buffer(msg, VGA_BUFFER_SIZE, format, ap);
     va_end(ap);
 
     vga_nwrite(msg, length);

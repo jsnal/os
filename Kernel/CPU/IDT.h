@@ -1,41 +1,41 @@
 #pragma once
 
-#include <stdint.h>
+#include <LibA/Types.h>
 
 #define ISR_PAGE_FAULT 14
 #define ISR_PIT 32
 #define ISR_KEYBOARD 33
 
 struct [[gnu::packed]] IDTEntry {
-    uint16_t base_low;
-    uint16_t selector;
-    uint8_t zero;
-    uint8_t flags;
-    uint16_t base_high;
+    u16 base_low;
+    u16 selector;
+    u8 zero;
+    u8 flags;
+    u16 base_high;
 };
 
 struct [[gnu::packed]] IDTPointer {
-    uint16_t limit;
-    uint32_t base;
+    u16 limit;
+    u32 base;
 };
 
 struct InterruptFrame {
-    uint32_t ds;
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebp;
-    uint32_t esp;
-    uint32_t ebx;
-    uint32_t edx;
-    uint32_t ecx;
-    uint32_t eax;
-    uint32_t interrupt_number;
-    uint32_t error_number;
-    uint32_t eip;
-    uint32_t cs;
-    uint32_t eflags;
-    uint32_t user_esp;
-    uint32_t ss;
+    u32 ds;
+    u32 edi;
+    u32 esi;
+    u32 ebp;
+    u32 esp;
+    u32 ebx;
+    u32 edx;
+    u32 ecx;
+    u32 eax;
+    u32 interrupt_number;
+    u32 error_number;
+    u32 eip;
+    u32 cs;
+    u32 eflags;
+    u32 user_esp;
+    u32 ss;
 };
 
 typedef void (*InterruptHandler)();
@@ -52,7 +52,7 @@ static inline void cli()
 
 namespace IDT {
 
-void register_interrupt_handler(uint32_t interrupt_number, InterruptHandler);
+void register_interrupt_handler(u32 interrupt_number, InterruptHandler);
 
 void dump_interrupt_frame(const InterruptFrame&);
 
@@ -62,7 +62,7 @@ void init();
 
 extern "C" {
 
-void idt_load(uint32_t base);
+void idt_load(u32 base);
 
 void isr_handler(InterruptFrame*);
 

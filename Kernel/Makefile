@@ -7,16 +7,15 @@ AS = i686-pc-os-as
 
 STANDARD_FLAGS = -g -std=c++17 -nostdinc -nostdlib -nostdinc++ -nodefaultlibs -ffreestanding -masm=intel
 WARNING_FLAGS = -Wall -Wextra -Wundef -Wcast-qual
+DEFINE_FLAGS = -DKERNEL
 OTHER_FLAGS = -fno-exceptions -fno-rtti -xc++
 
-CXXFLAGS = -MMD -MP $(STANDARD_FLAGS) $(WARNING_FLAGS) $(OTHER_FLAGS)
+CXXFLAGS = -MMD -MP $(STANDARD_FLAGS) $(WARNING_FLAGS) $(DEFINE_FLAGS) $(OTHER_FLAGS)
 LDFLAGS = -Map os.kernel.map --build-id=none
-LIBS = -I. -I../libc/include
+LIBS = -I. -I.. -I../LibC/include
 
 CRTBEGIN_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
-
-LIBC = ../libc/libc.a
 
 CXX_OBJS = \
 	CPU/GDT.o \
@@ -28,6 +27,7 @@ CXX_OBJS = \
 	Devices/PIT.o \
 	Devices/VGA.o \
 	Devices/Keyboard.o \
+	Stdlib.o \
 	Kernel.o \
 	kprintf.o \
 #	memory/heap.o \
@@ -35,9 +35,6 @@ CXX_OBJS = \
 #	memory/paging.o \
 #	memory/pmm.o \
 #	memory/zone.o \
-
-LIBC_OBJS = \
-	../libc/src/string/memcpy.o
 
 BOOT_OBJS = \
 	Boot/boot.o \
@@ -51,15 +48,11 @@ LINK_LIST = \
 	$(CRTBEGIN_OBJ) \
 	$(CRTEND_OBJ) \
 	$(OBJS) \
-	$(LIBC) \
 
 all: $(NAME)
 
-$(NAME): $(OBJS) $(LIBC) linker.ld
+$(NAME): $(OBJS) linker.ld
 	@echo "LD $@"; $(LD) $(LDFLAGS) -T linker.ld -o $@ $(LINK_LIST)
-
-$(LIBC):
-	@echo "MAKE libc"; $(MAKE) -C ../libc
 
 %.o: %.cpp
 	@echo "CXX $<"; $(CXX) $(CXXFLAGS) $(LIBS) -c -o $@ $<

@@ -14,7 +14,7 @@ else
   : "${SUDO_UID:=0}" "${SUDO_GID:=0}"
 fi
 
-. "$DIR/meta/env.sh"
+. "$DIR/Meta/env.sh"
 echo $PATH
 
 GRUB_BIN=$(command -v grub-install 2>/dev/null) || true
@@ -88,5 +88,5 @@ echo "done"
 
 echo "installing grub..."
 $GRUB_BIN --boot-directory=mnt/boot --target=i386-pc --modules="ext2 part_msdos" "${LOOPBACK}"
-cp -v "$DIR/meta/grub.cfg" mnt/boot/grub/grub.cfg
+cp -v "$DIR/Meta/grub.cfg" mnt/boot/grub/grub.cfg
 echo "done"

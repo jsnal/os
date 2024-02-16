@@ -1,5 +1,8 @@
--std=gnu11
+-D__os__
+-xc++
+-std=c++17
 -nostdinc
+-nostdinc++
 -nostdlib
 -nodefaultlibs
 -ffreestanding
@@ -9,4 +12,6 @@
 -Wundef
 -Wcast-qual
 -lgcc
--Iinclude
+-I.
+-I..
+-I../LibC/include

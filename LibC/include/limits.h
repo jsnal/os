@@ -9,10 +9,6 @@
 
 #define PAGE_SIZE 4096
 
-#define KB 1024
-#define MB (KB * KB)
-#define GB (KB * KB * KB)
-
 #define CHAR_BIT 8
 #define LONG_BIT 64
 

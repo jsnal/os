@@ -5,6 +5,7 @@
 #include <Devices/Keyboard.h>
 #include <Devices/PIT.h>
 #include <Devices/VGA.h>
+#include <LibA/Bitmap.h>
 #include <Logger.h>
 #include <multiboot.h>
 #include <panic.h>

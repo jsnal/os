@@ -4,15 +4,16 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <limits.h>
+#pragma once
+
+#include <LibA/Stdlib.h>
+#include <LibA/Types.h>
+#include <stdarg.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-#define CONVERT_BUFFER_SIZE LONG_BIT
+#define CONVERT_BUFFER_SIZE 64
 
-static size_t convert_unsigned_number(unsigned long number, char* buffer, size_t size, int base, bool caps)
+[[gnu::always_inline]] inline size_t convert_unsigned_number(unsigned long number, char* buffer, size_t size, int base, bool caps)
 {
     const char* digits = caps ? "0123456789ABCDEF" : "0123456789abcdef";
     size_t pos = 0;
@@ -25,7 +26,7 @@ static size_t convert_unsigned_number(unsigned long number, char* buffer, size_t
     return pos;
 }
 
-static size_t convert_signed_number(long number, char* buffer, size_t size, int base, bool caps)
+[[gnu::always_inline]] inline size_t convert_signed_number(long number, char* buffer, size_t size, int base, bool caps)
 {
     bool negative = false;
     size_t pos = 0;
@@ -43,7 +44,7 @@ static size_t convert_signed_number(long number, char* buffer, size_t size, int 
     return pos;
 }
 
-static size_t write_unsigned_number(unsigned long number, char* buffer, int base, bool caps, int width, int max)
+[[gnu::always_inline]] inline size_t write_unsigned_number(unsigned long number, char* buffer, int base, bool caps, int width, int max)
 {
     size_t written = 0;
     size_t convert_size;
@@ -66,7 +67,7 @@ static size_t write_unsigned_number(unsigned long number, char* buffer, int base
     return written;
 }
 
-static size_t write_signed_number(long number, char* buffer, int max)
+[[gnu::always_inline]] inline size_t write_signed_number(long number, char* buffer, int max)
 {
     size_t written = 0;
     int convert_size;
@@ -81,11 +82,11 @@ static size_t write_signed_number(long number, char* buffer, int max)
     return written;
 }
 
-static size_t write_string(const char* string, char* buffer, int max)
+[[gnu::always_inline]] inline size_t write_string(const char* string, char* buffer, int max)
 {
     int string_length = strlen(string);
 
-    if (buffer == NULL) {
+    if (buffer == nullptr) {
         return 1;
     }
 
@@ -98,7 +99,7 @@ static size_t write_string(const char* string, char* buffer, int max)
     return string_length;
 }
 
-int vsnprintf(char* str, size_t size, const char* format, va_list ap)
+[[gnu::always_inline]] inline int printf_buffer(char* str, size_t size, const char* format, va_list ap)
 {
     int length = 0;
     int remaining = size;
@@ -140,7 +141,7 @@ int vsnprintf(char* str, size_t size, const char* format, va_list ap)
                     length += write_unsigned_number(value_ui, &str[length], 10, false, 0, remaining);
                     break;
                 case 'd':
-                    value_i = va_arg(ap, signed int);
+                    value_i = va_arg(ap, int);
                     length += write_signed_number(value_i, &str[length], remaining);
                     break;
             }

@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <LibA/Types.h>
 #include <limits.h>
 #include <string.h>
 
 void* memset(void* dest, int val, size_t length)
 {
-    unsigned char* ptr = dest;
+    unsigned char* ptr = (unsigned char*)dest;
 
     while (length-- > 0) {
         *ptr++ = val;
@@ -73,10 +74,10 @@ size_t strlen(const char* str)
 char* itoa(char* dest, size_t size, int a, int base)
 {
     char buffer[sizeof(a) * CHAR_BIT + 1 + 1];
-    static const char digits[36] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    static const char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     if (base < 2 || base > 36) {
-        return NULL;
+        return nullptr;
     }
 
     char* p = &buffer[sizeof(buffer) - 1];
@@ -95,8 +96,8 @@ char* itoa(char* dest, size_t size, int a, int base)
 
     size_t str_size = &buffer[sizeof(buffer)] - p;
     if (str_size > size) {
-        return NULL;
+        return nullptr;
     }
 
-    return memcpy(dest, p, str_size);
+    return static_cast<char*>(memcpy(dest, p, str_size));
 }

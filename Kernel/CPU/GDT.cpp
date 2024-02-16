@@ -6,7 +6,7 @@
 static GDTEntry s_gdt_entries[GDT_ENTRY_LIMIT];
 static GDTPointer s_gdt_pointer;
 
-static void gdt_set_entry(uint32_t num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran)
+static void gdt_set_entry(u32 num, u32 base, u32 limit, u8 access, u8 gran)
 {
     s_gdt_entries[num].base_low = (base & 0xFFFF);
     s_gdt_entries[num].base_middle = (base >> 16) & 0xFF;

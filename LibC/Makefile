@@ -1,13 +1,13 @@
 NAME = libc.a
 
-CC = i686-pc-os-gcc
+CXX = i686-pc-os-g++
 AR = i686-pc-os-ar
 
-STANDARD_FLAGS = -g -std=gnu11 -nostdinc -nostdlib -nodefaultlibs -ffreestanding -masm=intel
-WARNING_FLAGS = -Wall -Wextra -Wundef -Wcast-qual
+STANDARD_FLAGS = -g -std=c++17 -nostdinc -nostdlib -nodefaultlibs -ffreestanding -masm=intel
+WARNING_FLAGS = -Wall -Wextra -Wundef -Wcast-qual -xc++
 
 CCFLAGS = -MMD -MP $(STANDARD_FLAGS) $(WARNING_FLAGS)
-LIBS = -Iinclude
+LIBS = -Iinclude -I..
 
 CRTBEGIN_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
@@ -29,8 +29,8 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	@echo "AR $@"; $(AR) $(ARFLAGS) $@ $?
 
-%.o: %.c
-	@echo "CC $<"; $(CC) $(CCFLAGS) $(LIBS) -c -o $@ $<
+%.o: %.cpp
+	@echo "CXX $<"; $(CXX) $(CCFLAGS) $(LIBS) -c -o $@ $<
 
 -include $(DEPS)
 

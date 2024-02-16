@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Devices/VGA.h>
+#include <LibA/Printf.h>
 #include <kprintf.h>
 #include <stdio.h>
 
@@ -24,7 +25,7 @@ static inline void panic(const char* format, ...)
 
     va_list ap;
     va_start(ap, format);
-    vsnprintf(message, PANIC_BUFFER_SIZE, format, ap);
+    printf_buffer(message, PANIC_BUFFER_SIZE, format, ap);
     va_end(ap);
 
     // vga_printf("*** PANIC ***\n%s", message);

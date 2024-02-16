@@ -1,9 +1,6 @@
--D__os__
--DKERNEL
--xc++
 -std=c++17
+-xc++
 -nostdinc
--nostdinc++
 -nostdlib
 -nodefaultlibs
 -ffreestanding
@@ -13,6 +10,5 @@
 -Wundef
 -Wcast-qual
 -lgcc
--I.
+-Iinclude
 -I..
--I../LibC/include
