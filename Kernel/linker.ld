@@ -44,5 +44,5 @@ SECTIONS
 	}
 
 	/* Remember the end of the Kernel */
-	kernel_end = ALIGN(4K);
+	g_kernel_end = ALIGN(4K);
 }

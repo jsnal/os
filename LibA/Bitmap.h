@@ -19,6 +19,17 @@ public:
         return Bitmap(data, size);
     }
 
+    static Bitmap create()
+    {
+        return Bitmap();
+    }
+
+    explicit Bitmap()
+        : m_size(0)
+    {
+        m_data = nullptr;
+    }
+
     Bitmap(u8* data, size_t size)
         : m_data(data)
         , m_size(size)

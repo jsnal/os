@@ -5,10 +5,10 @@ CC = i686-pc-os-gcc
 LD = i686-pc-os-ld
 AS = i686-pc-os-as
 
-STANDARD_FLAGS = -g -std=c++17 -nostdinc -nostdlib -nostdinc++ -nodefaultlibs -ffreestanding -masm=intel
+STANDARD_FLAGS = -fno-exceptions -fno-rtti -std=c++17 -nostdinc -nostdlib -nostdinc++ -nodefaultlibs -ffreestanding -masm=intel
 WARNING_FLAGS = -Wall -Wextra -Wundef -Wcast-qual
 DEFINE_FLAGS = -DKERNEL
-OTHER_FLAGS = -fno-exceptions -fno-rtti -xc++
+OTHER_FLAGS = -xc++
 
 CXXFLAGS = -MMD -MP $(STANDARD_FLAGS) $(WARNING_FLAGS) $(DEFINE_FLAGS) $(OTHER_FLAGS)
 LDFLAGS = -Map os.kernel.map --build-id=none
@@ -24,11 +24,13 @@ CXX_OBJS = \
 	CPU/lgdt.o \
 	CPU/lidt.o \
 	Devices/Console.o \
+	Devices/Keyboard.o \
 	Devices/PIT.o \
 	Devices/VGA.o \
-	Devices/Keyboard.o \
-	Stdlib.o \
 	Kernel.o \
+	Memory/MemoryManager.o \
+	Memory/PMM.o \
+	Stdlib.o \
 	kprintf.o \
 #	memory/heap.o \
 #	memory/memory.o \

@@ -7,6 +7,7 @@
 #include <Devices/VGA.h>
 #include <LibA/Bitmap.h>
 #include <Logger.h>
+#include <Memory/MemoryManager.h>
 #include <multiboot.h>
 #include <panic.h>
 #include <stdint.h>
@@ -49,6 +50,8 @@ extern "C" void kernel_entry(uint32_t* boot_page_directory, const multiboot_info
     PIT::init();
 
     vga_init();
+
+    MemoryManager::the().init(boot_page_directory, multiboot);
 
     kernel_main();
 }
