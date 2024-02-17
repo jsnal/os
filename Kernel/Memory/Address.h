@@ -7,6 +7,7 @@
 #pragma once
 
 #include <LibA/Types.h>
+#include <Logger.h>
 
 class VirtualAddress {
 public:
@@ -35,35 +36,21 @@ private:
 
 class PhysicalAddress {
 public:
-    enum Error {
-        OutOfMemory = 1,
-        AddressOutOfRange = 2,
-        NotPageAligned = 3,
-        AlreadyPresent = 4,
-    };
-
     PhysicalAddress()
     {
     }
 
-    explicit PhysicalAddress(u32 address)
+    PhysicalAddress(u32 address)
         : m_address(address)
     {
     }
-
-    explicit PhysicalAddress(Error error)
-        : m_address(error)
-    {
-    }
-
-    bool is_error() const { return m_address >= 1 && m_address <= 4; }
-    Error error() const { return static_cast<Error>(m_address); }
 
     bool is_page_aligned() const { return ((m_address & 0xfff) == 0); }
 
     u32 get() const { return m_address; }
     void set(u32 address) { m_address = address; }
-    PhysicalAddress offset(u32 offset) { return PhysicalAddress(m_address += offset); }
+    void add(u32 a) { m_address += a; }
+    PhysicalAddress offset(u32 offset) const { return PhysicalAddress(m_address + offset); }
 
     u8* ptr() { return reinterpret_cast<u8*>(m_address); }
     const u8* ptr() const { return reinterpret_cast<const u8*>(m_address); }

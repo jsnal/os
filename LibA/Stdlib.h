@@ -12,3 +12,9 @@
 #    include <stdlib.h>
 #    include <string.h>
 #endif
+
+template<typename T>
+T&& move(T& arg)
+{
+    return static_cast<T&&>(arg);
+}

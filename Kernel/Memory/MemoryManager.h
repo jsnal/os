@@ -26,7 +26,7 @@ public:
     PMM pmm() const { return m_pmm; }
 
 private:
-    void init(const multiboot_information_t*);
+    void internal_init(u32* boot_page_directory, const multiboot_information_t*);
 
     PageDirectoryEntry* m_kernel_page_directory;
 

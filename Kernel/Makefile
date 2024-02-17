@@ -1,7 +1,6 @@
 NAME = os.kernel
 
 CXX = i686-pc-os-g++
-CC = i686-pc-os-gcc
 LD = i686-pc-os-ld
 AS = i686-pc-os-as
 
@@ -13,9 +12,6 @@ OTHER_FLAGS = -xc++
 CXXFLAGS = -MMD -MP $(STANDARD_FLAGS) $(WARNING_FLAGS) $(DEFINE_FLAGS) $(OTHER_FLAGS)
 LDFLAGS = -Map os.kernel.map --build-id=none
 LIBS = -I. -I.. -I../LibC/include
-
-CRTBEGIN_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
-CRTEND_OBJ = $(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 
 CXX_OBJS = \
 	CPU/GDT.o \
@@ -31,6 +27,7 @@ CXX_OBJS = \
 	Memory/MemoryManager.o \
 	Memory/PMM.o \
 	Memory/Zone.o \
+	Runtime.o \
 	Stdlib.o \
 	kprintf.o \
 #	memory/heap.o \
@@ -47,15 +44,10 @@ BOOT_OBJS = \
 OBJS = $(CXX_OBJS) $(BOOT_OBJS)
 DEPS = $(OBJS:%.o=%.d)
 
-LINK_LIST = \
-	$(CRTBEGIN_OBJ) \
-	$(CRTEND_OBJ) \
-	$(OBJS) \
-
 all: $(NAME)
 
 $(NAME): $(OBJS) linker.ld
-	@echo "LD $@"; $(LD) $(LDFLAGS) -T linker.ld -o $@ $(LINK_LIST)
+	@echo "LD $@"; $(LD) $(LDFLAGS) -T linker.ld -o $@ $(OBJS)
 
 %.o: %.cpp
 	@echo "CXX $<"; $(CXX) $(CXXFLAGS) $(LIBS) -c -o $@ $<

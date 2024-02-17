@@ -122,16 +122,14 @@ static const uint8_t keyboard_map_2[] = {
     KEY_NULL, KEY_NULL
 };
 
-static Keyboard* s_the;
-
 Keyboard& Keyboard::the()
 {
-    return *s_the;
+    static Keyboard s_the;
+    return s_the;
 }
 
 Keyboard::Keyboard()
 {
-    s_the = this;
 }
 
 static void keyboard_interrupt_handler()

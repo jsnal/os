@@ -6,28 +6,60 @@
 
 #pragma once
 
+#include <LibA/Types.h>
+
 namespace LibA {
 
-template<typename T>
 class Result {
 public:
-    Result()
-        : m_is_error(false) {};
+    constexpr static int OK = 0;
 
-    Result(T result)
-        : m_is_error(false)
-        , m_result(result)
+    Result(int error_value)
+        : m_error_value(error_value)
     {
     }
 
-    bool is_error() const { return m_is_error; }
+    operator int() const { return m_error_value; }
 
-    T value() const { return m_result; }
+    bool is_ok() const { return m_error_value == 0; }
+    bool is_error() const { return m_error_value != 0; }
 
 private:
-    bool m_is_error;
-    T m_result;
+    int m_error_value { 0 };
+};
+
+template<typename T>
+class ResultOr {
+public:
+    ResultOr()
+        : m_result(1)
+    {
+    }
+
+    ResultOr(Result result)
+        : m_result(result)
+    {
+    }
+
+    ResultOr(T value)
+        : m_value(value)
+        , m_result(Result::OK)
+    {
+    }
+
+    bool is_ok() const { return m_result.is_ok(); }
+    bool is_error() const { return m_result.is_error(); }
+
+    Result error() const { return m_result; }
+
+    T& value() { return m_value; }
+    const T& value() const { return m_value; }
+
+private:
+    T m_value;
+    Result m_result;
 };
 }
 
 using LibA::Result;
+using LibA::ResultOr;

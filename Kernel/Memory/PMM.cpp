@@ -12,7 +12,6 @@ PMM::PMM(const multiboot_information_t* multiboot)
 
     u32 physical_region_base = 0;
     u32 physical_region_length = 0;
-    u32 number_of_pages = 0;
 
     dbgprintf("System Memory Map: lower_mem=%d KiB upper_mem=%d MiB\n", multiboot->memory_lower, multiboot->memory_upper / 1024);
     for (u32 position = 0, i = 0; position < multiboot->memory_map_length; position += sizeof(multiboot_mmap_t), i++) {

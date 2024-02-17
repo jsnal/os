@@ -3,33 +3,47 @@
 
 #define DEBUG_TAG "Zone"
 
-PhysicalAddress Zone::allocate_frame(const PhysicalAddress address, u32 number_of_pages)
+Result Zone::allocate_frame(const PhysicalAddress address, PhysicalAddress* allocations, u32 number_of_pages)
 {
     if (address < m_lower_address || address > m_upper_address) {
-        return PhysicalAddress(PhysicalAddress::AddressOutOfRange);
+        return ADDRESS_OUT_OF_RANGE;
     }
 
     if (!address.is_page_aligned()) {
-        return PhysicalAddress(PhysicalAddress::NotPageAligned);
+        return NOT_PAGE_ALIGNED;
     }
 
-    u32 address_index = 0;
+    ResultOr<PhysicalAddress> allocated_address;
+    u32 last_allocated_frame_index = m_last_allocated_frame_index;
+    u32 pages_allocated = 0;
+
+    m_last_allocated_frame_index = (address.get() - m_lower_address.get()) / PAGE_SIZE;
 
     for (u32 i = 0; i < number_of_pages; i++) {
-        address_index = ((address.get() + (PAGE_SIZE * i)) - m_lower_address.get()) / PAGE_SIZE;
+        allocated_address = allocate_frame();
 
-        if (m_bitmap.get(address_index)) {
-            return PhysicalAddress(PhysicalAddress::AlreadyPresent);
+        if (allocated_address.is_error()) {
+            m_last_allocated_frame_index = last_allocated_frame_index;
+            return allocated_address.error();
         }
 
-        m_bitmap.set(address_index, true);
+        if (allocations != nullptr) {
+            *(allocations + i) = allocated_address.value();
+        }
+        pages_allocated++;
     }
 
-    dbgprintf("Allocated %d physical pages starting at 0x%x\n", number_of_pages, address);
-    return address;
+    m_last_allocated_frame_index = last_allocated_frame_index;
+
+    if (pages_allocated < number_of_pages - 1) {
+        return OUT_OF_MEMORY;
+    }
+
+    dbgprintf("lower %x upper %x\n", m_lower_address, m_upper_address);
+    return Result::OK;
 }
 
-PhysicalAddress Zone::allocate_frame()
+ResultOr<PhysicalAddress> Zone::allocate_frame()
 {
     PhysicalAddress address;
 
@@ -50,22 +64,22 @@ PhysicalAddress Zone::allocate_frame()
     }
 
     dbgprintf("No free pages left!\n");
-    return PhysicalAddress(PhysicalAddress::OutOfMemory);
+    return Result(OUT_OF_MEMORY);
 }
 
-PhysicalAddress Zone::free_frame(const PhysicalAddress address)
+Result Zone::free_frame(const PhysicalAddress address)
 {
     if (address < m_lower_address || address > m_upper_address) {
-        return PhysicalAddress(PhysicalAddress::AddressOutOfRange);
+        return ADDRESS_OUT_OF_RANGE;
     }
 
     if (!address.is_page_aligned()) {
-        return PhysicalAddress(PhysicalAddress::NotPageAligned);
+        return NOT_PAGE_ALIGNED;
     }
 
     u32 address_index = (address - m_lower_address) / PAGE_SIZE;
     m_bitmap.set(address_index, false);
 
     dbgprintf("Freed physical page at 0x%x\n", address);
-    return PhysicalAddress(0);
+    return Result::OK;
 }

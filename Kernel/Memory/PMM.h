@@ -13,7 +13,7 @@ extern u32 g_kernel_end;
 
 class PMM {
 public:
-    explicit PMM()
+    PMM()
     {
     }
 

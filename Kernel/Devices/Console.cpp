@@ -8,16 +8,14 @@
 // Print out to Bochs console through 0xE9
 #define CONSOLE_ENABLE_BOCHS
 
-static Console* s_the;
-
 Console& Console::the()
 {
-    return *s_the;
+    static Console s_the;
+    return s_the;
 }
 
 Console::Console()
 {
-    s_the = this;
 }
 
 bool Console::enable()
