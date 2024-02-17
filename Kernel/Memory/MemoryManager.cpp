@@ -29,14 +29,17 @@ void MemoryManager::init(const multiboot_information_t* multiboot)
     m_pmm = PMM(multiboot);
     dbgprintf("kernel_page_directory=%x\n", m_kernel_page_directory);
     dbgprintf("kernel_page_table=%x\n", m_kernel_page_table);
-    dbgprintf("kernel_page_directory=%x\n", m_kernel_page_directory[0]);
-    dbgprintf("kernel_page_directory=%x\n", m_kernel_page_directory[1]);
-    dbgprintf("kernel_zone=%x\n", m_pmm.kernel_zone().bitmap().data());
+    dbgprintf("kernel_page_directory[0]=%x\n", m_kernel_page_directory[0]);
+    dbgprintf("kernel_page_directory[768]=%x\n", m_kernel_page_directory[758]);
+    dbgprintf("user_zone bitmap=%x\n", m_pmm.kernel_zone().bitmap().data());
 
-    m_pmm.kernel_zone().bitmap().set(1, true);
-    m_pmm.kernel_zone().bitmap().set(3, true);
-    m_pmm.kernel_zone().bitmap().set(5, true);
-    m_pmm.kernel_zone().bitmap().set(7, true);
+    dbgprintf("kernel_zone_lower=%x\n", m_pmm.kernel_zone().lower_address());
+    dbgprintf("kernel_zone_upper=%x\n", m_pmm.kernel_zone().upper_address());
+    dbgprintf("user_zone_lower=%x\n", m_pmm.user_zone().lower_address());
+    dbgprintf("user_zone_upper=%x\n", m_pmm.user_zone().upper_address());
+
+    PhysicalAddress a1 = m_pmm.kernel_zone().allocate_frame(0x00100000, 8);
+    // m_pmm.kernel_zone().free_frame(a5);
 }
 
 MemoryManager::MemoryManager()

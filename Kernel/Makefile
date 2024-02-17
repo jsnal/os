@@ -30,6 +30,7 @@ CXX_OBJS = \
 	Kernel.o \
 	Memory/MemoryManager.o \
 	Memory/PMM.o \
+	Memory/Zone.o \
 	Stdlib.o \
 	kprintf.o \
 #	memory/heap.o \

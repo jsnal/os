@@ -23,6 +23,8 @@ public:
 
     PageTableEntry* kernel_page_table() const { return m_kernel_page_table; }
 
+    PMM pmm() const { return m_pmm; }
+
 private:
     void init(const multiboot_information_t*);
 

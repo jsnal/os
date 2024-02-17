@@ -66,10 +66,10 @@ PMM::PMM(const multiboot_information_t* multiboot)
     }
 
     m_kernel_zone = Zone(physical_region_base,
-        KERNEL_ZONE_LENGTH,
+        KERNEL_ZONE_LENGTH - 1,
         (u8*)PAGE_ROUND_UP((u32)&g_kernel_end));
 
-    m_user_zone = Zone(m_kernel_zone.base_address() + KERNEL_ZONE_LENGTH,
-        physical_region_length - KERNEL_ZONE_LENGTH,
+    m_user_zone = Zone(m_kernel_zone.upper_address().get() + 1,
+        physical_region_length - KERNEL_ZONE_LENGTH - (1 * MB),
         m_kernel_zone.bitmap().data() + m_kernel_zone.bitmap().size_in_bytes());
 }
