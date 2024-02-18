@@ -1,4 +1,5 @@
 *.o
 *.d
 *.bin
+Kernel
 os.kernel.map

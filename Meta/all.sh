@@ -1,7 +1,6 @@
 #!/bin/sh
 
 . ./Meta/env.sh && \
-    make -C LibC && \
-    make -C Kernel && \
+    make -C Build install && \
     ./Meta/build_grub.sh && \
     ./Meta/run.sh $@

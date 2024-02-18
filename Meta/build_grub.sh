@@ -36,12 +36,12 @@ BYTES=$(($HEADS*$SECTORS*$BYTES_PER_SECTOR))
 CYLINDERS=$((($DISK_SIZE*1000*1024)/$BYTES))
 
 echo "setting up disk image..."
-dd if=/dev/zero of=os_grub.img bs=${BYTES}c count="${CYLINDERS:-50}" status=none || die "unable to create disk image"
-chown "$SUDO_UID":"$SUDO_GID" os_grub.img || die "couldn't adjust permissions on disk image"
+dd if=/dev/zero of=Kernel.img bs=${BYTES}c count="${CYLINDERS:-50}" status=none || die "unable to create disk image"
+chown "$SUDO_UID":"$SUDO_GID" Kernel.img || die "couldn't adjust permissions on disk image"
 echo "done"
 
 echo "creating loopback device..."
-LOOPBACK=$(losetup --find --partscan --show os_grub.img)
+LOOPBACK=$(losetup --find --partscan --show Kernel.img)
 if [ -z "$LOOPBACK" ]; then
     die "couldn't mount loopback device"
 fi
@@ -83,7 +83,7 @@ mkdir -p mnt/boot
 echo "done"
 
 echo "building filesystem..."
-sudo cp -v "$DIR/Kernel/os.kernel" mnt/boot/kernel
+sudo cp -v "$DIR/Kernel/Kernel" mnt/boot/kernel
 echo "done"
 
 echo "installing grub..."

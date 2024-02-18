@@ -1,3 +1,5 @@
-os.*
 *.img
 bochs_serial.txt
+compile_commands.json
+.cache/
+Build/

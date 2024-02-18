@@ -12,10 +12,6 @@
 #include <panic.h>
 #include <stdint.h>
 
-#if !defined(__os__)
-#    error "Compiling with incorrect toolchain."
-#endif
-
 #define DEBUG_TAG "Kernel"
 
 void kernel_main()
