@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <LibA/Types.h>
+#include <Universal/Types.h>
 
-namespace LibA {
+namespace Universal {
 
 template<typename T, size_t S>
 class Array {
@@ -38,4 +38,4 @@ private:
 
 }
 
-using LibA::Array;
+using Universal::Array;

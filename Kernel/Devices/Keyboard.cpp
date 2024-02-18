@@ -1,8 +1,8 @@
-#include <CPU/IDT.h>
-#include <Devices/Keyboard.h>
-#include <Devices/VGA.h>
-#include <IO.h>
-#include <Logger.h>
+#include <Kernel/CPU/IDT.h>
+#include <Kernel/Devices/Keyboard.h>
+#include <Kernel/Devices/VGA.h>
+#include <Kernel/IO.h>
+#include <Kernel/Logger.h>
 
 #define DEBUG_TAG "Keyboard"
 

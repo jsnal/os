@@ -1,5 +1,5 @@
-#include <Logger.h>
-#include <Memory/Zone.h>
+#include <Kernel/Logger.h>
+#include <Kernel/Memory/Zone.h>
 
 #define DEBUG_TAG "Zone"
 

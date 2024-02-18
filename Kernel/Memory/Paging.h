@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <LibA/Types.h>
+#include <Universal/Types.h>
 
 class PageDirectoryEntry {
 public:

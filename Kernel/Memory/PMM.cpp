@@ -1,6 +1,6 @@
-#include <Logger.h>
-#include <Memory/PMM.h>
-#include <panic.h>
+#include <Kernel/Logger.h>
+#include <Kernel/Memory/PMM.h>
+#include <Kernel/panic.h>
 
 #define DEBUG_TAG "PMM"
 

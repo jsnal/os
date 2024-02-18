@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <LibA/Types.h>
+#include <Universal/Types.h>
 
-namespace LibA {
+namespace Universal {
 
 class Result {
 public:
@@ -61,5 +61,5 @@ private:
 };
 }
 
-using LibA::Result;
-using LibA::ResultOr;
+using Universal::Result;
+using Universal::ResultOr;

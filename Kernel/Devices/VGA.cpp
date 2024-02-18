@@ -1,8 +1,7 @@
-#include <Devices/VGA.h>
-#include <LibA/Printf.h>
-#include <LibA/Stdlib.h>
-#include <Logger.h>
-#include <stdio.h>
+#include <Kernel/Devices/VGA.h>
+#include <Kernel/Logger.h>
+#include <Universal/Printf.h>
+#include <Universal/Stdlib.h>
 
 static vga_terminal terminal;
 

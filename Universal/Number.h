@@ -6,7 +6,7 @@
 
 #pragma once
 
-namespace LibA {
+namespace Universal {
 
 template<typename T, typename U>
 inline constexpr T ceiling_divide(T a, U b)
@@ -20,4 +20,4 @@ inline constexpr T ceiling_divide(T a, U b)
 
 }
 
-using LibA::ceiling_divide;
+using Universal::ceiling_divide;

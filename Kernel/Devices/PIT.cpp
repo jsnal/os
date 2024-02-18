@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <CPU/IDT.h>
-#include <Devices/PIT.h>
-#include <IO.h>
-#include <Logger.h>
+#include <Kernel/CPU/IDT.h>
+#include <Kernel/Devices/PIT.h>
+#include <Kernel/IO.h>
+#include <Kernel/Logger.h>
 
 #define DEBUG_TAG "PIT"
 

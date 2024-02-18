@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Devices/PIT.h>
-#include <kprintf.h>
+#include <Kernel/Devices/PIT.h>
+#include <Kernel/kprintf.h>
 #include <stdarg.h>
 
 #define ENABLE_COLOR

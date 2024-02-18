@@ -1,8 +1,8 @@
-#include <Logger.h>
-#include <Memory/MemoryManager.h>
-#include <Memory/PMM.h>
-#include <Memory/Types.h>
-#include <panic.h>
+#include <Kernel/Logger.h>
+#include <Kernel/Memory/MemoryManager.h>
+#include <Kernel/Memory/PMM.h>
+#include <Kernel/Memory/Types.h>
+#include <Kernel/panic.h>
 
 #define DEBUG_TAG "MemoryManager"
 

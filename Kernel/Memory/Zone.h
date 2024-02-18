@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <LibA/Bitmap.h>
-#include <LibA/Result.h>
-#include <LibA/Types.h>
-#include <Memory/Address.h>
-#include <Memory/Types.h>
+#include <Kernel/Memory/Address.h>
+#include <Kernel/Memory/Types.h>
+#include <Universal/Bitmap.h>
+#include <Universal/Result.h>
+#include <Universal/Types.h>
 
 #define KERNEL_ZONE_LENGTH (4 * MB)
 

@@ -1,18 +1,22 @@
-#include <CPU/GDT.h>
-#include <CPU/IDT.h>
-#include <CPU/PIC.h>
-#include <Devices/Console.h>
-#include <Devices/Keyboard.h>
-#include <Devices/PIT.h>
-#include <Devices/VGA.h>
-#include <LibA/Bitmap.h>
-#include <Logger.h>
-#include <Memory/MemoryManager.h>
-#include <multiboot.h>
-#include <panic.h>
-#include <stdint.h>
+#include <Kernel/CPU/GDT.h>
+#include <Kernel/CPU/IDT.h>
+#include <Kernel/CPU/PIC.h>
+#include <Kernel/Devices/Console.h>
+#include <Kernel/Devices/Keyboard.h>
+#include <Kernel/Devices/PIT.h>
+#include <Kernel/Devices/VGA.h>
+#include <Kernel/Logger.h>
+#include <Kernel/Memory/MemoryManager.h>
+#include <Kernel/multiboot.h>
+#include <Kernel/panic.h>
+#include <Universal/Bitmap.h>
+#include <Universal/Types.h>
 
 #define DEBUG_TAG "Kernel"
+
+#if !defined(__os__)
+#    error "Compiling with incorrect toolchain."
+#endif
 
 void kernel_main()
 {
@@ -25,7 +29,7 @@ void kernel_main()
         asm volatile("hlt");
 }
 
-extern "C" void kernel_entry(uint32_t* boot_page_directory, const multiboot_information_t* multiboot, const uint32_t magicNumber)
+extern "C" void kernel_entry(u32* boot_page_directory, const multiboot_information_t* multiboot, const u32 magicNumber)
 {
     Console::the().enable();
 

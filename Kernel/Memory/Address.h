@@ -6,8 +6,7 @@
 
 #pragma once
 
-#include <LibA/Types.h>
-#include <Logger.h>
+#include <Universal/Types.h>
 
 class VirtualAddress {
 public:

@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <Memory/Zone.h>
-#include <multiboot.h>
+#include <Kernel/Memory/Zone.h>
+#include <Kernel/multiboot.h>
 
 extern u32 g_kernel_end;
 

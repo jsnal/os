@@ -1,9 +1,9 @@
-#include <CPU/IDT.h>
-#include <CPU/PIC.h>
-#include <LibA/Stdlib.h>
+#include <Kernel/CPU/IDT.h>
+#include <Kernel/CPU/PIC.h>
+#include <Kernel/Logger.h>
+#include <Kernel/panic.h>
+#include <Universal/Stdlib.h>
 // #include <devices/vga.h>
-#include <Logger.h>
-#include <panic.h>
 
 #define DEBUG_TAG "IDT"
 

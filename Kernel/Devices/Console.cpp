@@ -1,5 +1,5 @@
-#include <Devices/Console.h>
-#include <IO.h>
+#include <Kernel/Devices/Console.h>
+#include <Kernel/IO.h>
 #include <stdarg.h>
 
 #define COM1 0x3f8

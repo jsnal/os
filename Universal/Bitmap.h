@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <LibA/Number.h>
-#include <LibA/Stdlib.h>
-#include <LibA/Types.h>
+#include <Universal/Number.h>
+#include <Universal/Stdlib.h>
+#include <Universal/Types.h>
 
-namespace LibA {
+namespace Universal {
 
 class Bitmap {
 public:
@@ -68,4 +68,4 @@ private:
 
 }
 
-using LibA::Bitmap;
+using Universal::Bitmap;

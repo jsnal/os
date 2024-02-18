@@ -1,5 +1,5 @@
-#include <CPU/GDT.h>
-#include <Logger.h>
+#include <Kernel/CPU/GDT.h>
+#include <Kernel/Logger.h>
 
 #define DEBUG_TAG "GDT"
 

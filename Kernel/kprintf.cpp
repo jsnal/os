@@ -1,6 +1,6 @@
-#include <Devices/Console.h>
-#include <LibA/Printf.h>
-#include <kprintf.h>
+#include <Kernel/Devices/Console.h>
+#include <Kernel/kprintf.h>
+#include <Universal/Printf.h>
 
 #define KPRINTF_BUFFER_SIZE 128
 

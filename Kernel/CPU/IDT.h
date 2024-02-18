@@ -1,6 +1,6 @@
 #pragma once
 
-#include <LibA/Types.h>
+#include <Universal/Types.h>
 
 #define ISR_PAGE_FAULT 14
 #define ISR_PIT 32

@@ -1,7 +1,7 @@
-#include <CPU/IDT.h>
-#include <CPU/PIC.h>
-#include <IO.h>
-#include <Logger.h>
+#include <Kernel/CPU/IDT.h>
+#include <Kernel/CPU/PIC.h>
+#include <Kernel/IO.h>
+#include <Kernel/Logger.h>
 
 #define DEBUG_TAG "PIC"
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Devices/VGA.h>
-#include <LibA/Printf.h>
-#include <kprintf.h>
+#include <Kernel/Devices/VGA.h>
+#include <Kernel/kprintf.h>
+#include <Universal/Printf.h>
 #include <stdio.h>
 
 #define PANIC_BUFFER_SIZE 256

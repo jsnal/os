@@ -30,8 +30,6 @@ set(SOURCES
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DKERNEL")
 
-include_directories(.)
-
 add_link_options(-T ${CMAKE_SOURCE_DIR}/Kernel/linker.ld -nostdlib --build-id=none)
 
 add_executable(Kernel ${SOURCES})

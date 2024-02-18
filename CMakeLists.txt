@@ -4,6 +4,10 @@ project (os C CXX ASM)
 include_directories(.)
 include_directories(LibC/include)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_VERIFY_INTERFACE_HEADER_SETS ON)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_STAGING_PREFIX ${CMAKE_SOURCE_DIR})

@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <LibA/Stdlib.h>
-#include <LibA/Types.h>
+#include <Universal/Stdlib.h>
+#include <Universal/Types.h>
 #include <stdarg.h>
 #include <stdbool.h>
 

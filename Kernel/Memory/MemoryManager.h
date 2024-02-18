@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include <LibA/Types.h>
-#include <Memory/PMM.h>
-#include <Memory/Paging.h>
-#include <multiboot.h>
+#include <Kernel/Memory/PMM.h>
+#include <Kernel/Memory/Paging.h>
+#include <Kernel/multiboot.h>
+#include <Universal/Types.h>
 
 class MemoryManager final {
 public:
