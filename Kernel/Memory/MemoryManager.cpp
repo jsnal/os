@@ -33,18 +33,12 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
 
     kmalloc_init();
 
-    auto v0 = kmalloc_forever(2 * MB);
-    auto v1 = kmalloc_forever(16);
-
-    dbgprintf("kmalloc_forever v0=%x\n", v0);
-    dbgprintf("kmalloc_forever v1=%x\n", v1);
-
-    m_pmm = PMM(multiboot);
+    m_pmm = new PMM(multiboot);
 
     dbgprintf("kernel_page_directory=%x\n", m_kernel_page_directory);
     dbgprintf("kernel_page_table=%x\n", m_kernel_page_table);
     dbgprintf("kernel_page_directory[0]=%x\n", m_kernel_page_directory[0]);
-    dbgprintf("kernel_page_directory[768]=%x\n", m_kernel_page_directory[758]);
-    dbgprintf("kernel_zone bitmap=%x\n", m_pmm.kernel_zone().bitmap().data());
-    dbgprintf("user_zone bitmap=%x\n", m_pmm.user_zone().bitmap().data());
+    dbgprintf("kernel_page_directory[768]=%x\n", m_kernel_page_directory[768]);
+    dbgprintf("kernel_zone bitmap=%x\n", pmm().kernel_zone().lower_address());
+    dbgprintf("user_zone bitmap=%x\n", pmm().user_zone().lower_address());
 }

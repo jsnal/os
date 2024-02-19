@@ -2,12 +2,11 @@
 #include <Kernel/Memory/PMM.h>
 #include <Kernel/kmalloc.h>
 #include <Universal/Assert.h>
+#include <Universal/Stdlib.h>
 
 #define DEBUG_TAG "kmalloc"
 
-#define KMALLOC_FOREVER_SIZE (1 * MB)
-
-#define KMALLOC_RESULT_OOM 1
+#define KMALLOC_FOREVER_SIZE (KB * 512)
 
 static u8* s_kmalloc_forever_pointer;
 static u8* s_kmalloc_forever_end;
@@ -23,7 +22,8 @@ void kmalloc_init()
 void* kmalloc_forever(size_t size)
 {
     ASSERT(size != 0 && size <= KMALLOC_FOREVER_SIZE && (s_kmalloc_forever_pointer + size) <= s_kmalloc_forever_end);
-    u8* return_address = s_kmalloc_forever_pointer;
+    u8* address = s_kmalloc_forever_pointer;
     s_kmalloc_forever_pointer += size;
-    return return_address;
+    dbgprintf("allocated forever memory: %x of size %d\n", address, size);
+    return address;
 }

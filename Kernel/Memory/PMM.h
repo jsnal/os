@@ -7,11 +7,13 @@
 #pragma once
 
 #include <Kernel/Memory/Zone.h>
+#include <Kernel/kmalloc.h>
 #include <Kernel/multiboot.h>
 
 extern u32 g_kernel_end;
 
 class PMM {
+    NEW_FOREVER
 public:
     PMM()
     {
@@ -19,11 +21,10 @@ public:
 
     PMM(const multiboot_information_t*);
 
-    Zone kernel_zone() const { return m_kernel_zone; }
-
-    Zone user_zone() const { return m_user_zone; }
+    Zone& kernel_zone() const { return *m_kernel_zone; }
+    Zone& user_zone() const { return *m_user_zone; }
 
 private:
-    Zone m_kernel_zone;
-    Zone m_user_zone;
+    Zone* m_kernel_zone;
+    Zone* m_user_zone;
 };

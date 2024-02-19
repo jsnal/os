@@ -21,14 +21,6 @@
 #define PAGE_WRITABLE 0x2
 #define PAGE_USER 0x4
 
-#define MEM_ERR_CHECK(v) (!(IS_PAGE_ALIGNED(v)))
-#define MEM_ERR_NONE 0
-#define MEM_ERR_GENERAL 1
-#define MEM_ERR_OUT_OF_MEMORY 2
-#define MEM_ERR_ADDRESS_OUT_OF_RANGE 3
-#define MEM_ERR_NOT_PAGE_ALIGNED 4
-#define MEM_ERR_PAGE_ALREADY_PRESENT 5
-
 typedef uint32_t physical_address_t;
 typedef uint32_t virtual_address_t;
 

@@ -23,7 +23,7 @@ public:
 
     PageTableEntry* kernel_page_table() const { return m_kernel_page_table; }
 
-    PMM pmm() const { return m_pmm; }
+    PMM& pmm() const { return *m_pmm; }
 
 private:
     void internal_init(u32* boot_page_directory, const multiboot_information_t*);
@@ -32,5 +32,5 @@ private:
 
     PageTableEntry* m_kernel_page_table;
 
-    PMM m_pmm;
+    PMM* m_pmm;
 };

@@ -8,6 +8,7 @@
 
 #include <Kernel/Memory/Address.h>
 #include <Kernel/Memory/Types.h>
+#include <Kernel/kmalloc.h>
 #include <Universal/Bitmap.h>
 #include <Universal/Result.h>
 #include <Universal/Types.h>
@@ -15,6 +16,7 @@
 #define KERNEL_ZONE_LENGTH (4 * MB)
 
 class Zone {
+    NEW_FOREVER
 public:
     constexpr static int OUT_OF_MEMORY = 1;
     constexpr static int ADDRESS_OUT_OF_RANGE = 2;
@@ -27,13 +29,14 @@ public:
     {
     }
 
-    Zone(u32 base_address, u32 length, u8* bitmap_address)
+    Zone(u32 base_address, u32 length)
         : m_lower_address(PhysicalAddress(base_address))
         , m_upper_address(PhysicalAddress(base_address + length))
         , m_pages_in_range(length / PAGE_SIZE)
-        , m_bitmap(Bitmap::wrap(bitmap_address, length / PAGE_SIZE / 8))
     {
-        m_bitmap.fill(0);
+        size_t bitmap_size = length / PAGE_SIZE / 8;
+        u8* bitmap_address = static_cast<u8*>(kmalloc_forever(bitmap_size));
+        m_bitmap.wrap(bitmap_address, bitmap_size);
     }
 
     Result allocate_frame(const PhysicalAddress address, PhysicalAddress* allocations, u32 number_of_pages);

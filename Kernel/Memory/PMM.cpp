@@ -1,3 +1,4 @@
+#include <Kernel/Assert.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/PMM.h>
 #include <Kernel/panic.h>
@@ -6,9 +7,7 @@
 
 PMM::PMM(const multiboot_information_t* multiboot)
 {
-    if ((u32)&g_kernel_end < KERNEL_VIRTUAL_BASE) {
-        panic("Kernel is not in high-half\n");
-    }
+    ASSERT((u32)&g_kernel_end >= KERNEL_VIRTUAL_BASE);
 
     u32 physical_region_base = 0;
     u32 physical_region_length = 0;
@@ -64,11 +63,7 @@ PMM::PMM(const multiboot_information_t* multiboot)
         panic("Unable to find region big enough to allocate the Kernel\n");
     }
 
-    m_kernel_zone = Zone(physical_region_base,
-        KERNEL_ZONE_LENGTH - 1,
-        (u8*)PAGE_ROUND_UP((u32)&g_kernel_end));
-
-    m_user_zone = Zone(m_kernel_zone.upper_address().get() + 1,
-        physical_region_length - KERNEL_ZONE_LENGTH - (1 * MB),
-        m_kernel_zone.bitmap().data() + m_kernel_zone.bitmap().size_in_bytes());
+    m_kernel_zone = new Zone(physical_region_base, KERNEL_ZONE_LENGTH);
+    m_user_zone = new Zone(m_kernel_zone->upper_address().get(),
+        physical_region_length - KERNEL_ZONE_LENGTH - (1 * MB));
 }
