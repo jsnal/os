@@ -34,9 +34,10 @@ public:
         , m_upper_address(PhysicalAddress(base_address + length))
         , m_pages_in_range(length / PAGE_SIZE)
     {
-        size_t bitmap_size = length / PAGE_SIZE / 8;
-        u8* bitmap_address = static_cast<u8*>(kmalloc_forever(bitmap_size));
-        m_bitmap.wrap(bitmap_address, bitmap_size);
+        size_t bitmap_size_in_bits = length / PAGE_SIZE;
+        u8* bitmap_address = static_cast<u8*>(kmalloc_forever(bitmap_size_in_bits / 8));
+        m_bitmap = Bitmap::wrap(bitmap_address, bitmap_size_in_bits);
+        m_bitmap.fill(0);
     }
 
     Result allocate_frame(const PhysicalAddress address, PhysicalAddress* allocations, u32 number_of_pages);

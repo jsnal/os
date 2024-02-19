@@ -25,18 +25,18 @@ public:
     }
 
     explicit Bitmap()
-        : m_size(0)
+        : m_size_in_bits(0)
     {
         m_data = nullptr;
     }
 
-    Bitmap(u8* data, size_t size)
+    Bitmap(u8* data, size_t size_in_bits)
         : m_data(data)
-        , m_size(size)
+        , m_size_in_bits(size_in_bits)
     {
     }
 
-    size_t size() const { return m_size; }
+    size_t size() const { return m_size_in_bits; }
 
     bool get(u32 index) const
     {
@@ -59,11 +59,11 @@ public:
 
     u8* data() const { return m_data; }
 
-    u32 size_in_bytes() const { return ceiling_divide(m_size, 8); }
+    u32 size_in_bytes() const { return ceiling_divide(m_size_in_bits, 8); }
 
 private:
     u8* m_data;
-    size_t m_size;
+    size_t m_size_in_bits;
 };
 
 }

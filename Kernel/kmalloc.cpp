@@ -24,6 +24,5 @@ void* kmalloc_forever(size_t size)
     ASSERT(size != 0 && size <= KMALLOC_FOREVER_SIZE && (s_kmalloc_forever_pointer + size) <= s_kmalloc_forever_end);
     u8* address = s_kmalloc_forever_pointer;
     s_kmalloc_forever_pointer += size;
-    dbgprintf("allocated forever memory: %x of size %d\n", address, size);
     return address;
 }

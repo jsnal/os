@@ -39,6 +39,6 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
     dbgprintf("kernel_page_table=%x\n", m_kernel_page_table);
     dbgprintf("kernel_page_directory[0]=%x\n", m_kernel_page_directory[0]);
     dbgprintf("kernel_page_directory[768]=%x\n", m_kernel_page_directory[768]);
-    dbgprintf("kernel_zone bitmap=%x\n", pmm().kernel_zone().lower_address());
-    dbgprintf("user_zone bitmap=%x\n", pmm().user_zone().lower_address());
+    dbgprintf("kernel_zone bitmap=%x\n", pmm().kernel_zone().bitmap().data());
+    dbgprintf("user_zone bitmap=%x\n", pmm().user_zone().bitmap().data());
 }
