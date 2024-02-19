@@ -14,6 +14,7 @@ SET(KERNEL_SOURCES
     Memory/Zone.cpp
     Runtime.cpp
     Stdlib.cpp
+    kmalloc.cpp
     kprintf.cpp
 )
 

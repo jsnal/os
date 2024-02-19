@@ -1,5 +1,5 @@
 CompileFlags:
-  Add: [-D__os__, -xc++]
+  Add: [-D__os__, -DKERNEL, -xc++]
 
 Diagnostics:
   UnusedIncludes: None

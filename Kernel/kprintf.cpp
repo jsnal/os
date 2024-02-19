@@ -2,7 +2,7 @@
 #include <Kernel/kprintf.h>
 #include <Universal/Printf.h>
 
-#define KPRINTF_BUFFER_SIZE 128
+#define KPRINTF_BUFFER_SIZE 256
 
 void kvprintf(const char* format, va_list ag)
 {

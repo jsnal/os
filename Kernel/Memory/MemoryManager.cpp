@@ -2,6 +2,7 @@
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Memory/PMM.h>
 #include <Kernel/Memory/Types.h>
+#include <Kernel/kmalloc.h>
 #include <Kernel/panic.h>
 
 #define DEBUG_TAG "MemoryManager"
@@ -29,6 +30,15 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
 {
     m_kernel_page_directory = reinterpret_cast<PageDirectoryEntry*>(boot_page_directory);
     m_kernel_page_table = reinterpret_cast<PageTableEntry*>((u8*)boot_page_directory + PAGE_SIZE);
+
+    kmalloc_init();
+
+    auto v0 = kmalloc_forever(2 * MB);
+    auto v1 = kmalloc_forever(16);
+
+    dbgprintf("kmalloc_forever v0=%x\n", v0);
+    dbgprintf("kmalloc_forever v1=%x\n", v1);
+
     m_pmm = PMM(multiboot);
 
     dbgprintf("kernel_page_directory=%x\n", m_kernel_page_directory);
