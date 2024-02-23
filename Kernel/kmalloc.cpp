@@ -13,7 +13,7 @@ static u8* s_kmalloc_forever_end;
 
 void kmalloc_init()
 {
-    s_kmalloc_forever_pointer = (u8*)PAGE_ROUND_UP((u32)&g_kernel_end);
+    s_kmalloc_forever_pointer = (u8*)Memory::Types::page_round_up((u32)&g_kernel_end);
     s_kmalloc_forever_end = s_kmalloc_forever_pointer + KMALLOC_FOREVER_SIZE;
 
     dbgprintf("kmalloc_forever_pointer=%x, kmalloc_forever_end=%x\n", s_kmalloc_forever_pointer, s_kmalloc_forever_end);

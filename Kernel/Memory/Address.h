@@ -8,16 +8,21 @@
 
 #include <Universal/Types.h>
 
+#define PAGE_DIRECTORY_INDEX(virtual_address) (((u32)virtual_address.get()) >> 22)
+#define PAGE_TABLE_INDEX(virtual_address) ((((u32)virtual_address.get()) & 0x3fffff) >> 12)
+
 class VirtualAddress {
 public:
     VirtualAddress()
     {
     }
 
-    explicit VirtualAddress(u32 address)
+    VirtualAddress(u32 address)
         : m_address(address)
     {
     }
+
+    operator int() const { return m_address; }
 
     bool is_page_aligned() const { return ((m_address & 0xfff) == 0); }
 
@@ -43,6 +48,8 @@ public:
         : m_address(address)
     {
     }
+
+    operator int() const { return m_address; }
 
     bool is_page_aligned() const { return ((m_address & 0xfff) == 0); }
 

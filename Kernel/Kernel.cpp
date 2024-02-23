@@ -18,7 +18,7 @@
 #    error "Compiling with incorrect toolchain."
 #endif
 
-void kernel_main()
+[[noreturn]] void kernel_main()
 {
 
     Keyboard::the().init();
@@ -29,7 +29,7 @@ void kernel_main()
         asm volatile("hlt");
 }
 
-extern "C" void kernel_entry(u32* boot_page_directory, const multiboot_information_t* multiboot, const u32 magicNumber)
+extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multiboot_information_t* multiboot, const u32 magicNumber)
 {
     Console::the().enable();
 

@@ -3,21 +3,23 @@
 
 #define DEBUG_TAG "Zone"
 
+using namespace Memory;
+
 Result Zone::allocate_frame(const PhysicalAddress address, PhysicalAddress* allocations, u32 number_of_pages)
 {
     if (address < m_lower_address || address > m_upper_address) {
-        return ADDRESS_OUT_OF_RANGE;
+        return Types::AddressOutOfRange;
     }
 
     if (!address.is_page_aligned()) {
-        return NOT_PAGE_ALIGNED;
+        return Types::NotPageAligned;
     }
 
     ResultOr<PhysicalAddress> allocated_address;
     u32 last_allocated_frame_index = m_last_allocated_frame_index;
     u32 pages_allocated = 0;
 
-    m_last_allocated_frame_index = (address.get() - m_lower_address.get()) / PAGE_SIZE;
+    m_last_allocated_frame_index = (address.get() - m_lower_address.get()) / Types::PageSize;
 
     for (u32 i = 0; i < number_of_pages; i++) {
         allocated_address = allocate_frame();
@@ -36,7 +38,7 @@ Result Zone::allocate_frame(const PhysicalAddress address, PhysicalAddress* allo
     m_last_allocated_frame_index = last_allocated_frame_index;
 
     if (pages_allocated < number_of_pages - 1) {
-        return OUT_OF_MEMORY;
+        return Types::OutOfMemory;
     }
 
     dbgprintf("lower %x upper %x\n", m_lower_address, m_upper_address);
@@ -50,7 +52,7 @@ ResultOr<PhysicalAddress> Zone::allocate_frame()
     for (u32 i = m_last_allocated_frame_index; i < m_pages_in_range; i++) {
         if (!m_bitmap.get(i)) {
             m_bitmap.set(i, true);
-            address = m_lower_address.offset(PAGE_SIZE * i);
+            address = m_lower_address.offset(Types::PageSize * i);
             m_last_allocated_frame_index = i;
             dbgprintf("Allocated phyiscal page at 0x%x\n", address);
             return address;
@@ -64,20 +66,20 @@ ResultOr<PhysicalAddress> Zone::allocate_frame()
     }
 
     dbgprintf("No free pages left!\n");
-    return Result(OUT_OF_MEMORY);
+    return Result(Types::OutOfMemory);
 }
 
 Result Zone::free_frame(const PhysicalAddress address)
 {
     if (address < m_lower_address || address > m_upper_address) {
-        return ADDRESS_OUT_OF_RANGE;
+        return Types::AddressOutOfRange;
     }
 
     if (!address.is_page_aligned()) {
-        return NOT_PAGE_ALIGNED;
+        return Types::NotPageAligned;
     }
 
-    u32 address_index = (address - m_lower_address) / PAGE_SIZE;
+    u32 address_index = (address - m_lower_address) / Types::PageSize;
     m_bitmap.set(address_index, false);
 
     dbgprintf("Freed physical page at 0x%x\n", address);

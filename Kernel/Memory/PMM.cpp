@@ -5,6 +5,8 @@
 
 #define DEBUG_TAG "PMM"
 
+using namespace Memory;
+
 PMM::PMM(const multiboot_information_t* multiboot)
 {
     ASSERT((u32)&g_kernel_end >= KERNEL_VIRTUAL_BASE);
@@ -28,12 +30,12 @@ PMM::PMM(const multiboot_information_t* multiboot)
             continue;
         }
 
-        u32 address_remainder = (u32)(mmap->base_address % PAGE_SIZE);
-        u32 length_remainder = (u32)(mmap->length % PAGE_SIZE);
+        u32 address_remainder = (u32)(mmap->base_address % Types::PageSize);
+        u32 length_remainder = (u32)(mmap->length % Types::PageSize);
 
         if (address_remainder != 0) {
             dbgprintf("  Region does not start on page boundary, correcting by %d bytes\n", address_remainder);
-            address_remainder = PAGE_SIZE - address_remainder;
+            address_remainder = Types::PageSize - address_remainder;
             mmap->base_address += address_remainder;
             mmap->length -= address_remainder;
         }
@@ -43,7 +45,7 @@ PMM::PMM(const multiboot_information_t* multiboot)
             mmap->length -= length_remainder;
         }
 
-        if (mmap->length < PAGE_SIZE) {
+        if (mmap->length < Types::PageSize) {
             dbgprintf("  Region is smaller than a page... skipping");
             continue;
         }
