@@ -36,8 +36,10 @@ private:
 void* operator new(size_t, void*);
 void* operator new(size_t);
 
+void operator delete(void*);
+
 void* kmalloc(size_t);
 
-void kmalloc_free(void*);
+void kfree(void*);
 
 void kmalloc_init();

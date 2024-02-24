@@ -89,8 +89,6 @@ public:
     size_t total_chunks() const { return m_total_chunks; }
     size_t allocated_chunks() const { return m_allocated_chunks; }
     size_t free_chunks() const { return m_total_chunks - m_allocated_chunks; }
-    const u8* chunks() const { return m_chunks; }
-    const Bitmap bitmap() const { return m_bitmap; }
 
 private:
     size_t m_total_chunks { 0 };

@@ -22,6 +22,11 @@ void* operator new(size_t size)
     return ptr;
 }
 
+void operator delete(void* ptr)
+{
+    kfree(ptr);
+}
+
 void KmallocTracker::add_heap(u8* heap, size_t heap_size)
 {
     // TODO: This should append to a list, not override the original heap
@@ -36,7 +41,7 @@ void* kmalloc(size_t size)
     return address;
 }
 
-void kmalloc_free(void* ptr)
+void kfree(void* ptr)
 {
     dbgprintf("kmalloc", "free @ 0x%x", ptr);
     s_kmalloc_tracker->heap().deallocate(ptr);
@@ -45,7 +50,5 @@ void kmalloc_free(void* ptr)
 void kmalloc_init()
 {
     s_kmalloc_tracker = new (s_kmalloc_tracker_heap) KmallocTracker(kmalloc_initial_heap, KMALLOC_INITIAL_HEAP_SIZE);
-
-    dbgprintf("kmalloc", "Allocated s_kmalloc_tracker %x, total_chunks=%d, chunks=%x, bitmap=%x\n",
-        s_kmalloc_tracker, s_kmalloc_tracker->heap().total_chunks(), s_kmalloc_tracker->heap().chunks(), s_kmalloc_tracker->heap().bitmap());
+    dbgprintf("kmalloc", "Initialzed kmalloc: 0x%x, total_chunks=%d\n", s_kmalloc_tracker, s_kmalloc_tracker->heap().total_chunks());
 }

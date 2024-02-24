@@ -55,8 +55,6 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
     dbgprintf("MemoryManager", "kernel_zone bitmap=%x\n", pmm().kernel_zone().bitmap().data());
     dbgprintf("MemoryManager", "user_zone bitmap=%x\n", pmm().user_zone().bitmap().data());
 
-    auto ret = pmm().kernel_zone().allocate_frame((u32)&g_kernel_end, nullptr, KMALLOC_INITIAL_HEAP_SIZE / Types::PageSize);
-
     // auto& pte = get_page_table_entry(m_kernel_page_directory, 0xD03FF000, true);
     ASSERT(map_kernel_page(0xC03FF000, 0x000B8000).is_ok());
 

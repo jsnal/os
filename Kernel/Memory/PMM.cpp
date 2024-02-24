@@ -63,7 +63,11 @@ PMM::PMM(const multiboot_information_t* multiboot)
         panic("Unable to find region big enough to allocate the Kernel\n");
     }
 
-    m_kernel_zone = new Zone(physical_region_base, KERNEL_ZONE_LENGTH);
-    m_user_zone = new Zone(m_kernel_zone->upper_address().get(),
-        physical_region_length - KERNEL_ZONE_LENGTH - (1 * MB));
+    u32 kernel_image_size = (u32)&g_kernel_end - KERNEL_VIRTUAL_BASE;
+
+    m_kernel_zone = new Zone((u32)&g_kernel_end, KERNEL_ZONE_LENGTH - kernel_image_size);
+    m_user_zone = new Zone(m_kernel_zone->upper_address(), physical_region_length - KERNEL_ZONE_LENGTH);
+
+    ASSERT(m_kernel_zone != nullptr && m_user_zone != nullptr);
+    dbgprintf("PMM", "Initialized PMM: kernel_zone=0x%x user_zone=0x%x\n", m_kernel_zone, m_user_zone);
 }

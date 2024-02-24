@@ -5,7 +5,6 @@ using namespace Memory;
 
 Result Zone::allocate_frame(const PhysicalAddress address, PhysicalAddress* allocations, u32 number_of_pages)
 {
-    dbgprintf("Zone", "address=%x lower=%x\n", address, m_lower_address);
     if (address < m_lower_address || address > m_upper_address) {
         return Types::AddressOutOfRange;
     }
@@ -40,7 +39,7 @@ Result Zone::allocate_frame(const PhysicalAddress address, PhysicalAddress* allo
         return Types::OutOfMemory;
     }
 
-    dbgprintf("Zone", "lower %x upper %x\n", m_lower_address, m_upper_address);
+    dbgprintf("Zone", "Allocated physical pages from 0x%x to 0x%x\n", address, address + number_of_pages * Types::PageSize);
     return Result::OK;
 }
 
@@ -53,7 +52,6 @@ ResultOr<PhysicalAddress> Zone::allocate_frame()
             m_bitmap.set(i, true);
             address = m_lower_address.offset(Types::PageSize * i);
             m_last_allocated_frame_index = i;
-            dbgprintf("Zone", "Allocated phyiscal page at 0x%x\n", address);
             return address;
         }
 
