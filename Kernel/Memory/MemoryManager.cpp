@@ -109,6 +109,19 @@ Result MemoryManager::map_kernel_page(VirtualAddress virtual_address, PhysicalAd
 
 Result MemoryManager::unmap_kernel_page(VirtualAddress virtual_address)
 {
+    if (virtual_address.get() < KERNEL_VIRTUAL_BASE) {
+        return Types::AddressOutOfRange;
+    }
+
+    u16 page_directory_index = PAGE_DIRECTORY_INDEX(virtual_address);
+    u16 page_table_index = PAGE_TABLE_INDEX(virtual_address);
+    PageDirectoryEntry& page_directory_entry = m_kernel_page_directory.entries()[page_directory_index];
+
+    if (!page_directory_entry.is_present()) {
+        return Types::AddressOutOfRange;
+    }
+
+    page_directory_entry.page_table_base()[page_table_index].set_present(false);
     return Result::OK;
 }
 

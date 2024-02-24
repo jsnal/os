@@ -37,10 +37,13 @@ SECTIONS
 	}
 
 	/* Read-write data and stack */
-	.bss ALIGN(4K) : AT(ADDR(.bss) - 0xC0000000)
+	.bss ALIGN(4K) (NOLOAD) : AT(ADDR(.bss) - 0xC0000000)
 	{
 		*(COMMON)
 		*(.bss)
+
+		. = ALIGN(4K);
+		*(.heap)
 	}
 
 	/* Remember the end of the Kernel */
