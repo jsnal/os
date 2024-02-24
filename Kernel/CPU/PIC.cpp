@@ -3,8 +3,6 @@
 #include <Kernel/IO.h>
 #include <Kernel/Logger.h>
 
-#define DEBUG_TAG "PIC"
-
 #define PIC1_COMMAND 0x0020
 #define PIC1_DATA 0x0021
 #define PIC2_COMMAND 0x00A0
@@ -71,7 +69,7 @@ void init()
     IO::outb(PIC1_DATA, 0xFB);
     IO::outb(PIC2_DATA, 0xFF);
 
-    dbgprintf("Initialized PIC: offset1=0x%x offset2=0x%x\n", PIC1_OFFSET, PIC2_OFFSET);
+    dbgprintf("PIC", "Initialized PIC: offset1=0x%x offset2=0x%x\n", PIC1_OFFSET, PIC2_OFFSET);
 
     sti();
 }

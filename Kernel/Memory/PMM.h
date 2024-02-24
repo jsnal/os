@@ -13,7 +13,6 @@
 extern u32 g_kernel_end;
 
 class PMM {
-    NEW_FOREVER
 public:
     PMM()
     {

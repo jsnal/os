@@ -4,8 +4,6 @@
 #include <Kernel/IO.h>
 #include <Kernel/Logger.h>
 
-#define DEBUG_TAG "Keyboard"
-
 #define KEYBOARD_PORT 0x60
 #define KEYBOARD_ACK 0x61
 #define KEYBOARD_STATUS 0x64
@@ -150,7 +148,7 @@ void Keyboard::handle_interrupt()
     // char converted_character = 0;
 
 #ifdef DEBUG_KEYBOARD
-    dbgprintf("Key pressed: modifier=%x scan_code=%d %s\n", m_modifier, scan_code, pressed ? "down" : "up");
+    dbgprintf("Keyboard", "Key pressed: modifier=%x scan_code=%d %s\n", m_modifier, scan_code, pressed ? "down" : "up");
 #endif
 
     switch (scan_code) {

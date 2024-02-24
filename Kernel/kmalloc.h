@@ -10,6 +10,7 @@
 #include <Kernel/Memory/Heap.h>
 #include <Universal/Types.h>
 
+#define KMALLOC_INITIAL_HEAP_SIZE (MB * 1)
 #define KMALLOC_HEAP_CHUNK_SIZE 32
 
 #define NEW_FOREVER \
@@ -32,10 +33,11 @@ private:
     Heap<KMALLOC_HEAP_CHUNK_SIZE> m_heap;
 };
 
-void kmalloc_init();
+void* operator new(size_t, void*);
+void* operator new(size_t);
 
 void* kmalloc(size_t);
 
 void kmalloc_free(void*);
 
-void* kmalloc_forever(size_t);
+void kmalloc_init();

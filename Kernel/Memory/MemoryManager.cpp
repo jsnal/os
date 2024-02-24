@@ -8,8 +8,6 @@
 #include <Universal/Assert.h>
 #include <Universal/Stdlib.h>
 
-#define DEBUG_TAG "MemoryManager"
-
 using namespace Memory;
 
 MemoryManager& MemoryManager::the()
@@ -50,12 +48,14 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
 
     m_pmm = new PMM(multiboot);
 
-    dbgprintf("kernel_page_directory=%x\n", m_kernel_page_directory);
-    dbgprintf("kernel_page_table=%x\n", m_kernel_page_table);
-    dbgprintf("kernel_page_directory[0]=%x\n", m_kernel_page_directory.entries()[0]);
-    dbgprintf("kernel_page_directory[768]=%x\n", m_kernel_page_directory.entries()[768]);
-    dbgprintf("kernel_zone bitmap=%x\n", pmm().kernel_zone().bitmap().data());
-    dbgprintf("user_zone bitmap=%x\n", pmm().user_zone().bitmap().data());
+    dbgprintf("MemoryManager", "kernel_page_directory=%x\n", m_kernel_page_directory);
+    dbgprintf("MemoryManager", "kernel_page_table=%x\n", m_kernel_page_table);
+    dbgprintf("MemoryManager", "kernel_page_directory[0]=%x\n", m_kernel_page_directory.entries()[0]);
+    dbgprintf("MemoryManager", "kernel_page_directory[768]=%x\n", m_kernel_page_directory.entries()[768]);
+    dbgprintf("MemoryManager", "kernel_zone bitmap=%x\n", pmm().kernel_zone().bitmap().data());
+    dbgprintf("MemoryManager", "user_zone bitmap=%x\n", pmm().user_zone().bitmap().data());
+
+    auto ret = pmm().kernel_zone().allocate_frame((u32)&g_kernel_end, nullptr, KMALLOC_INITIAL_HEAP_SIZE / Types::PageSize);
 
     // auto& pte = get_page_table_entry(m_kernel_page_directory, 0xD03FF000, true);
     ASSERT(map_kernel_page(0xC03FF000, 0x000B8000).is_ok());
@@ -77,7 +77,7 @@ PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_director
 
         ASSERT(page_table.is_ok());
 
-        dbgprintf("Allocated new page table at 0x%x\n", page_table.value());
+        dbgprintf("MemoryManager", "Allocated new page table at 0x%x\n", page_table.value());
 
         page_directory_entry.set_page_table_base(page_table.value().get());
         page_directory_entry.set_user_supervisor(is_kernel);
@@ -103,7 +103,7 @@ Result MemoryManager::map_kernel_page(VirtualAddress virtual_address, PhysicalAd
 
     invalidate_page(virtual_address);
 
-    dbgprintf("Mapped virtual address 0x%x to physical address 0x%x\n", virtual_address, physical_address);
+    dbgprintf("MemoryManager", "Mapped virtual address 0x%x to physical address 0x%x\n", virtual_address, physical_address);
     return Result::OK;
 }
 

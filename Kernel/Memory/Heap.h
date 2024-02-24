@@ -6,12 +6,9 @@
 
 #pragma once
 
-#include <Kernel/Logger.h>
 #include <Kernel/Memory/Types.h>
 #include <Universal/Bitmap.h>
 #include <Universal/Types.h>
-
-#define DEBUG_TAG "Heap"
 
 using namespace Memory;
 
@@ -34,8 +31,6 @@ public:
     {
         size_t allocation_size = size + sizeof(AllocationHeader);
         size_t chunks_needed = (allocation_size + CHUNK_SIZE - 1) / CHUNK_SIZE;
-
-        dbgprintf("allocation_size=%d chunks_needed=%d\n", allocation_size, chunks_needed);
 
         if (chunks_needed > free_chunks()) {
             return nullptr;
@@ -65,7 +60,6 @@ public:
         auto* allocation_header = (AllocationHeader*)((u8*)m_chunks + chunk_start_index * CHUNK_SIZE);
         allocation_header->allocation_size = chunks_needed;
 
-        dbgprintf("chunk_start_index %d\n", chunk_start_index);
         return allocation_header->data;
     }
 
@@ -87,9 +81,7 @@ public:
             return;
         }
 
-        dbgprintf("statrtindex %d\n", chunk_start_index);
         for (size_t i = chunk_start_index; i < chunk_end_index; i++) {
-            dbgprintf("free index %d\n", i);
             m_bitmap.set(i, false);
         }
     }

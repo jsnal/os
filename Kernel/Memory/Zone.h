@@ -16,7 +16,6 @@
 #define KERNEL_ZONE_LENGTH (4 * MB)
 
 class Zone {
-    NEW_FOREVER
 public:
     Zone()
         : m_lower_address(PhysicalAddress())
@@ -31,7 +30,7 @@ public:
         , m_pages_in_range(length / Memory::Types::PageSize)
     {
         size_t bitmap_size_in_bits = length / Memory::Types::PageSize;
-        u8* bitmap_address = static_cast<u8*>(kmalloc_forever(bitmap_size_in_bits / 8));
+        u8* bitmap_address = static_cast<u8*>(kmalloc(bitmap_size_in_bits / 8));
         m_bitmap = Bitmap::wrap(bitmap_address, bitmap_size_in_bits);
         m_bitmap.fill(0);
     }

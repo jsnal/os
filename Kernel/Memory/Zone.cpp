@@ -1,12 +1,11 @@
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/Zone.h>
 
-#define DEBUG_TAG "Zone"
-
 using namespace Memory;
 
 Result Zone::allocate_frame(const PhysicalAddress address, PhysicalAddress* allocations, u32 number_of_pages)
 {
+    dbgprintf("Zone", "address=%x lower=%x\n", address, m_lower_address);
     if (address < m_lower_address || address > m_upper_address) {
         return Types::AddressOutOfRange;
     }
@@ -41,7 +40,7 @@ Result Zone::allocate_frame(const PhysicalAddress address, PhysicalAddress* allo
         return Types::OutOfMemory;
     }
 
-    dbgprintf("lower %x upper %x\n", m_lower_address, m_upper_address);
+    dbgprintf("Zone", "lower %x upper %x\n", m_lower_address, m_upper_address);
     return Result::OK;
 }
 
@@ -54,7 +53,7 @@ ResultOr<PhysicalAddress> Zone::allocate_frame()
             m_bitmap.set(i, true);
             address = m_lower_address.offset(Types::PageSize * i);
             m_last_allocated_frame_index = i;
-            dbgprintf("Allocated phyiscal page at 0x%x\n", address);
+            dbgprintf("Zone", "Allocated phyiscal page at 0x%x\n", address);
             return address;
         }
 
@@ -65,7 +64,7 @@ ResultOr<PhysicalAddress> Zone::allocate_frame()
         }
     }
 
-    dbgprintf("No free pages left!\n");
+    dbgprintf("Zone", "No free pages left!\n");
     return Result(Types::OutOfMemory);
 }
 
@@ -82,6 +81,6 @@ Result Zone::free_frame(const PhysicalAddress address)
     u32 address_index = (address - m_lower_address) / Types::PageSize;
     m_bitmap.set(address_index, false);
 
-    dbgprintf("Freed physical page at 0x%x\n", address);
+    dbgprintf("Zone", "Freed physical page at 0x%x\n", address);
     return Result::OK;
 }

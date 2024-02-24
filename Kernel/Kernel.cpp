@@ -12,8 +12,6 @@
 #include <Universal/Bitmap.h>
 #include <Universal/Types.h>
 
-#define DEBUG_TAG "Kernel"
-
 #if !defined(__os__)
 #    error "Compiling with incorrect toolchain."
 #endif
@@ -38,7 +36,7 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
     }
 
     if (multiboot->flags & MULTIBOOT_FLAGS_BOOTLOADER_NAME) {
-        dbgprintf("Loaded by: %s\n", multiboot->bootloader_name);
+        dbgprintf("Kernel", "Loaded by: %s\n", multiboot->bootloader_name);
     }
 
     GDT::init();

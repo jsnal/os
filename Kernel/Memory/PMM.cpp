@@ -3,8 +3,6 @@
 #include <Kernel/Memory/PMM.h>
 #include <Kernel/panic.h>
 
-#define DEBUG_TAG "PMM"
-
 using namespace Memory;
 
 PMM::PMM(const multiboot_information_t* multiboot)
@@ -14,11 +12,11 @@ PMM::PMM(const multiboot_information_t* multiboot)
     u32 physical_region_base = 0;
     u32 physical_region_length = 0;
 
-    dbgprintf("System Memory Map: lower_mem=%d KiB upper_mem=%d MiB\n", multiboot->memory_lower, multiboot->memory_upper / 1024);
+    dbgprintf("PMM", "System Memory Map: lower_mem=%d KiB upper_mem=%d MiB\n", multiboot->memory_lower, multiboot->memory_upper / 1024);
     for (u32 position = 0, i = 0; position < multiboot->memory_map_length; position += sizeof(multiboot_mmap_t), i++) {
         multiboot_mmap_t* mmap = multiboot->memory_map + i;
 
-        dbgprintf("  %x%x:%x%x %d (%s)\n",
+        dbgprintf("PMM", "  %x%x:%x%x %d (%s)\n",
             (u32)(mmap->base_address >> 32),
             (u32)(mmap->base_address & 0xffffffff),
             (u32)(mmap->length >> 32),
@@ -34,19 +32,19 @@ PMM::PMM(const multiboot_information_t* multiboot)
         u32 length_remainder = (u32)(mmap->length % Types::PageSize);
 
         if (address_remainder != 0) {
-            dbgprintf("  Region does not start on page boundary, correcting by %d bytes\n", address_remainder);
+            dbgprintf("PMM", "  Region does not start on page boundary, correcting by %d bytes\n", address_remainder);
             address_remainder = Types::PageSize - address_remainder;
             mmap->base_address += address_remainder;
             mmap->length -= address_remainder;
         }
 
         if (length_remainder != 0) {
-            dbgprintf("  Region does not end on page boundary, correcting by %d bytes\n", length_remainder);
+            dbgprintf("PMM", "  Region does not end on page boundary, correcting by %d bytes\n", length_remainder);
             mmap->length -= length_remainder;
         }
 
         if (mmap->length < Types::PageSize) {
-            dbgprintf("  Region is smaller than a page... skipping");
+            dbgprintf("PMM", "  Region is smaller than a page... skipping");
             continue;
         }
 

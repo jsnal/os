@@ -1,8 +1,6 @@
 #include <Kernel/CPU/GDT.h>
 #include <Kernel/Logger.h>
 
-#define DEBUG_TAG "GDT"
-
 static GDTEntry s_gdt_entries[GDT_ENTRY_LIMIT];
 static GDTPointer s_gdt_pointer;
 
@@ -31,7 +29,7 @@ void init()
     gdt_set_entry(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Kernel mode data segment
     gdt_load((uintptr_t)&s_gdt_pointer);
 
-    dbgprintf("Initialized GDT: 0x%x\n", &s_gdt_pointer);
+    dbgprintf("GDT", "Initialized GDT: 0x%x\n", &s_gdt_pointer);
 }
 
 }

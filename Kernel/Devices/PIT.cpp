@@ -9,8 +9,6 @@
 #include <Kernel/IO.h>
 #include <Kernel/Logger.h>
 
-#define DEBUG_TAG "PIT"
-
 #define PIT_BASE_FREQUENCY 1193182
 
 #define PIT_CHANNEL_0 0x40
@@ -55,7 +53,7 @@ void init()
 
     timer_reload = PIT_BASE_FREQUENCY / TICKS_PER_SECOND;
 
-    dbgprintf("Initialized PIT: %u Hz, square wave (0x%x)\n", TICKS_PER_SECOND, timer_reload);
+    dbgprintf("PIT", "Initialized PIT: %u Hz, square wave (0x%x)\n", TICKS_PER_SECOND, timer_reload);
 
     IO::outb(PIT_CHANNEL_0, timer_reload & 0xFF);        // Low byte
     IO::outb(PIT_CHANNEL_0, (timer_reload >> 8) & 0xFF); // High byte

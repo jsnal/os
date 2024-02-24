@@ -5,8 +5,6 @@
 #include <Universal/Stdlib.h>
 // #include <devices/vga.h>
 
-#define DEBUG_TAG "IDT"
-
 #define IDT_ENTRY_LIMIT 256
 #define IDT_ENTRY_COUNT 48
 
@@ -38,7 +36,7 @@ extern "C" void isr_handler(InterruptFrame* frame)
         return;
     }
 
-    dbgprintf("Interrupt fired: %d:%x\n", frame->interrupt_number, frame->interrupt_number);
+    dbgprintf("IDT", "Interrupt fired: %d:%x\n", frame->interrupt_number, frame->interrupt_number);
     IDT::dump_interrupt_frame(*frame);
 }
 
@@ -131,7 +129,7 @@ void init()
 
     idt_load((uintptr_t)&s_idt_pointer);
 
-    dbgprintf("Initialized IDT: 0x%x\n", &s_idt_pointer);
+    dbgprintf("IDT", "Initialized IDT: 0x%x\n", &s_idt_pointer);
 
     register_interrupt_handler(0, divide_by_zero_handler);
 }
