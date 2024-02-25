@@ -22,6 +22,12 @@ void* operator new(size_t size)
     return ptr;
 }
 
+void* operator new[](size_t size)
+{
+    void* ptr = kmalloc(size);
+    return ptr;
+}
+
 void operator delete(void* ptr)
 {
     kfree(ptr);

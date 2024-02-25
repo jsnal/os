@@ -80,10 +80,15 @@ echo "mounting filesystem... "
 mkdir -p mnt
 mount "${LOOPBACK}p1" mnt/ || die "couldn't mount filesystem"
 mkdir -p mnt/boot
+mkdir -p mnt/home
+mkdir -p mnt/home/user
 echo "done"
 
 echo "building filesystem..."
 sudo cp -v "$DIR/Kernel/Kernel" mnt/boot/kernel
+sudo echo "File 1 data" > mnt/home/user/file1.txt
+sudo echo "File 2 data" > mnt/home/user/file2.txt
+sudo echo "File 3 data" > mnt/home/user/file3.txt
 echo "done"
 
 echo "installing grub..."

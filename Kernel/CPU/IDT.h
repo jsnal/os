@@ -5,6 +5,7 @@
 #define ISR_PAGE_FAULT 14
 #define ISR_PIT 32
 #define ISR_KEYBOARD 33
+#define ISR_DISK 46
 
 struct [[gnu::packed]] IDTEntry {
     u16 base_low;

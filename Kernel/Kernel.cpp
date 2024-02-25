@@ -8,6 +8,7 @@
 #include <Kernel/Devices/VGA.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
+#include <Kernel/Storage/ATA.h>
 #include <Kernel/panic.h>
 #include <Universal/Bitmap.h>
 #include <Universal/Types.h>
@@ -50,6 +51,8 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
     vga_init();
 
     MemoryManager::the().init(boot_page_directory, multiboot);
+
+    Storage::ATA::init();
 
     kernel_main();
 }
