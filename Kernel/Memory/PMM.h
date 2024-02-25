@@ -6,9 +6,9 @@
 
 #pragma once
 
+#include <Kernel/Boot/multiboot.h>
 #include <Kernel/Memory/Zone.h>
 #include <Kernel/kmalloc.h>
-#include <Kernel/multiboot.h>
 
 extern u32 g_kernel_end;
 

@@ -6,9 +6,9 @@
 
 #pragma once
 
+#include <Kernel/Boot/multiboot.h>
 #include <Kernel/Memory/PMM.h>
 #include <Kernel/Memory/Paging.h>
-#include <Kernel/multiboot.h>
 #include <Universal/Result.h>
 #include <Universal/Types.h>
 

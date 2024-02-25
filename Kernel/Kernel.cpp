@@ -1,3 +1,4 @@
+#include <Kernel/Boot/multiboot.h>
 #include <Kernel/CPU/GDT.h>
 #include <Kernel/CPU/IDT.h>
 #include <Kernel/CPU/PIC.h>
@@ -7,7 +8,6 @@
 #include <Kernel/Devices/VGA.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
-#include <Kernel/multiboot.h>
 #include <Kernel/panic.h>
 #include <Universal/Bitmap.h>
 #include <Universal/Types.h>
