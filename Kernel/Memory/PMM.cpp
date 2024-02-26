@@ -65,7 +65,7 @@ PMM::PMM(const multiboot_information_t* multiboot)
 
     u32 kernel_image_size = (u32)&g_kernel_end - KERNEL_VIRTUAL_BASE;
 
-    m_kernel_zone = new Zone((u32)&g_kernel_end, KERNEL_ZONE_LENGTH - kernel_image_size);
+    m_kernel_zone = new Zone(Types::virtual_to_physical((u32)&g_kernel_end), KERNEL_ZONE_LENGTH - kernel_image_size);
     m_user_zone = new Zone(m_kernel_zone->upper_address(), physical_region_length - KERNEL_ZONE_LENGTH);
 
     ASSERT(m_kernel_zone != nullptr && m_user_zone != nullptr);
