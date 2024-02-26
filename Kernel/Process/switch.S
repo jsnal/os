@@ -19,4 +19,7 @@ context_switch:
     pop esi
     pop ebx
     pop ebp
-    ret
+
+    mov al, 0x20
+    out 0x20, al
+    iret

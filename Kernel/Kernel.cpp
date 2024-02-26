@@ -8,7 +8,7 @@
 #include <Kernel/Devices/VGA.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
-#include <Kernel/Process/Process.h>
+#include <Kernel/Process/ProcessManager.h>
 #include <Kernel/Storage/ATA.h>
 #include <Kernel/panic.h>
 #include <Universal/Bitmap.h>
@@ -18,15 +18,26 @@
 #    error "Compiling with incorrect toolchain."
 #endif
 
-[[noreturn]] void kernel_main()
+[[noreturn]] void simple_process_runnable()
 {
+    dbgprintf("Kernel", "Running a simple process!\n");
+    while (true)
+        ;
+}
+
+[[noreturn]] static void kernel_main()
+{
+    ProcessManager::the().create_kernel_process(simple_process_runnable, "simple");
+    // ProcessManager::the().schedule();
+
+    // Storage::ATA::init();
 
     Keyboard::the().init();
 
     vga_write("System Booted!");
 
-    for (;;)
-        asm volatile("hlt");
+    while (true)
+        ;
 }
 
 extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multiboot_information_t* multiboot, const u32 magicNumber)
@@ -53,8 +64,9 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     MemoryManager::the().init(boot_page_directory, multiboot);
 
-    Process::init();
-    // Storage::ATA::init();
+    ProcessManager::the().init(kernel_main);
 
-    kernel_main();
+    while (true) {
+        asm volatile("hlt");
+    }
 }

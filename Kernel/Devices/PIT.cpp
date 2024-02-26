@@ -8,6 +8,7 @@
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/IO.h>
 #include <Kernel/Logger.h>
+#include <Kernel/Process/ProcessManager.h>
 
 #define PIT_BASE_FREQUENCY 1193182
 
@@ -30,6 +31,10 @@ static void pit_interrupt_handler()
     s_milliseconds_since_boot++;
     if (s_milliseconds_since_boot % TICKS_PER_SECOND == 0) {
         s_seconds_since_boot++;
+    }
+
+    if (s_milliseconds_since_boot % TICKS_PER_SCHEDULE == 0) {
+        ProcessManager::the().schedule();
     }
 }
 

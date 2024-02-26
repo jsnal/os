@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #define TICKS_PER_SECOND 1000
+#define TICKS_PER_SCHEDULE 100
 
 namespace PIT {
 

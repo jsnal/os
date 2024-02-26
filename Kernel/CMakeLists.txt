@@ -13,6 +13,7 @@ SET(KERNEL_SOURCES
     Memory/PMM.cpp
     Memory/Zone.cpp
     Process/Process.cpp
+    Process/ProcessManager.cpp
     Process/switch.S
     Runtime.cpp
     Stdlib.cpp
