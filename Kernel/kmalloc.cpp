@@ -19,16 +19,23 @@ void* operator new(size_t, void* ptr)
 void* operator new(size_t size)
 {
     void* ptr = kmalloc(size);
+    ASSERT(ptr != nullptr);
     return ptr;
 }
 
 void* operator new[](size_t size)
 {
     void* ptr = kmalloc(size);
+    ASSERT(ptr != nullptr);
     return ptr;
 }
 
 void operator delete(void* ptr)
+{
+    kfree(ptr);
+}
+
+void operator delete[](void* ptr)
 {
     kfree(ptr);
 }
@@ -44,6 +51,15 @@ void* kmalloc(size_t size)
     ASSERT(s_kmalloc_tracker != nullptr);
     void* address = s_kmalloc_tracker->heap().allocate(size);
     dbgprintf("kmalloc", "%d byte allocation @ 0x%x\n", size, address);
+    return address;
+}
+
+void* kcalloc(size_t size)
+{
+    ASSERT(s_kmalloc_tracker != nullptr);
+    void* address = s_kmalloc_tracker->heap().allocate(size);
+    dbgprintf("kmalloc", "%d byte allocation @ 0x%x\n", size, address);
+    memset(address, 0, size);
     return address;
 }
 

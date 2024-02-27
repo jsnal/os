@@ -31,10 +31,8 @@ public:
         , m_pages_in_range(length / Memory::Types::PageSize)
     {
         size_t bitmap_size_in_bits = length / Memory::Types::PageSize;
-        u8* bitmap_address = static_cast<u8*>(kmalloc(bitmap_size_in_bits / 8));
+        u8* bitmap_address = static_cast<u8*>(kcalloc(bitmap_size_in_bits / 8));
         m_bitmap = Bitmap::wrap(bitmap_address, bitmap_size_in_bits);
-        m_bitmap.fill(0);
-
         dbgprintf("Zone", "%d KiB Zone created from %x to %x\n", (m_upper_address - m_lower_address) / 1024, m_lower_address, m_upper_address);
     }
 

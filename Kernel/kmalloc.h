@@ -38,8 +38,10 @@ void* operator new(size_t);
 void* operator new[](size_t);
 
 void operator delete(void*);
+void operator delete[](void*);
 
 void* kmalloc(size_t);
+void* kcalloc(size_t);
 
 void kfree(void*);
 
