@@ -8,6 +8,7 @@
 
 #include <Kernel/CPU/TSS.h>
 #include <Universal/LinkedList.h>
+#include <Universal/ShareCounted.h>
 #include <Universal/Types.h>
 
 class Process : public LinkedListNode<Process> {

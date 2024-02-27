@@ -9,6 +9,7 @@
 #include <Kernel/panic.h>
 
 #define ASSERT(expr) (static_cast<bool>(expr) ? (void)0 : assert_failed(#expr, __FILE_NAME__, __PRETTY_FUNCTION__, __LINE__))
+#define NO_IMPLEMENTATION() (ASSERT(false))
 
 static inline void assert_failed(const char* message, const char* file, const char* function, u32 line)
 {

@@ -21,26 +21,27 @@ void ProcessManager::init(void (*entry_point)())
     s_processes = new LinkedList<Process>;
 
     s_kernel_process = new Process(entry_point, get_next_pid(), "idle", 512, true);
+
     context_switch(nullptr, s_kernel_process->m_esp);
 }
 
 void ProcessManager::create_kernel_process(void (*entry_point)(), const char* name)
 {
-    auto* kernel_process = new Process(entry_point, get_next_pid(), name, true);
+    auto kernel_process = new Process(entry_point, get_next_pid(), name, true);
     s_processes->add_first(kernel_process);
 }
 
 void ProcessManager::schedule()
 {
-    dbgprintf("ProcessManager", "Scheduling a new process\n");
-    auto* process = s_processes->head();
-
-    if (s_current_process == process) {
-        // dbgprintf("ProcessManager", "Ignoring scheduler\n");
-        return;
-    }
-
-    s_current_process = process;
-    dbgprintf("ProcessManager", "Calling this one!!\n");
-    context_switch(&s_kernel_process->m_esp, process->m_esp);
+    // dbgprintf("ProcessManager", "Scheduling a new process\n");
+    // auto* process = s_processes->head();
+    //
+    // if (s_current_process == process) {
+    //     // dbgprintf("ProcessManager", "Ignoring scheduler\n");
+    //     return;
+    // }
+    //
+    // s_current_process = process;
+    // dbgprintf("ProcessManager", "Calling this one!!\n");
+    // context_switch(&s_kernel_process->m_esp, process->m_esp);
 }
