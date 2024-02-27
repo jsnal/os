@@ -16,6 +16,14 @@ class Process : public LinkedListNode<Process> {
     friend class ProcessManager;
 
 public:
+    enum State : u8 {
+        Created = 0,
+        Ready,
+        Waiting,
+        Running,
+        Terminated
+    };
+
     u32 pid() const { return m_pid; }
     const char* name() const { return m_name; }
 

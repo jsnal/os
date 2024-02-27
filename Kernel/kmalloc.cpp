@@ -65,7 +65,7 @@ void* kcalloc(size_t size)
 
 void kfree(void* ptr)
 {
-    dbgprintf("kmalloc", "free @ 0x%x", ptr);
+    dbgprintf("kmalloc", "free @ 0x%x\n", ptr);
     s_kmalloc_tracker->heap().deallocate(ptr);
 }
 

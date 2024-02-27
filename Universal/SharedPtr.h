@@ -124,6 +124,15 @@ private:
 };
 
 template<typename T>
+inline SharedPtr<T> adopt_if_nonnull(T* object)
+{
+    if (object) {
+        return SharedPtr<T>(true, *object);
+    }
+    return {};
+}
+
+template<typename T>
 inline SharedPtr<T> adopt(T& object)
 {
     return SharedPtr<T>(true, object);
@@ -132,4 +141,5 @@ inline SharedPtr<T> adopt(T& object)
 }
 
 using Universal::adopt;
+using Universal::adopt_if_nonnull;
 using Universal::SharedPtr;

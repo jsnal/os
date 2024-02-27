@@ -33,7 +33,7 @@ void ProcessManager::create_kernel_process(void (*entry_point)(), const char* na
 
 void ProcessManager::schedule()
 {
-    // dbgprintf("ProcessManager", "Scheduling a new process\n");
+    dbgprintf("ProcessManager", "Scheduling a new process\n");
     // auto* process = s_processes->head();
     //
     // if (s_current_process == process) {

@@ -1,5 +1,6 @@
 *.img
 bochs_serial.txt
 compile_commands.json
+CMakeLists.txt.user
 .cache/
 Build/
