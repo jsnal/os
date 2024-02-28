@@ -18,16 +18,30 @@
 #    error "Compiling with incorrect toolchain."
 #endif
 
-[[noreturn]] void simple_process_runnable()
+[[noreturn]] void simple_process_runnable1()
 {
-    dbgprintf("Kernel", "Running a simple process!\n");
+    dbgprintf("Kernel", "Running a simple process 1!\n");
+    dbgprintf("Kernel", "Simple process 1: Print 1\n");
+    dbgprintf("Kernel", "Simple process 1: Print 2\n");
+    while (true)
+        ;
+}
+
+[[noreturn]] void simple_process_runnable2()
+{
+    dbgprintf("Kernel", "Running a simple process 2!\n");
+    dbgprintf("Kernel", "Simple process 2: Print 1\n");
+    dbgprintf("Kernel", "Simple process 2: Print 2\n");
     while (true)
         ;
 }
 
 [[noreturn]] static void kernel_main()
 {
-    ProcessManager::the().create_kernel_process(simple_process_runnable, "simple");
+    ProcessManager::the().init();
+
+    ProcessManager::the().create_kernel_process(simple_process_runnable1, "simple1");
+    ProcessManager::the().create_kernel_process(simple_process_runnable2, "simple2");
     // ProcessManager::the().schedule();
 
     // Storage::ATA::init();
@@ -64,7 +78,7 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     MemoryManager::the().init(boot_page_directory, multiboot);
 
-    ProcessManager::the().init(kernel_main);
+    kernel_main();
 
     while (true) {
         asm volatile("hlt");

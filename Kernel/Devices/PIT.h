@@ -7,13 +7,18 @@
 #ifndef _DEVICES_PIT_H_
 #define _DEVICES_PIT_H_
 
-#include <stdint.h>
+#include <Universal/Types.h>
 
 #define TICKS_PER_SECOND 1000
-#define TICKS_PER_SCHEDULE 100
 
 namespace PIT {
 
+struct WakeupRoutine {
+    u32 milliseconds;
+    void (*wakeup_routine)();
+};
+
+void register_pit_wakeup(u32, void (*wakeup_routine_pointer)());
 uint32_t milliseconds_since_boot();
 uint32_t seconds_since_boot();
 void init();

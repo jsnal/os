@@ -15,7 +15,7 @@ class ProcessManager final {
 public:
     static ProcessManager& the();
 
-    static void init(void (*entry_point)());
+    static void init();
 
     void create_kernel_process(void (*entry_point)(), const char* name);
 

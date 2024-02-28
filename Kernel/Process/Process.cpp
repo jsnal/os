@@ -26,20 +26,22 @@ Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_
     }
 
     memset((u32*)stack_allocation, 0, Memory::Types::PageSize);
+    stack_allocation = (stack_allocation + Memory::Types::PageSize) & 0xfffffff8;
 
-    m_esp = stack_allocation;
-    u32* stack = (u32*)(m_esp + Memory::Types::PageSize);
+    m_context = ((Context*)stack_allocation) - 1;
+    m_context->m_edi = 0;
+    m_context->m_esi = 0;
+    m_context->m_ebx = 0;
+    m_context->m_ebp = (u32)stack_allocation;
+    m_context->m_eip = (u32)entry_point;
+    m_context->m_cs = 0x08;
+    m_context->m_eflags = 0x0202;
 
-    *(--stack) = 0x0202;                          // eflags
-    *(--stack) = 0x8;                             // cs
-    *(--stack) = (uint32_t)entry_point;           // eip
-    *(--stack) = m_ebp = m_esp + Types::PageSize; // ebp
-    *(--stack) = 0;                               // ebx
-    *(--stack) = 0;                               // esi
-    *(--stack) = 0;                               // edi
-
-    m_esp = (u32)stack;
-    m_eip = (u32)entry_point;
+    dbgprintf("Process", "stack_allocation %x\n", stack_allocation);
+    dbgprintf("Process", "m_context %x\n", m_context);
+    dbgprintf("Process", "m_context->m_edi %x\n", &m_context->m_edi);
+    dbgprintf("Process", "m_context->m_esi %x\n", &m_context->m_esi);
+    dbgprintf("Process", "m_context->m_eip %x\n", &m_context->m_eip);
 
     dbgprintf("Process", "Process %u (%s) spawned at 0x%x with %u bytes of stack\n", m_pid, m_name, m_entry_point, stack_size);
 }

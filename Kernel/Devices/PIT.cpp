@@ -23,22 +23,43 @@
 
 #define PIT_WRITE_WORD 0x30
 
-static uint32_t s_milliseconds_since_boot = 0;
-static uint32_t s_seconds_since_boot = 0;
+#define WAKEUP_ROUTINES_SIZE 2
 
-static void pit_interrupt_handler()
+static u32 s_milliseconds_since_boot = 0;
+static u32 s_seconds_since_boot = 0;
+static u8 s_wakeup_routine_count = 0;
+static PIT::WakeupRoutine s_wakeup_routines[WAKEUP_ROUTINES_SIZE];
+
+static void
+pit_interrupt_handler()
 {
     s_milliseconds_since_boot++;
     if (s_milliseconds_since_boot % TICKS_PER_SECOND == 0) {
         s_seconds_since_boot++;
     }
 
-    if (s_milliseconds_since_boot % TICKS_PER_SCHEDULE == 0) {
+    if (s_milliseconds_since_boot % 100 == 0) {
         ProcessManager::the().schedule();
     }
+    // for (int i = 0; i < s_wakeup_routine_count; i++) {
+    //     if (s_wakeup_routines[i].wakeup_routine != nullptr && s_milliseconds_since_boot % s_wakeup_routines[i].milliseconds == 0) {
+    //         s_wakeup_routines[i].wakeup_routine();
+    //     }
+    // }
 }
 
 namespace PIT {
+
+void register_pit_wakeup(u32 milliseconds, void (*wakeup_routine_pointer)())
+{
+    if (s_wakeup_routine_count >= WAKEUP_ROUTINES_SIZE || wakeup_routine_pointer == nullptr) {
+        return;
+    }
+
+    dbgprintf("PIT", "Registering a PIT wakeup @ %x every %d ms\n", wakeup_routine_pointer, milliseconds);
+    s_wakeup_routines[s_wakeup_routine_count].milliseconds = milliseconds;
+    s_wakeup_routines[s_wakeup_routine_count++].wakeup_routine = wakeup_routine_pointer;
+}
 
 uint32_t milliseconds_since_boot()
 {

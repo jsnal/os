@@ -26,7 +26,7 @@ static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t
 extern "C" void isr_handler(InterruptFrame* frame)
 {
     if (frame == nullptr || frame->interrupt_number > IDT_ENTRY_COUNT || s_interrupt_handlers[frame->interrupt_number] == nullptr) {
-        panic("Interrupt %d is not handled!", frame->interrupt_number);
+        panic("Interrupt %d is not handled! Error %x\n", frame->interrupt_number, frame->error_number);
     }
 
     s_interrupt_handlers[frame->interrupt_number]();
