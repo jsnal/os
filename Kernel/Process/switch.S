@@ -23,7 +23,7 @@ context_switch:
     mov edx, [esp + 24]
 
     mov [eax], esp
-    mov esp, [edx]
+    mov esp, edx
 
     pop edi
     pop esi

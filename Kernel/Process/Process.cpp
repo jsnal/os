@@ -16,17 +16,20 @@ Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_
         return;
     }
 
-    u32 stack_allocation = 0;
-    if (stack_size == Types::PageSize) {
-        auto frame = MemoryManager::the().pmm().kernel_zone().allocate_frame();
-        ASSERT(frame.is_ok());
-        stack_allocation = Memory::Types::physical_to_virtual(frame.value());
-    } else {
-        stack_allocation = (u32)kmalloc(stack_size);
-    }
+    u32* stack_allocation = 0;
+    auto frame = MemoryManager::the().pmm().kernel_zone().allocate_frame();
+    ASSERT(frame.is_ok());
+    stack_allocation = (u32*)Memory::Types::physical_to_virtual(frame.value());
+    // if (stack_size == Types::PageSize) {
+    //     auto frame = MemoryManager::the().pmm().kernel_zone().allocate_frame();
+    //     ASSERT(frame.is_ok());
+    //     stack_allocation = (u32*)Memory::Types::physical_to_virtual(frame.value());
+    // } else {
+    //     stack_allocation = (u32*)kmalloc(stack_size);
+    // }
 
-    memset((u32*)stack_allocation, 0, Memory::Types::PageSize);
-    stack_allocation = (stack_allocation + Memory::Types::PageSize) & 0xfffffff8;
+    memset(stack_allocation, 0, Memory::Types::PageSize);
+    stack_allocation = (stack_allocation + Memory::Types::PageSize); // & 0xfffffff8;
 
     m_context = ((Context*)stack_allocation) - 1;
 
@@ -37,6 +40,9 @@ Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_
     m_context->m_ebx = 0;
     m_context->m_esi = 0;
     m_context->m_edi = 0; // Bottom of the stack-frame
+
+    dbgprintf("Process", "&m_context %x\n", &m_context);
+    dbgprintf("Process", "*m_context %x\n", m_context);
 
     dbgprintf("Process", "Process %u (%s) spawned at 0x%x with %u bytes of stack\n", m_pid, m_name, m_entry_point, stack_size);
 }

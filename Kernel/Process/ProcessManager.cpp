@@ -10,9 +10,9 @@ Process* ProcessManager::s_current_process;
 Process* ProcessManager::s_kernel_process;
 LinkedList<Process>* ProcessManager::s_processes;
 
-extern "C" void context_run(u32 esp);
+extern "C" void context_run(Process::Context* context);
 
-extern "C" void context_switch(Process::Context** old_esp, Process::Context** new_esp);
+extern "C" void context_switch(Process::Context** old_context, Process::Context* new_context);
 
 static void pit_schedule_wakeup()
 {
@@ -46,7 +46,7 @@ void ProcessManager::init()
     PIT::register_pit_wakeup(QUANTUM_IN_MILLISECONDS, pit_schedule_wakeup);
 
     s_current_process = s_kernel_process;
-    context_run(s_kernel_process->esp());
+    context_run(s_kernel_process->m_context);
 }
 
 void ProcessManager::create_kernel_process(void (*entry_point)(), const char* name)
@@ -68,6 +68,12 @@ void ProcessManager::schedule()
 
     dbgprintf("ProcessManager", "Running the scheduler\n");
 
+    if (previous_process == next_process) {
+        dbgprintf("ProcessManager", "Switching to the 'idle' task\n");
+        s_current_process = s_kernel_process;
+        context_switch(previous_process->context_ptr(), s_kernel_process->context());
+    }
+
     s_current_process = next_process;
-    context_switch(&previous_process->m_context, &next_process->m_context);
+    context_switch(previous_process->context_ptr(), next_process->context());
 }

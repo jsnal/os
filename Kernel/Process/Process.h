@@ -39,10 +39,8 @@ public:
     u32 pid() const { return m_pid; }
     const char* name() const { return m_name; }
 
-    u32 esp() { return reinterpret_cast<u32>(m_context); }
-    u32* esp_ptr() { return reinterpret_cast<u32*>(m_context); }
-
     Context* context() { return m_context; }
+    Context** context_ptr() { return &m_context; }
 
 private:
     Process(void (*entry_point)(), u32 pid, const char* name, bool is_kernel);

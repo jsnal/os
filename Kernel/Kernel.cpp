@@ -44,7 +44,6 @@
     ProcessManager::the().create_kernel_process(simple_process_runnable1, "simple1");
     ProcessManager::the().create_kernel_process(simple_process_runnable2, "simple2");
     ProcessManager::the().create_kernel_process(simple_process_runnable3, "simple3");
-    // ProcessManager::the().schedule();
 
     // Storage::ATA::init();
 
