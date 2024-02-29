@@ -17,11 +17,11 @@ public:
 
     static void init();
 
+    ProcessManager();
+
     void create_kernel_process(void (*entry_point)(), const char* name);
 
     void schedule();
-
-    ProcessManager() {};
 
 private:
     static u32 get_next_pid() { return s_current_pid++; }

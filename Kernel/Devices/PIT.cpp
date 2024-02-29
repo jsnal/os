@@ -38,14 +38,11 @@ pit_interrupt_handler()
         s_seconds_since_boot++;
     }
 
-    if (s_milliseconds_since_boot % 100 == 0) {
-        ProcessManager::the().schedule();
+    for (int i = 0; i < s_wakeup_routine_count; i++) {
+        if (s_wakeup_routines[i].wakeup_routine != nullptr && s_milliseconds_since_boot % s_wakeup_routines[i].milliseconds == 0) {
+            s_wakeup_routines[i].wakeup_routine();
+        }
     }
-    // for (int i = 0; i < s_wakeup_routine_count; i++) {
-    //     if (s_wakeup_routines[i].wakeup_routine != nullptr && s_milliseconds_since_boot % s_wakeup_routines[i].milliseconds == 0) {
-    //         s_wakeup_routines[i].wakeup_routine();
-    //     }
-    // }
 }
 
 namespace PIT {

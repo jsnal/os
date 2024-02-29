@@ -21,27 +21,29 @@
 [[noreturn]] void simple_process_runnable1()
 {
     dbgprintf("Kernel", "Running a simple process 1!\n");
-    dbgprintf("Kernel", "Simple process 1: Print 1\n");
-    dbgprintf("Kernel", "Simple process 1: Print 2\n");
-    while (true)
-        ;
+    while (true) {
+    }
 }
 
 [[noreturn]] void simple_process_runnable2()
 {
     dbgprintf("Kernel", "Running a simple process 2!\n");
-    dbgprintf("Kernel", "Simple process 2: Print 1\n");
-    dbgprintf("Kernel", "Simple process 2: Print 2\n");
-    while (true)
-        ;
+    while (true) {
+    }
+}
+
+[[noreturn]] void simple_process_runnable3()
+{
+    dbgprintf("Kernel", "Running a simple process 3!\n");
+    while (true) {
+    }
 }
 
 [[noreturn]] static void kernel_main()
 {
-    ProcessManager::the().init();
-
     ProcessManager::the().create_kernel_process(simple_process_runnable1, "simple1");
     ProcessManager::the().create_kernel_process(simple_process_runnable2, "simple2");
+    ProcessManager::the().create_kernel_process(simple_process_runnable3, "simple3");
     // ProcessManager::the().schedule();
 
     // Storage::ATA::init();
@@ -49,6 +51,8 @@
     Keyboard::the().init();
 
     vga_write("System Booted!");
+
+    ProcessManager::the().init();
 
     while (true)
         ;

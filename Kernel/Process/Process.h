@@ -34,6 +34,8 @@ public:
         u32 m_eflags { 0 };
     };
 
+    void dump_stack() const;
+
     u32 pid() const { return m_pid; }
     const char* name() const { return m_name; }
 
