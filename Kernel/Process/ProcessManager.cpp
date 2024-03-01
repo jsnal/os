@@ -52,26 +52,44 @@ void ProcessManager::init()
 void ProcessManager::create_kernel_process(void (*entry_point)(), const char* name)
 {
     auto kernel_process = new Process(entry_point, get_next_pid(), name, true);
+    kernel_process->set_state(Process::Ready);
     s_processes->add_first(kernel_process);
 }
 
 void ProcessManager::schedule()
 {
-    Process* next_process;
-    Process* previous_process = s_current_process;
-
-    if (s_current_process->next() == nullptr) {
-        next_process = s_processes->head();
-    } else {
-        next_process = s_current_process->next();
-    }
 
     dbgprintf("ProcessManager", "Running the scheduler\n");
+    Process* next_process = nullptr;
+    Process* previous_process = s_current_process;
+    Process* p = s_current_process;
 
-    if (previous_process == next_process) {
-        dbgprintf("ProcessManager", "Switching to the 'idle' task\n");
+    if (s_current_process == s_kernel_process) {
+        p = s_processes->head();
+    }
+
+    for (u32 i = 0; i < s_processes->size(); i++) {
+        if (p->next() == nullptr) {
+            p = s_processes->head();
+        } else {
+            p = p->next();
+        }
+
+        if (p->state() == Process::Ready) {
+            next_process = p;
+            break;
+        }
+    }
+
+    if (next_process == nullptr) {
+        dbgprintf("ProcessManager", "No processes to run, falling back to idle\n");
+        if (s_current_process == s_kernel_process) {
+            return;
+        }
+
         s_current_process = s_kernel_process;
         context_switch(previous_process->context_ptr(), s_kernel_process->context());
+        return;
     }
 
     s_current_process = next_process;

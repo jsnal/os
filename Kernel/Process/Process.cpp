@@ -8,8 +8,8 @@
 Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_size, bool is_kernel)
     : m_pid(pid)
     , m_name(name)
-    , m_entry_point(entry_point)
     , m_is_kernel(is_kernel)
+    , m_state(State::Created)
 {
     // User processes not supported... yet
     if (!m_is_kernel) {
@@ -17,16 +17,13 @@ Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_
     }
 
     u32* stack_allocation = 0;
-    auto frame = MemoryManager::the().pmm().kernel_zone().allocate_frame();
-    ASSERT(frame.is_ok());
-    stack_allocation = (u32*)Memory::Types::physical_to_virtual(frame.value());
-    // if (stack_size == Types::PageSize) {
-    //     auto frame = MemoryManager::the().pmm().kernel_zone().allocate_frame();
-    //     ASSERT(frame.is_ok());
-    //     stack_allocation = (u32*)Memory::Types::physical_to_virtual(frame.value());
-    // } else {
-    //     stack_allocation = (u32*)kmalloc(stack_size);
-    // }
+    if (stack_size == Types::PageSize) {
+        auto frame = MemoryManager::the().pmm().kernel_zone().allocate_frame();
+        ASSERT(frame.is_ok());
+        stack_allocation = (u32*)Memory::Types::physical_to_virtual(frame.value());
+    } else {
+        stack_allocation = (u32*)kmalloc(stack_size);
+    }
 
     memset(stack_allocation, 0, Memory::Types::PageSize);
     stack_allocation = (stack_allocation + Memory::Types::PageSize); // & 0xfffffff8;
@@ -44,7 +41,7 @@ Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_
     dbgprintf("Process", "&m_context %x\n", &m_context);
     dbgprintf("Process", "*m_context %x\n", m_context);
 
-    dbgprintf("Process", "Process %u (%s) spawned at 0x%x with %u bytes of stack\n", m_pid, m_name, m_entry_point, stack_size);
+    dbgprintf("Process", "Process %u (%s) spawned at 0x%x with %u bytes of stack\n", m_pid, m_name, entry_point, stack_size);
 }
 
 Process::Process(void (*entry_point)(), u32 pid, const char* name, bool is_kernel)

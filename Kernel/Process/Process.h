@@ -42,15 +42,18 @@ public:
     Context* context() { return m_context; }
     Context** context_ptr() { return &m_context; }
 
+    void set_state(State state) { m_state = state; }
+    State state() const { return m_state; }
+
 private:
     Process(void (*entry_point)(), u32 pid, const char* name, bool is_kernel);
     Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_size, bool is_kernel);
 
     u32 m_pid;
     const char* m_name;
-    void (*m_entry_point)() { nullptr };
     bool m_is_kernel { false };
     Context* m_context;
+    State m_state;
 
     Process* m_next { nullptr };
     Process* m_previous { nullptr };

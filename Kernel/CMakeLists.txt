@@ -14,7 +14,7 @@ SET(KERNEL_SOURCES
     Memory/Zone.cpp
     Process/Process.cpp
     Process/ProcessManager.cpp
-    Process/switch.S
+    Process/context.S
     Runtime.cpp
     Stdlib.cpp
     Storage/ATA.cpp
