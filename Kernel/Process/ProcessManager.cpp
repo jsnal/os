@@ -5,14 +5,14 @@
 
 #define QUANTUM_IN_MILLISECONDS 100
 
-u32 ProcessManager::s_current_pid;
+pid_t ProcessManager::s_current_pid;
 Process* ProcessManager::s_current_process;
 Process* ProcessManager::s_kernel_process;
 LinkedList<Process>* ProcessManager::s_processes;
 
 extern "C" void context_run(Process::Context* context);
 
-extern "C" void context_switch(Process::Context** old_context, Process::Context* new_context);
+extern "C" void context_switch(Process::Context** old_context, Process::Context** new_context);
 
 static void pit_schedule_wakeup()
 {
@@ -56,10 +56,19 @@ void ProcessManager::create_kernel_process(void (*entry_point)(), const char* na
     s_processes->add_first(kernel_process);
 }
 
+ResultOr<Process*> ProcessManager::find_by_pid(pid_t pid) const
+{
+    for (Process* p = s_processes->head(); p != nullptr; p = p->next()) {
+        if (p->pid() == pid) {
+            return p;
+        }
+    }
+    return {};
+}
+
 void ProcessManager::schedule()
 {
 
-    dbgprintf("ProcessManager", "Running the scheduler\n");
     Process* next_process = nullptr;
     Process* previous_process = s_current_process;
     Process* p = s_current_process;
@@ -82,16 +91,11 @@ void ProcessManager::schedule()
     }
 
     if (next_process == nullptr) {
-        dbgprintf("ProcessManager", "No processes to run, falling back to idle\n");
-        if (s_current_process == s_kernel_process) {
-            return;
-        }
-
         s_current_process = s_kernel_process;
-        context_switch(previous_process->context_ptr(), s_kernel_process->context());
+        context_switch(previous_process->context_ptr(), s_kernel_process->context_ptr());
         return;
     }
 
     s_current_process = next_process;
-    context_switch(previous_process->context_ptr(), next_process->context());
+    context_switch(previous_process->context_ptr(), next_process->context_ptr());
 }

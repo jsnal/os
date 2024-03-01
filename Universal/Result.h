@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Universal/Assert.h>
 #include <Universal/Types.h>
 
 namespace Universal {
@@ -13,6 +14,7 @@ namespace Universal {
 class Result {
 public:
     constexpr static int OK = 0;
+    constexpr static int Failure = 0;
 
     Result(int error_value)
         : m_error_value(error_value)
@@ -52,8 +54,17 @@ public:
 
     Result error() const { return m_result; }
 
-    T& value() { return m_value; }
-    const T& value() const { return m_value; }
+    T& value()
+    {
+        ASSERT(!is_error());
+        return m_value;
+    }
+
+    const T& value() const
+    {
+        ASSERT(!is_error());
+        return m_value;
+    }
 
 private:
     T m_value;
