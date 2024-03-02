@@ -9,6 +9,7 @@
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Process/ProcessManager.h>
+#include <Kernel/Process/Spinlock.h>
 #include <Kernel/Storage/ATA.h>
 #include <Kernel/panic.h>
 #include <Universal/Bitmap.h>
