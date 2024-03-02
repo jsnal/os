@@ -68,7 +68,6 @@ ResultOr<Process*> ProcessManager::find_by_pid(pid_t pid) const
 
 void ProcessManager::schedule()
 {
-
     Process* next_process = nullptr;
     Process* previous_process = s_current_process;
     Process* p = s_current_process;

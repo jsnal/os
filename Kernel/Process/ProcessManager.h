@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Kernel/Process/Process.h>
+#include <Kernel/Process/Spinlock.h>
 #include <Universal/Result.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/Types.h>

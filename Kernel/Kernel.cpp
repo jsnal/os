@@ -4,16 +4,18 @@
 #include <Kernel/CPU/PIC.h>
 #include <Kernel/Devices/Console.h>
 #include <Kernel/Devices/Keyboard.h>
+#include <Kernel/Devices/PATA.h>
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/Devices/VGA.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/Process/Spinlock.h>
-#include <Kernel/Storage/ATA.h>
 #include <Kernel/panic.h>
 #include <Universal/Bitmap.h>
 #include <Universal/Types.h>
+
+#include <Kernel/Bus/PCI.h>
 
 #if !defined(__os__)
 #    error "Compiling with incorrect toolchain."
@@ -81,6 +83,13 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
     vga_init();
 
     MemoryManager::the().init(boot_page_directory, multiboot);
+
+    u8 value = Bus::PCI::read8({ 0, 0, 0 }, 0xE);
+    dbgprintf("Kernel", "PCI Header Type %d\n", value);
+
+    for (u8 slot = 0; slot < 32; slot++) {
+        dbgprintf("Kernel", "PCI Vendor ID %d\n", Bus::PCI::read16({ 0, slot, 0 }, 0x0));
+    }
 
     kernel_main();
 
