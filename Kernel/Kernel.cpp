@@ -84,12 +84,9 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     MemoryManager::the().init(boot_page_directory, multiboot);
 
-    u8 value = Bus::PCI::read8({ 0, 0, 0 }, 0xE);
-    dbgprintf("Kernel", "PCI Header Type %d\n", value);
-
-    for (u8 slot = 0; slot < 32; slot++) {
-        dbgprintf("Kernel", "PCI Vendor ID %d\n", Bus::PCI::read16({ 0, slot, 0 }, 0x0));
-    }
+    Bus::PCI::enumerate_devices([](Bus::PCI::Address address, Bus::PCI::ID id, u16 type) {
+        dbgprintf("PCI", "vendor id %x device id %x type %x\n", id.vendor, id.device, type);
+    });
 
     kernel_main();
 

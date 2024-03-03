@@ -10,7 +10,24 @@
 #define PCI_ADDRESS_PORT 0xCF8
 #define PCI_DATA_PORT 0xCFC
 
+#define PCI_VENDOR_ID 0x0
+#define PCI_DEVICE_ID 0x2
+#define PCI_SUBCLASS 0xA
+#define PCI_CLASS 0xB
+#define PCI_HEADER_TYPE 0xE
+#define PCI_SECONDARY_BUS 0x19
+#define PCI_MULTI_FUNCTION 0x80
+
+#define PCI_NO_VENDOR 0xFFFF
+
+#define PCI_SLOTS_ON_BUS 32
+#define PCI_FUNCTIONS_ON_SLOT 8
+
 namespace Bus::PCI {
+
+static void enumerate_functions(u8 bus, u8 slot, u8 functions, EnumerateCallback callback);
+static void enumerate_slot(u8 bus, u8 slot, EnumerateCallback callback);
+static void enumerate_bus(u8 bus, EnumerateCallback callback);
 
 static u32 get_io_address(Address& address, u8 field)
 {
@@ -34,6 +51,66 @@ u32 read32(Address address, u8 field)
 
     IO::outl(PCI_ADDRESS_PORT, get_io_address(address, field));
     return IO::inl(PCI_DATA_PORT);
+}
+
+static void enumerate_functions(u8 bus, u8 slot, u8 functions, EnumerateCallback callback)
+{
+    Address functions_address = { bus, slot, functions };
+
+    u16 type = (read8(functions_address, PCI_CLASS) << 8) + read8(functions_address, PCI_SUBCLASS);
+    if (type == PCI_TYPE_BRIDGE) {
+        u8 second_bus = read8(functions_address, PCI_SECONDARY_BUS);
+        enumerate_bus(second_bus, callback);
+    }
+
+    u16 vendor = read16(functions_address, PCI_VENDOR_ID);
+    u16 device = read16(functions_address, PCI_DEVICE_ID);
+    callback(functions_address, { vendor, device }, type);
+}
+
+static void enumerate_slot(u8 bus, u8 slot, EnumerateCallback callback)
+{
+    Address slot_common_header_address = { bus, slot, 0 };
+
+    if (read16(slot_common_header_address, PCI_VENDOR_ID) == PCI_NO_VENDOR) {
+        return;
+    }
+
+    enumerate_functions(bus, slot, 0, callback);
+
+    if (read8(slot_common_header_address, PCI_HEADER_TYPE) == 1) {
+        return;
+    }
+
+    Address functions_address;
+    for (u8 function = 1; function < PCI_FUNCTIONS_ON_SLOT; function++) {
+        functions_address = { bus, slot, function };
+        if (read16(functions_address, PCI_VENDOR_ID) != PCI_NO_VENDOR) {
+            enumerate_functions(bus, slot, function, callback);
+        }
+    }
+}
+
+static void enumerate_bus(u8 bus, EnumerateCallback callback)
+{
+    for (u8 slot = 0; slot < PCI_SLOTS_ON_BUS; slot++) {
+        enumerate_slot(bus, slot, callback);
+    }
+}
+
+void enumerate_devices(EnumerateCallback callback)
+{
+    Address host_bridge_header = { 0, 0, 0 };
+    if ((read8(host_bridge_header, PCI_HEADER_TYPE) & PCI_MULTI_FUNCTION) == 0) {
+        enumerate_bus(0, callback);
+    } else {
+        for (u8 function = 0; function < 8; function++) {
+            Address address = { 0, 0, function };
+            if (read16(address, PCI_VENDOR_ID) != PCI_NO_VENDOR) {
+                enumerate_bus(function, callback);
+            }
+        }
+    }
 }
 
 }

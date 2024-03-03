@@ -10,11 +10,21 @@
 
 namespace Bus::PCI {
 
+#define PCI_TYPE_BRIDGE 0x0604
+#define PCI_TYPE_IDE_CONTROLLER 0x0x0101
+
 struct Address {
     u8 bus;
     u8 slot;
     u8 function;
 };
+
+struct ID {
+    u16 vendor;
+    u16 device;
+};
+
+typedef void (*EnumerateCallback)(Address, ID, u16 type);
 
 u8 read8(Address, u8 field);
 u16 read16(Address, u8 field);
@@ -23,5 +33,7 @@ u32 read32(Address, u8 field);
 void write8();
 void write16();
 void write32();
+
+void enumerate_devices(EnumerateCallback);
 
 }
