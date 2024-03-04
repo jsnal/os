@@ -4,7 +4,7 @@
 #include <Kernel/CPU/PIC.h>
 #include <Kernel/Devices/Console.h>
 #include <Kernel/Devices/Keyboard.h>
-#include <Kernel/Devices/PATA.h>
+#include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/Devices/VGA.h>
 #include <Kernel/Logger.h>
@@ -14,8 +14,6 @@
 #include <Kernel/panic.h>
 #include <Universal/Bitmap.h>
 #include <Universal/Types.h>
-
-#include <Kernel/Bus/PCI.h>
 
 #if !defined(__os__)
 #    error "Compiling with incorrect toolchain."
@@ -84,9 +82,7 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     MemoryManager::the().init(boot_page_directory, multiboot);
 
-    Bus::PCI::enumerate_devices([](Bus::PCI::Address address, Bus::PCI::ID id, u16 type) {
-        dbgprintf("PCI", "vendor id %x device id %x type %x\n", id.vendor, id.device, type);
-    });
+    auto disk = PATADisk::create(PATADisk::Primary, PATADisk::Master);
 
     kernel_main();
 

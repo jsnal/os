@@ -25,7 +25,7 @@ public:
     {
     }
 
-    ReturnT invoke(ArgumentTs... args) override
+    ReturnT invoke(ArgumentTs... args) override final
     {
         return m_raw_function(args...);
     }
@@ -43,6 +43,8 @@ public:
     using FunctionT = ReturnT(ArgumentTs...);
 
     Function() = default;
+
+    Function(std::nullptr_t) { }
 
     template<typename RawFunctionT>
     Function(RawFunctionT&& raw_function)

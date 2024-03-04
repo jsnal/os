@@ -25,9 +25,9 @@
 
 namespace Bus::PCI {
 
-static void enumerate_functions(u8 bus, u8 slot, u8 functions, EnumerateCallback callback);
-static void enumerate_slot(u8 bus, u8 slot, EnumerateCallback callback);
-static void enumerate_bus(u8 bus, EnumerateCallback callback);
+static void enumerate_functions(u8 bus, u8 slot, u8 functions, EnumerateCallback& callback);
+static void enumerate_slot(u8 bus, u8 slot, EnumerateCallback& callback);
+static void enumerate_bus(u8 bus, EnumerateCallback& callback);
 
 static u32 get_io_address(Address& address, u8 field)
 {
@@ -53,7 +53,7 @@ u32 read32(Address address, u8 field)
     return IO::inl(PCI_DATA_PORT);
 }
 
-static void enumerate_functions(u8 bus, u8 slot, u8 functions, EnumerateCallback callback)
+static void enumerate_functions(u8 bus, u8 slot, u8 functions, EnumerateCallback& callback)
 {
     Address functions_address = { bus, slot, functions };
 
@@ -68,7 +68,7 @@ static void enumerate_functions(u8 bus, u8 slot, u8 functions, EnumerateCallback
     callback(functions_address, { vendor, device }, type);
 }
 
-static void enumerate_slot(u8 bus, u8 slot, EnumerateCallback callback)
+static void enumerate_slot(u8 bus, u8 slot, EnumerateCallback& callback)
 {
     Address slot_common_header_address = { bus, slot, 0 };
 
@@ -91,7 +91,7 @@ static void enumerate_slot(u8 bus, u8 slot, EnumerateCallback callback)
     }
 }
 
-static void enumerate_bus(u8 bus, EnumerateCallback callback)
+static void enumerate_bus(u8 bus, EnumerateCallback& callback)
 {
     for (u8 slot = 0; slot < PCI_SLOTS_ON_BUS; slot++) {
         enumerate_slot(bus, slot, callback);
@@ -112,5 +112,4 @@ void enumerate_devices(EnumerateCallback callback)
         }
     }
 }
-
 }

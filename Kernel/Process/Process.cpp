@@ -38,9 +38,6 @@ Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_
     m_context->m_esi = 0;
     m_context->m_edi = 0; // Bottom of the stack-frame
 
-    dbgprintf("Process", "&m_context %x\n", &m_context);
-    dbgprintf("Process", "*m_context %x\n", m_context);
-
     dbgprintf("Process", "Process %u (%s) spawned at 0x%x with %u bytes of stack\n", m_pid, m_name, entry_point, stack_size);
 }
 

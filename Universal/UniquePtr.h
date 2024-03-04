@@ -96,7 +96,6 @@ public:
 
     void clear()
     {
-        dbgprintf("UniquePtr", "freeing the PTR\n");
         delete m_ptr;
         m_ptr = nullptr;
     }
