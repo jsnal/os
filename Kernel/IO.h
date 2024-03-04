@@ -51,4 +51,11 @@ static inline void outl(u16 port, u32 value)
                  :
                  : "a"(value), "Nd"(port));
 }
+
+static inline void delay(size_t microseconds)
+{
+    for (size_t i = 0; i < microseconds; i++) {
+        inb(0x80);
+    }
+}
 }

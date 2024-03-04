@@ -8,6 +8,7 @@
 
 #include <Kernel/Bus/PCI.h>
 #include <Kernel/Devices/ATA.h>
+#include <Universal/Result.h>
 
 class PATADisk {
 public:
@@ -22,6 +23,8 @@ public:
     };
 
     static PATADisk* create(Channel, Type);
+
+    Result read_sector(u8* buffer, u32 lba) const;
 
     Bus::PCI::Address pci_address() const { return m_pci_address; }
 

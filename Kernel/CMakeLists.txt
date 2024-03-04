@@ -19,7 +19,6 @@ SET(KERNEL_SOURCES
     Process/context.S
     Runtime.cpp
     Stdlib.cpp
-    Storage/ATA.cpp
     kmalloc.cpp
     kprintf.cpp
 )

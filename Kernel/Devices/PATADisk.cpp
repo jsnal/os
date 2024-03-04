@@ -98,9 +98,33 @@ PATADisk::PATADisk(Bus::PCI::Address address, Channel channel, Type type)
 
     ATAIdentity* ata_info = reinterpret_cast<ATAIdentity*>(identity_buffer);
     m_addressable_blocks = ata_info->user_addressable_sectors;
-    ata_info->
+    dbgprintf("PATADisk", "Disk '%s' created with %d blocks\n", m_model_number, m_addressable_blocks);
+}
 
-        dbgprintf("PATADisk", "Disk '%s' created with %d blocks\n", m_model_number, m_addressable_blocks);
+Result PATADisk::read_sector(u8* buffer, u32 lba) const
+{
+    // Select device, use LBA addressing mode
+    IO::outb(m_io_base + ATA_REG_HDDEVSEL, 0xE0 | ((m_type == Slave) << 4) | ((lba >> 24) & 0x0F));
+    IO::delay(20);
+
+    // Send sector count
+    IO::outb(m_io_base + ATA_REG_SECCOUNT0, 1);
+
+    // Send LBA address
+    IO::outb(m_io_base + ATA_REG_LBA0, lba & 0xFF);
+    IO::outb(m_io_base + ATA_REG_LBA1, (lba >> 8) & 0xFF);
+    IO::outb(m_io_base + ATA_REG_LBA2, (lba >> 16) & 0xFF);
+
+    // Send read command
+    IO::outb(m_io_base + ATA_REG_COMMAND, ATA_CMD_READ_PIO);
+
+    // Read data from data port
+    u16* ptr = (u16*)buffer;
+    for (u16 i = 0; i < 256; ++i) {
+        ptr[i] = IO::inw(m_io_base);
+    }
+
+    return Result(Result::OK);
 }
 
 void PATADisk::disk_interrupts_handler()

@@ -82,7 +82,14 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     MemoryManager::the().init(boot_page_directory, multiboot);
 
-    auto disk = PATADisk::create(PATADisk::Primary, PATADisk::Master);
+    auto disk1 = PATADisk::create(PATADisk::Primary, PATADisk::Slave);
+    u8 buffer[256] = {};
+    disk1->read_sector(buffer, 2);
+
+    for (u16 i = 0x88; i < 0x88 + 32; i++) {
+        dbgprintf("Kernel", "read: %x\n", buffer[i]);
+    }
+    dbgprintf("Kernel", "String: %s\n", buffer + 0x88);
 
     kernel_main();
 
