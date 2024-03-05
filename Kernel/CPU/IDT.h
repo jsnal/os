@@ -5,7 +5,8 @@
 #define ISR_PAGE_FAULT 14
 #define ISR_PIT 32
 #define ISR_KEYBOARD 33
-#define ISR_DISK 46
+#define ISR_DISK_MASTER 46
+#define ISR_DISK_SLAVE 47
 
 struct [[gnu::packed]] IDTEntry {
     u16 base_low;
@@ -54,6 +55,8 @@ static inline void cli()
 namespace IDT {
 
 void register_interrupt_handler(u32 interrupt_number, InterruptHandler);
+
+void unregister_interrupt_handler(u32 interrupt_number);
 
 void dump_interrupt_frame(const InterruptFrame&);
 

@@ -3,6 +3,7 @@
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Process/Process.h>
+#include <Kernel/Process/ProcessManager.h>
 #include <Universal/Stdlib.h>
 
 Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_size, bool is_kernel)
@@ -44,6 +45,23 @@ Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_
 Process::Process(void (*entry_point)(), u32 pid, const char* name, bool is_kernel)
     : Process(entry_point, pid, name, Types::PageSize, is_kernel)
 {
+}
+
+void Process::set_ready()
+{
+    dbgprintf("Process", "Setting '%s' to Ready\n", name());
+    m_state = Ready;
+}
+
+void Process::set_waiting(WaitingStatus& waiting_status)
+{
+    dbgprintf("Process", "Setting waiting\n");
+    if (waiting_status.is_ready()) {
+        set_ready();
+        return;
+    }
+    m_state = Waiting;
+    ProcessManager::the().yield();
 }
 
 void Process::dump_stack() const

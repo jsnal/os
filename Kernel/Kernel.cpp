@@ -36,6 +36,26 @@
 [[noreturn]] void simple_process_runnable3()
 {
     dbgprintf("Kernel", "Running a simple process 3!\n");
+    auto disk = PATADisk::create(PATADisk::Primary, PATADisk::Slave);
+    if (disk.ptr() != nullptr) {
+        u8 write_buffer[256] = {};
+        write_buffer[0] = 'T';
+        write_buffer[1] = 'a';
+        write_buffer[2] = 'y';
+        write_buffer[3] = 'l';
+        write_buffer[4] = 'o';
+        write_buffer[5] = 'r';
+
+        disk->write_sector(write_buffer, 0);
+
+        u8 read_buffer[256] = {};
+        dbgprintf("Kernel", "About to read!\n");
+        disk->read_sector(read_buffer, 0);
+
+        for (u16 i = 0; i < 32; i++) {
+            dbgprintf("Kernel", "read: %c\n", read_buffer[i]);
+        }
+    }
     while (true) {
     }
 }
@@ -82,25 +102,6 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     MemoryManager::the().init(boot_page_directory, multiboot);
 
-    auto disk = PATADisk::create(PATADisk::Primary, PATADisk::Slave);
-    if (disk.ptr() != nullptr) {
-        u8 write_buffer[256] = {};
-        write_buffer[0] = 'T';
-        write_buffer[1] = 'a';
-        write_buffer[2] = 'y';
-        write_buffer[3] = 'l';
-        write_buffer[4] = 'o';
-        write_buffer[5] = 'r';
-
-        disk->write_sector(write_buffer, 0);
-
-        u8 read_buffer[256] = {};
-        disk->read_sector(read_buffer, 0);
-
-        for (u16 i = 0; i < 32; i++) {
-            dbgprintf("Kernel", "read: %c\n", read_buffer[i]);
-        }
-    }
     kernel_main();
 
     while (true) {

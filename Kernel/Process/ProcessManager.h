@@ -19,6 +19,8 @@ public:
 
     static void init();
 
+    static Process& current_process() { return *s_current_process; }
+
     ProcessManager();
 
     void create_kernel_process(void (*entry_point)(), const char* name);
@@ -26,6 +28,11 @@ public:
     ResultOr<Process*> find_by_pid(pid_t) const;
 
     void schedule();
+
+    void yield();
+
+    void enter_critical();
+    void exit_critical();
 
 private:
     static pid_t get_next_pid() { return s_current_pid++; }

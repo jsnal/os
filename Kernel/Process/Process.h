@@ -7,9 +7,12 @@
 #pragma once
 
 #include <Kernel/CPU/TSS.h>
+#include <Kernel/Process/WaitingStatus.h>
 #include <Universal/LinkedList.h>
 #include <Universal/ShareCounted.h>
 #include <Universal/Types.h>
+
+class WaitingStatus;
 
 class Process : public LinkedListNode<Process> {
     friend class LinkedListNode<Process>;
@@ -44,6 +47,9 @@ public:
 
     void set_state(State state) { m_state = state; }
     State state() const { return m_state; }
+
+    void set_ready();
+    void set_waiting(WaitingStatus&);
 
 private:
     Process(void (*entry_point)(), u32 pid, const char* name, bool is_kernel);

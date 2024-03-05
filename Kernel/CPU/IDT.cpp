@@ -47,7 +47,7 @@ static void divide_by_zero_handler()
 
 namespace IDT {
 
-void register_interrupt_handler(uint32_t interrupt_number, InterruptHandler handler)
+void register_interrupt_handler(u32 interrupt_number, InterruptHandler handler)
 {
     if (interrupt_number < IDT_ENTRY_COUNT) {
         s_interrupt_handlers[interrupt_number] = handler;
@@ -57,6 +57,19 @@ void register_interrupt_handler(uint32_t interrupt_number, InterruptHandler hand
         }
     } else {
         errprintf("Unable to register %d, out of bounds\n", interrupt_number);
+    }
+}
+
+void unregister_interrupt_handler(u32 interrupt_number)
+{
+    if (interrupt_number < IDT_ENTRY_COUNT) {
+        s_interrupt_handlers[interrupt_number] = nullptr;
+
+        if (interrupt_number >= 32 && interrupt_number <= 47) {
+            PIC::mask(interrupt_number - 32);
+        }
+    } else {
+        errprintf("Unable to unregister %d, out of bounds\n", interrupt_number);
     }
 }
 

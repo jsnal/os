@@ -1,3 +1,4 @@
+#include <Kernel/CPU/IDT.h>
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Process/ProcessManager.h>
@@ -72,6 +73,8 @@ void ProcessManager::schedule()
     Process* previous_process = s_current_process;
     Process* p = s_current_process;
 
+    enter_critical();
+
     if (s_current_process == s_kernel_process) {
         p = s_processes->head();
     }
@@ -83,6 +86,7 @@ void ProcessManager::schedule()
             p = p->next();
         }
 
+        dbgprintf("ProcessManager", "Process '%s' state %d\n", p->name(), p->state());
         if (p->state() == Process::Ready) {
             next_process = p;
             break;
@@ -95,6 +99,23 @@ void ProcessManager::schedule()
         return;
     }
 
+    // dbgprintf("ProcessManager", "Scheduling '%s'\n", next_process->name());
     s_current_process = next_process;
     context_switch(previous_process->context_ptr(), next_process->context_ptr());
+}
+
+void ProcessManager::yield()
+{
+    // TODO: This should check for more conditions
+    schedule();
+}
+
+void ProcessManager::enter_critical()
+{
+    cli();
+}
+
+void ProcessManager::exit_critical()
+{
+    sti();
 }
