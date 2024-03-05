@@ -8,6 +8,7 @@
 
 #include <Kernel/Bus/PCI.h>
 #include <Kernel/Devices/ATA.h>
+#include <Kernel/Process/Spinlock.h>
 #include <Universal/Result.h>
 
 class PATADisk {
@@ -22,16 +23,24 @@ public:
         Slave
     };
 
-    static PATADisk* create(Channel, Type);
+    PATADisk(Bus::PCI::Address, Channel, Type);
+
+    static UniquePtr<PATADisk> create(Channel, Type);
 
     Result read_sector(u8* buffer, u32 lba) const;
+
+    Result write_sector(const u8* buffer, u32 lba) const;
 
     Bus::PCI::Address pci_address() const { return m_pci_address; }
 
 private:
-    PATADisk(Bus::PCI::Address, Channel, Type);
-
     static void disk_interrupts_handler();
+
+    Result initiate_command(u8 command, u32 lba, u8 sectors) const;
+
+    void wait_until_ready() const;
+
+    static Spinlock s_lock;
 
     char m_model_number[ATA_IDENT_MODEL_LENGTH];
     u32 m_addressable_blocks { 0 };

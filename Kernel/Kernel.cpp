@@ -82,15 +82,25 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     MemoryManager::the().init(boot_page_directory, multiboot);
 
-    auto disk1 = PATADisk::create(PATADisk::Primary, PATADisk::Slave);
-    u8 buffer[256] = {};
-    disk1->read_sector(buffer, 2);
+    auto disk = PATADisk::create(PATADisk::Primary, PATADisk::Slave);
+    if (disk.ptr() != nullptr) {
+        u8 write_buffer[256] = {};
+        write_buffer[0] = 'T';
+        write_buffer[1] = 'a';
+        write_buffer[2] = 'y';
+        write_buffer[3] = 'l';
+        write_buffer[4] = 'o';
+        write_buffer[5] = 'r';
 
-    for (u16 i = 0x88; i < 0x88 + 32; i++) {
-        dbgprintf("Kernel", "read: %x\n", buffer[i]);
+        disk->write_sector(write_buffer, 0);
+
+        u8 read_buffer[256] = {};
+        disk->read_sector(read_buffer, 0);
+
+        for (u16 i = 0; i < 32; i++) {
+            dbgprintf("Kernel", "read: %c\n", read_buffer[i]);
+        }
     }
-    dbgprintf("Kernel", "String: %s\n", buffer + 0x88);
-
     kernel_main();
 
     while (true) {

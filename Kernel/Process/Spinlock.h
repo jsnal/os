@@ -9,6 +9,8 @@
 #include <Universal/Atomic.h>
 #include <Universal/Types.h>
 
+namespace Universal {
+
 class Spinlock {
 public:
     Spinlock() { }
@@ -34,3 +36,25 @@ private:
 
     Atomic<u8> m_lock { 0 };
 };
+
+class ScopedSpinlock {
+public:
+    ScopedSpinlock(Spinlock& lock)
+        : m_lock(lock)
+    {
+        m_lock.lock();
+    };
+
+    ~ScopedSpinlock()
+    {
+        m_lock.unlock();
+    }
+
+private:
+    Spinlock& m_lock;
+};
+
+}
+
+using Universal::ScopedSpinlock;
+using Universal::Spinlock;
