@@ -30,8 +30,7 @@ static u32 s_seconds_since_boot = 0;
 static u8 s_wakeup_routine_count = 0;
 static PIT::WakeupRoutine s_wakeup_routines[WAKEUP_ROUTINES_SIZE];
 
-static void
-pit_interrupt_handler()
+static void pit_interrupt_handler(InterruptFrame*)
 {
     s_milliseconds_since_boot++;
     if (s_milliseconds_since_boot % TICKS_PER_SECOND == 0) {

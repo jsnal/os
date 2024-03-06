@@ -7,12 +7,13 @@
 #pragma once
 
 #include <Kernel/Bus/PCI.h>
+#include <Kernel/CPU/IRQHandler.h>
 #include <Kernel/Devices/ATA.h>
 #include <Kernel/Process/Spinlock.h>
 #include <Kernel/Process/WaitingStatus.h>
 #include <Universal/Result.h>
 
-class PATADisk {
+class PATADisk : public IRQHandler {
 public:
     enum Channel {
         Primary,
@@ -32,7 +33,11 @@ public:
 
     Result write_sector(const u8* buffer, u32 lba) const;
 
+    void clear_interrupts() const;
+
     Bus::PCI::Address pci_address() const { return m_pci_address; }
+
+    void handle() override;
 
 private:
     static void disk_interrupts_handler();
@@ -43,9 +48,9 @@ private:
 
     static Spinlock s_lock;
     static WaitingStatus s_waiting_status;
+    static bool s_currently_waiting;
 
     char m_model_number[ATA_IDENT_MODEL_LENGTH];
-    u8 m_interrupt_number { 0 };
     u32 m_addressable_blocks { 0 };
     u16 m_io_base { 0 };
     u16 m_control_base { 0 };

@@ -20,7 +20,7 @@ MemoryManager::MemoryManager()
 {
 }
 
-static void page_fault_interrupt_handler()
+static void page_fault_interrupt_handler(InterruptFrame*)
 {
     u32 fault_address;
     asm volatile("mov %0, cr2"

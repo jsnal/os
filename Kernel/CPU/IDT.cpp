@@ -25,11 +25,13 @@ static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t
 
 extern "C" void isr_handler(InterruptFrame* frame)
 {
-    if (frame == nullptr || frame->interrupt_number > IDT_ENTRY_COUNT || s_interrupt_handlers[frame->interrupt_number] == nullptr) {
+    if (frame == nullptr || frame->interrupt_number > IDT_ENTRY_COUNT) {
         panic("Interrupt %d is not handled! Error %x\n", frame->interrupt_number, frame->error_number);
     }
 
-    s_interrupt_handlers[frame->interrupt_number]();
+    if (s_interrupt_handlers[frame->interrupt_number] != nullptr) {
+        s_interrupt_handlers[frame->interrupt_number](frame);
+    }
 
     if (frame->interrupt_number >= 32 && frame->interrupt_number <= 47) {
         PIC::eoi(frame->interrupt_number - 32);
@@ -40,7 +42,7 @@ extern "C" void isr_handler(InterruptFrame* frame)
     IDT::dump_interrupt_frame(*frame);
 }
 
-static void divide_by_zero_handler()
+static void divide_by_zero_handler(InterruptFrame*)
 {
     panic("Divide by zero detected!\n");
 }

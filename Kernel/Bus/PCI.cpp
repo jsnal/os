@@ -12,6 +12,7 @@
 
 #define PCI_VENDOR_ID 0x0
 #define PCI_DEVICE_ID 0x2
+#define PCI_COMMAND 0x4
 #define PCI_SUBCLASS 0xA
 #define PCI_CLASS 0xB
 #define PCI_HEADER_TYPE 0xE
@@ -51,6 +52,33 @@ u32 read32(Address address, u8 field)
 
     IO::outl(PCI_ADDRESS_PORT, get_io_address(address, field));
     return IO::inl(PCI_DATA_PORT);
+}
+
+void write8(Address address, u8 field, u8 value)
+{
+    IO::outl(PCI_ADDRESS_PORT, get_io_address(address, field));
+    IO::outb(PCI_DATA_PORT + (field & 3), value);
+}
+
+void write16(Address address, u8 field, u16 value)
+{
+    IO::outl(PCI_ADDRESS_PORT, get_io_address(address, field));
+    IO::outw(PCI_DATA_PORT + (field & 2), value);
+}
+
+void write32(Address address, u8 field, u16 value)
+{
+    IO::outl(PCI_ADDRESS_PORT, get_io_address(address, field));
+    IO::outw(PCI_DATA_PORT, value);
+}
+
+void enable_interrupt(Address address)
+{
+    Command command = {
+        .value = read16(address, PCI_COMMAND)
+    };
+    command.attributes.interrupt_disable = false;
+    write16(address, PCI_COMMAND, command.value);
 }
 
 static void enumerate_functions(u8 bus, u8 slot, u8 functions, EnumerateCallback& callback)

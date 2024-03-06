@@ -5,8 +5,9 @@
 #define ISR_PAGE_FAULT 14
 #define ISR_PIT 32
 #define ISR_KEYBOARD 33
-#define ISR_DISK_MASTER 46
-#define ISR_DISK_SLAVE 47
+
+#define IRQ_DISK_PRIMARY 14
+#define IRQ_DISK_SECONDARY 15
 
 struct [[gnu::packed]] IDTEntry {
     u16 base_low;
@@ -40,7 +41,7 @@ struct InterruptFrame {
     u32 ss;
 };
 
-typedef void (*InterruptHandler)();
+typedef void (*InterruptHandler)(InterruptFrame*);
 
 static inline void sti()
 {

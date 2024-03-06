@@ -130,7 +130,7 @@ Keyboard::Keyboard()
 {
 }
 
-static void keyboard_interrupt_handler()
+static void keyboard_interrupt_handler(InterruptFrame*)
 {
     Keyboard::the().handle_interrupt();
 }

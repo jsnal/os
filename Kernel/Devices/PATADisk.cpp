@@ -13,6 +13,7 @@
 
 Spinlock PATADisk::s_lock {};
 WaitingStatus PATADisk::s_waiting_status {};
+bool PATADisk::s_currently_waiting { false };
 
 UniquePtr<PATADisk> PATADisk::create(Channel channel, Type type)
 {
@@ -91,13 +92,16 @@ UniquePtr<PATADisk> PATADisk::create(Channel channel, Type type)
     disk->m_addressable_blocks = ata_info->user_addressable_sectors;
     dbgprintf("PATADisk", "Disk '%s' created with %d blocks\n", disk->m_model_number, disk->m_addressable_blocks);
 
+    // NOTE: The IDENTIFY command generates an interrupt that needs to be cleared before
+    //       issuing any other commands to the controller.
+    disk->clear_interrupts();
     return disk;
 }
 
 PATADisk::PATADisk(Bus::PCI::Address address, Channel channel, Type type)
-    : m_interrupt_number(type == Master ? ISR_DISK_MASTER : ISR_DISK_SLAVE)
+    : IRQHandler(channel == Primary ? IRQ_DISK_PRIMARY : IRQ_DISK_SECONDARY)
     , m_io_base(channel == Primary ? 0x1F0 : 0x170)
-    , m_control_base(channel == Primary ? 0x3f6 : 0x376)
+    , m_control_base(channel == Primary ? 0x3F6 : 0x376)
     , m_channel(channel)
     , m_type(type)
     , m_pci_address(address)
@@ -114,17 +118,18 @@ Result PATADisk::read_sector(u8* buffer, u32 lba) const
     s_waiting_status = WaitingStatus(&ProcessManager::current_process());
     s_waiting_status.set_waiting();
 
-    IDT::register_interrupt_handler(m_interrupt_number, disk_interrupts_handler);
-    ProcessManager::current_process().set_waiting(s_waiting_status);
+    // IDT::register_interrupt_handler(m_interrupt_number, disk_interrupts_handler);
+    // ProcessManager::current_process().set_waiting(s_waiting_status);
 
-    ProcessManager::the().enter_critical();
+    // ProcessManager::the().enter_critical();
     u16* ptr = (u16*)buffer;
     for (u16 i = 0; i < 256; ++i) {
         ptr[i] = IO::inw(m_io_base);
     }
-    ProcessManager::the().exit_critical();
 
-    IDT::unregister_interrupt_handler(m_interrupt_number);
+    // IDT::unregister_interrupt_handler(m_interrupt_number);
+    // ProcessManager::the().exit_critical();
+
     return Result(Result::OK);
 }
 
@@ -136,20 +141,25 @@ Result PATADisk::write_sector(const u8* buffer, u32 lba) const
     s_waiting_status = WaitingStatus(&ProcessManager::current_process());
     s_waiting_status.set_waiting();
 
-    IDT::register_interrupt_handler(m_interrupt_number, disk_interrupts_handler);
-    ProcessManager::current_process().set_waiting(s_waiting_status);
-    dbgprintf("PATADisk", "writing\n");
+    // IDT::register_interrupt_handler(m_interrupt_number, disk_interrupts_handler);
+    // ProcessManager::current_process().set_waiting(s_waiting_status);
+    // dbgprintf("PATADisk", "writing\n");
 
-    ProcessManager::the().enter_critical();
+    // ProcessManager::the().enter_critical();
     for (u16 i = 0; i < 256; i++) {
         IO::outw(m_io_base + ATA_REG_DATA, buffer[i * 2] + (buffer[i * 2 + 1] << 8));
     }
 
-    dbgprintf("PATADisk", "writing critical\n");
-    IDT::unregister_interrupt_handler(m_interrupt_number);
-    ProcessManager::the().exit_critical();
+    // dbgprintf("PATADisk", "writing critical\n");
+    // IDT::unregister_interrupt_handler(m_interrupt_number);
+    // ProcessManager::the().exit_critical();
 
     return Result(Result::OK);
+}
+
+void PATADisk::clear_interrupts() const
+{
+    IO::inb(m_io_base + ATA_REG_STATUS);
 }
 
 Result PATADisk::initiate_command(u8 command, u32 lba, u8 sectors) const
@@ -157,8 +167,9 @@ Result PATADisk::initiate_command(u8 command, u32 lba, u8 sectors) const
     ProcessManager::the().enter_critical();
 
     wait_until_ready();
-
-    IO::outb(m_io_base + ATA_REG_HDDEVSEL, 0xE0 | ((m_type == Slave) << 4) | ((lba >> 24) & 0x0F));
+    dbgprintf("PATADisk", "address %x\n", m_io_base + ATA_REG_HDDEVSEL);
+    dbgprintf("PATADisk", "address %x\n", 0xE0 | (m_type == Slave ? 0x8 : 0x0) | (lba & 0xF000000) >> 24);
+    IO::outb(m_io_base + ATA_REG_HDDEVSEL, 0xE0 | (m_type == Slave ? 0x8 : 0x0) | (lba & 0xF000000) >> 24);
 
     IO::delay(20);
 
@@ -184,8 +195,11 @@ void PATADisk::wait_until_ready() const
     }
 }
 
-void PATADisk::disk_interrupts_handler()
+void PATADisk::handle()
 {
-    dbgprintf("PATADisk", "Received an interrupt while waiting on %s\n", PATADisk::s_waiting_status.process().name());
-    PATADisk::s_waiting_status.set_ready();
+    u8 status = IO::inb(m_io_base + ATA_REG_STATUS);
+    dbgprintf("PATADisk", "Received an interrupt while waiting\n");
+    dbgprintf("PATADisk", "DRQ=%d BSY=%d DRDY=%d ERR=%d\n", (status & ATA_SR_DRQ) == 0, (status & ATA_SR_BSY) == 0, (status & ATA_SR_DRDY) == 0, (status & ATA_SR_ERR) == 0);
+
+    // PATADisk::s_waiting_status.set_ready();
 }
