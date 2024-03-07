@@ -9,8 +9,17 @@
 #include <Kernel/CPU/IDT.h>
 #include <Universal/Types.h>
 
+#define IRQ_HANDLER_COUNT 16
+
+#define IRQ_PIT 0
+#define IRQ_KEYBOARD 1
+#define IRQ_DISK_PRIMARY 14
+#define IRQ_DISK_SECONDARY 15
+
 class IRQHandler {
 public:
+    static void handle_all_irqs(const InterruptFrame&);
+
     virtual void handle() = 0;
 
 protected:
@@ -18,8 +27,6 @@ protected:
 
     IRQHandler(int irq);
     ~IRQHandler();
-
-    static void handle_all_irqs(InterruptFrame*);
 
     bool enabled() const { return m_enabled; }
 

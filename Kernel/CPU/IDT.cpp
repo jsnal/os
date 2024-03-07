@@ -1,18 +1,24 @@
 #include <Kernel/CPU/IDT.h>
+#include <Kernel/CPU/IRQHandler.h>
 #include <Kernel/CPU/PIC.h>
 #include <Kernel/Logger.h>
 #include <Kernel/panic.h>
+#include <Universal/Number.h>
 #include <Universal/Stdlib.h>
-// #include <devices/vga.h>
 
 #define IDT_ENTRY_LIMIT 256
-#define IDT_ENTRY_COUNT 48
+#define EXCEPTION_HANDLER_COUNT 32
 
-static InterruptHandler s_interrupt_handlers[IDT_ENTRY_COUNT];
+static ExceptionHandler s_exception_handlers[EXCEPTION_HANDLER_COUNT];
 
-__attribute__((aligned(0x10))) static IDTEntry s_idt_entries[IDT_ENTRY_LIMIT];
+[[gnu::aligned(0x10)]] static IDTEntry s_idt_entries[IDT_ENTRY_LIMIT];
 
 static IDTPointer s_idt_pointer;
+
+static void divide_by_zero_exception_handler(const InterruptFrame&)
+{
+    panic("Divide by zero detected!\n");
+}
 
 static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t flags)
 {
@@ -25,62 +31,43 @@ static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t
 
 extern "C" void isr_handler(InterruptFrame* frame)
 {
-    if (frame == nullptr || frame->interrupt_number > IDT_ENTRY_COUNT) {
-        panic("Interrupt %d is not handled! Error %x\n", frame->interrupt_number, frame->error_number);
+    if (frame == nullptr || frame->interrupt_number > EXCEPTION_HANDLER_COUNT + IRQ_HANDLER_COUNT - 1) {
+        if (frame == nullptr) {
+            panic("Interrupt ? is not handled! Error ?!\n");
+        }
+        panic("Interrupt %d is not handled! Error %d!\n", frame->interrupt_number, frame->error_number);
     }
 
-    if (s_interrupt_handlers[frame->interrupt_number] != nullptr) {
-        s_interrupt_handlers[frame->interrupt_number](frame);
+    if (number_between_inclusive(frame->interrupt_number, 0, 31)) {
+        if (s_exception_handlers[frame->interrupt_number] != nullptr) {
+            s_exception_handlers[frame->interrupt_number](*frame);
+        }
+
+        dbgprintf("IDT", "Interrupt fired: %d\n", frame->interrupt_number);
+        IDT::dump_interrupt_frame(*frame);
+    } else {
+        IRQHandler::handle_all_irqs(*frame);
     }
-
-    if (frame->interrupt_number >= 32 && frame->interrupt_number <= 47) {
-        PIC::eoi(frame->interrupt_number - 32);
-        return;
-    }
-
-    dbgprintf("IDT", "Interrupt fired: %d:%x\n", frame->interrupt_number, frame->interrupt_number);
-    IDT::dump_interrupt_frame(*frame);
-}
-
-static void divide_by_zero_handler(InterruptFrame*)
-{
-    panic("Divide by zero detected!\n");
 }
 
 namespace IDT {
 
-void register_interrupt_handler(u32 interrupt_number, InterruptHandler handler)
+Result register_exception_handler(u32 exception_number, ExceptionHandler handler)
 {
-    if (interrupt_number < IDT_ENTRY_COUNT) {
-        s_interrupt_handlers[interrupt_number] = handler;
-
-        if (interrupt_number >= 32 && interrupt_number <= 47) {
-            PIC::unmask(interrupt_number - 32);
-        }
-    } else {
-        errprintf("Unable to register %d, out of bounds\n", interrupt_number);
+    if (exception_number < EXCEPTION_HANDLER_COUNT) {
+        s_exception_handlers[exception_number] = handler;
+        return Result::OK;
     }
-}
 
-void unregister_interrupt_handler(u32 interrupt_number)
-{
-    if (interrupt_number < IDT_ENTRY_COUNT) {
-        s_interrupt_handlers[interrupt_number] = nullptr;
-
-        if (interrupt_number >= 32 && interrupt_number <= 47) {
-            PIC::mask(interrupt_number - 32);
-        }
-    } else {
-        errprintf("Unable to unregister %d, out of bounds\n", interrupt_number);
-    }
+    return Result::Failure;
 }
 
 void dump_interrupt_frame(const InterruptFrame& frame)
 {
-    errprintf("EAX=%x EBX=%x ECX=%x EDX=%x\n", frame.eax, frame.ebx, frame.ecx, frame.edx);
-    errprintf("ESI=%x EDI=%x EBP=%x ESP=%x\n", frame.esi, frame.edi, frame.ebp, frame.esp);
-    errprintf("DS=%x CS=%x SS=%x\n", frame.ds, frame.cs, frame.ss);
-    errprintf("EFLAGS=%x\n", frame.eflags);
+    dbgprintf("IDT", "EAX=%x EBX=%x ECX=%x EDX=%x\n", frame.eax, frame.ebx, frame.ecx, frame.edx);
+    dbgprintf("IDT", "ESI=%x EDI=%x EBP=%x ESP=%x\n", frame.esi, frame.edi, frame.ebp, frame.esp);
+    dbgprintf("IDT", "DS=%x CS=%x SS=%x\n", frame.ds, frame.cs, frame.ss);
+    dbgprintf("IDT", "EFLAGS=%x\n", frame.eflags);
 }
 
 void init()
@@ -146,7 +133,8 @@ void init()
 
     dbgprintf("IDT", "Initialized IDT: 0x%x\n", &s_idt_pointer);
 
-    register_interrupt_handler(0, divide_by_zero_handler);
+    if (register_exception_handler(EXCEPTION_DIVIDE_BY_ZERO, divide_by_zero_exception_handler).is_error()) {
+        panic("Unable to register 'divide by zero' exception handler\n");
+    }
 }
-
 }

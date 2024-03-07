@@ -20,7 +20,7 @@ MemoryManager::MemoryManager()
 {
 }
 
-static void page_fault_interrupt_handler(InterruptFrame*)
+static void page_fault_exception_handler(const InterruptFrame&)
 {
     u32 fault_address;
     asm volatile("mov %0, cr2"
@@ -36,7 +36,7 @@ void MemoryManager::init(u32* boot_page_directory, const multiboot_information_t
     }
 
     the().internal_init(boot_page_directory, multiboot);
-    IDT::register_interrupt_handler(ISR_PAGE_FAULT, page_fault_interrupt_handler);
+    IDT::register_exception_handler(EXCEPTION_PAGE_FAULT, page_fault_exception_handler);
 }
 
 void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_information_t* multiboot)

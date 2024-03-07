@@ -6,23 +6,23 @@
 
 #pragma once
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <Kernel/CPU/IRQHandler.h>
+#include <Universal/Types.h>
 
-class Keyboard final {
+class Keyboard final : public IRQHandler {
 public:
     static Keyboard& the();
 
     Keyboard();
 
+    void handle() override;
+
     void init();
 
-    void handle_interrupt();
-
 private:
-    uint32_t get_scan_code();
+    u32 get_scan_code();
 
     void update_modifier(uint8_t modifier, bool pressed);
 
-    uint32_t m_modifier { 0 };
+    u32 m_modifier { 0 };
 };

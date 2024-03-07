@@ -9,6 +9,18 @@
 namespace Universal {
 
 template<typename T, typename U>
+inline constexpr bool number_between(T number, U a, U b)
+{
+    return number > a && number < b;
+}
+
+template<typename T, typename U>
+inline constexpr bool number_between_inclusive(T number, U a, U b)
+{
+    return number >= a && number <= b;
+}
+
+template<typename T, typename U>
 inline constexpr T ceiling_divide(T a, U b)
 {
     T result = a / b;
@@ -21,3 +33,5 @@ inline constexpr T ceiling_divide(T a, U b)
 }
 
 using Universal::ceiling_divide;
+using Universal::number_between;
+using Universal::number_between_inclusive;

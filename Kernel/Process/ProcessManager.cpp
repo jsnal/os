@@ -44,7 +44,7 @@ ProcessManager::ProcessManager()
 
 void ProcessManager::init()
 {
-    PIT::register_pit_wakeup(QUANTUM_IN_MILLISECONDS, pit_schedule_wakeup);
+    PIT::the().register_pit_wakeup(QUANTUM_IN_MILLISECONDS, pit_schedule_wakeup);
 
     s_current_process = s_kernel_process;
     context_run(s_kernel_process->m_context);

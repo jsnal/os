@@ -1,4 +1,3 @@
-#include <Kernel/CPU/IDT.h>
 #include <Kernel/Devices/Keyboard.h>
 #include <Kernel/Devices/VGA.h>
 #include <Kernel/IO.h>
@@ -26,7 +25,7 @@
 #define KEYBOARD_MODIFIER_ALT 0x04
 #define KEYBOARD_MODIFIER_CAPS_LOCK 0x08
 
-static const uint8_t keyboard_map_1[] = {
+static const u8 keyboard_map_1[] = {
     KEY_NULL,
     KEY_ESCAPE,
     '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=',
@@ -73,7 +72,7 @@ static const uint8_t keyboard_map_1[] = {
     KEY_NULL, KEY_NULL
 };
 
-static const uint8_t keyboard_map_2[] = {
+static const u8 keyboard_map_2[] = {
     KEY_NULL,
     KEY_ESCAPE,
     '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',
@@ -127,23 +126,15 @@ Keyboard& Keyboard::the()
 }
 
 Keyboard::Keyboard()
+    : IRQHandler(IRQ_KEYBOARD)
 {
+    enable_irq();
 }
 
-static void keyboard_interrupt_handler(InterruptFrame*)
-{
-    Keyboard::the().handle_interrupt();
-}
-
-void Keyboard::init()
-{
-    IDT::register_interrupt_handler(ISR_KEYBOARD, keyboard_interrupt_handler);
-}
-
-void Keyboard::handle_interrupt()
+void Keyboard::handle()
 {
 
-    uint32_t scan_code = get_scan_code();
+    u32 scan_code = get_scan_code();
     bool pressed = (scan_code & 0x80) == 0;
     // char converted_character = 0;
 
@@ -183,14 +174,14 @@ void Keyboard::handle_interrupt()
 
 uint32_t Keyboard::get_scan_code()
 {
-    uint32_t code = IO::inb(KEYBOARD_PORT);
-    uint32_t value = IO::inb(KEYBOARD_ACK);
+    u32 code = IO::inb(KEYBOARD_PORT);
+    u32 value = IO::inb(KEYBOARD_ACK);
     IO::outb(KEYBOARD_ACK, value | 0x80);
     IO::outb(KEYBOARD_ACK, value);
     return code;
 }
 
-void Keyboard::update_modifier(uint8_t modifier, bool pressed)
+void Keyboard::update_modifier(u8 modifier, bool pressed)
 {
     if (pressed) {
         m_modifier |= modifier;

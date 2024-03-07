@@ -5,32 +5,32 @@
  */
 
 #include <Kernel/CPU/IRQHandler.h>
+#include <Kernel/CPU/PIC.h>
+#include <Kernel/Logger.h>
 
-#define IRQ_COUNT 16
-
-IRQHandler* s_handlers[IRQ_COUNT];
+IRQHandler* s_handlers[IRQ_HANDLER_COUNT];
 
 IRQHandler::IRQHandler(int irq)
     : m_irq(irq)
 {
     s_handlers[m_irq] = this;
-    IDT::register_interrupt_handler(m_irq, handle_all_irqs);
+    PIC::unmask(m_irq);
 }
 
 IRQHandler::~IRQHandler()
 {
+    PIC::mask(m_irq);
     s_handlers[m_irq] = nullptr;
-    IDT::unregister_interrupt_handler(m_irq);
 }
 
-void IRQHandler::handle_all_irqs(InterruptFrame* frame)
+void IRQHandler::handle_all_irqs(const InterruptFrame& frame)
 {
-    IRQHandler* handler = s_handlers[frame->interrupt_number - 0x20];
-    if (handler == nullptr || !handler->enabled()) {
-        return;
+    IRQHandler* handler = s_handlers[frame.interrupt_number - 32];
+    if (handler != nullptr && handler->enabled()) {
+        handler->handle();
     }
 
-    s_handlers[frame->interrupt_number]->handle();
+    PIC::eoi(frame.interrupt_number - 32);
 }
 
 void IRQHandler::enable_irq()

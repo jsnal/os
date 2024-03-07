@@ -7,22 +7,37 @@
 #ifndef _DEVICES_PIT_H_
 #define _DEVICES_PIT_H_
 
+#include <Kernel/CPU/IRQHandler.h>
 #include <Universal/Types.h>
 
 #define TICKS_PER_SECOND 1000
-
-namespace PIT {
+#define WAKEUP_ROUTINES_COUNT 2
 
 struct WakeupRoutine {
     u32 milliseconds;
     void (*wakeup_routine)();
 };
 
-void register_pit_wakeup(u32, void (*wakeup_routine_pointer)());
-uint32_t milliseconds_since_boot();
-uint32_t seconds_since_boot();
-void init();
+class PIT final : public IRQHandler {
+public:
+    static PIT& the();
 
-}
+    PIT();
+
+    void handle() override;
+
+    static u32 milliseconds_since_boot() { return s_milliseconds_since_boot; }
+
+    static u32 seconds_since_boot() { return s_seconds_since_boot; }
+
+    void register_pit_wakeup(u32 milliseconds, void (*wakeup_routine_pointer)());
+
+private:
+    static u32 s_milliseconds_since_boot;
+    static u32 s_seconds_since_boot;
+
+    u8 m_wakeup_routine_count { 0 };
+    WakeupRoutine m_wakeup_routines[WAKEUP_ROUTINES_COUNT] {};
+};
 
 #endif

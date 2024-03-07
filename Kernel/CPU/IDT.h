@@ -1,13 +1,10 @@
 #pragma once
 
+#include <Universal/Result.h>
 #include <Universal/Types.h>
 
-#define ISR_PAGE_FAULT 14
-#define ISR_PIT 32
-#define ISR_KEYBOARD 33
-
-#define IRQ_DISK_PRIMARY 14
-#define IRQ_DISK_SECONDARY 15
+#define EXCEPTION_DIVIDE_BY_ZERO 0
+#define EXCEPTION_PAGE_FAULT 14
 
 struct [[gnu::packed]] IDTEntry {
     u16 base_low;
@@ -41,7 +38,7 @@ struct InterruptFrame {
     u32 ss;
 };
 
-typedef void (*InterruptHandler)(InterruptFrame*);
+typedef void (*ExceptionHandler)(const InterruptFrame&);
 
 static inline void sti()
 {
@@ -55,9 +52,7 @@ static inline void cli()
 
 namespace IDT {
 
-void register_interrupt_handler(u32 interrupt_number, InterruptHandler);
-
-void unregister_interrupt_handler(u32 interrupt_number);
+Result register_exception_handler(u32 exception_number, ExceptionHandler);
 
 void dump_interrupt_frame(const InterruptFrame&);
 

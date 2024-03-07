@@ -68,7 +68,7 @@
 
     // Storage::ATA::init();
 
-    Keyboard::the().init();
+    Keyboard::the();
 
     vga_write("System Booted!");
 
@@ -96,7 +96,7 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     PIC::init();
 
-    PIT::init();
+    PIT::the();
 
     vga_init();
 
