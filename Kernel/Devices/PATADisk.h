@@ -13,7 +13,7 @@
 #include <Kernel/Process/WaitingStatus.h>
 #include <Universal/Result.h>
 
-class PATADisk : public IRQHandler {
+class PATADisk final : public IRQHandler {
 public:
     enum Channel {
         Primary,
@@ -29,20 +29,20 @@ public:
 
     static UniquePtr<PATADisk> create(Channel, Type);
 
-    Result read_sector(u8* buffer, u32 lba) const;
+    Result read_sector(u8* buffer, u32 lba);
 
-    Result write_sector(const u8* buffer, u32 lba) const;
+    Result write_sector(const u8* buffer, u32 lba);
 
     void clear_interrupts() const;
 
     Bus::PCI::Address pci_address() const { return m_pci_address; }
 
+private:
     void handle() override;
 
-private:
     static void disk_interrupts_handler();
 
-    Result initiate_command(u8 command, u32 lba, u8 sectors) const;
+    void initiate_command(u8 command, u32 lba, u8 sectors);
 
     void wait_until_ready() const;
 

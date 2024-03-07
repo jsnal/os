@@ -19,7 +19,7 @@ public:
 
     static void init();
 
-    static Process& current_process() { return *s_current_process; }
+    static Process* current_process() { return s_current_process; }
 
     ProcessManager();
 

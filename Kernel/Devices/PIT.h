@@ -24,8 +24,6 @@ public:
 
     PIT();
 
-    void handle() override;
-
     static u32 milliseconds_since_boot() { return s_milliseconds_since_boot; }
 
     static u32 seconds_since_boot() { return s_seconds_since_boot; }
@@ -33,6 +31,8 @@ public:
     void register_pit_wakeup(u32 milliseconds, void (*wakeup_routine_pointer)());
 
 private:
+    void handle() override;
+
     static u32 s_milliseconds_since_boot;
     static u32 s_seconds_since_boot;
 

@@ -30,6 +30,13 @@ void IRQHandler::handle_all_irqs(const InterruptFrame& frame)
         handler->handle();
     }
 
+    if (frame.interrupt_number == 46) {
+        dbgprintf("IRQ", "Got disk drive interrupt 46\n");
+    }
+    if (frame.interrupt_number == 47) {
+        dbgprintf("IRQ", "Got disk drive interrupt 47\n");
+    }
+
     PIC::eoi(frame.interrupt_number - 32);
 }
 

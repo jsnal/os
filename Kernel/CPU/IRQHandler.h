@@ -20,8 +20,6 @@ class IRQHandler {
 public:
     static void handle_all_irqs(const InterruptFrame&);
 
-    virtual void handle() = 0;
-
 protected:
     IRQHandler() {};
 
@@ -34,6 +32,8 @@ protected:
     void disable_irq();
 
 private:
+    virtual void handle() = 0;
+
     u8 m_irq { 0 };
 
     bool m_enabled { false };

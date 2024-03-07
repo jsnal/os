@@ -15,11 +15,11 @@ public:
 
     Keyboard();
 
-    void handle() override;
-
     void init();
 
 private:
+    void handle() override;
+
     u32 get_scan_code();
 
     void update_modifier(uint8_t modifier, bool pressed);

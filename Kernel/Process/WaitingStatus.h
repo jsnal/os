@@ -20,15 +20,16 @@ public:
     {
     }
 
-    Process& process() { return *m_process; }
+    Process* process() { return m_process; }
 
-    [[gnu::always_inline]] inline void set_waiting() { m_is_waiting.store(1); };
-    [[gnu::always_inline]] inline void set_ready() { m_is_waiting.store(0); };
+    [[gnu::always_inline]] inline void set_waiting() { m_is_waiting = true; };
+    [[gnu::always_inline]] inline void set_ready() { m_is_waiting = false; };
 
-    [[gnu::always_inline]] inline bool is_ready() { return m_is_waiting.load() == 0; };
+    [[gnu::always_inline]] inline bool is_waiting() { return m_is_waiting; };
+    [[gnu::always_inline]] inline bool is_ready() { return !m_is_waiting; };
 
 private:
     Process* m_process;
 
-    Atomic<u8> m_is_waiting { 0 };
+    bool m_is_waiting { true };
 };

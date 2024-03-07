@@ -51,6 +51,8 @@ public:
     void set_ready();
     void set_waiting(WaitingStatus&);
 
+    bool m_new { true };
+
 private:
     Process(void (*entry_point)(), u32 pid, const char* name, bool is_kernel);
     Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_size, bool is_kernel);

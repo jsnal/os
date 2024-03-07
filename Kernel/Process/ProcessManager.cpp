@@ -14,6 +14,7 @@ LinkedList<Process>* ProcessManager::s_processes;
 extern "C" void context_run(Process::Context* context);
 
 extern "C" void context_switch(Process::Context** old_context, Process::Context** new_context);
+extern "C" void context_switch_new(Process::Context** old_context, Process::Context** new_context);
 
 static void pit_schedule_wakeup()
 {
@@ -99,9 +100,13 @@ void ProcessManager::schedule()
         return;
     }
 
-    // dbgprintf("ProcessManager", "Scheduling '%s'\n", next_process->name());
     s_current_process = next_process;
-    context_switch(previous_process->context_ptr(), next_process->context_ptr());
+    if (next_process->m_new) {
+        next_process->m_new = false;
+        context_switch_new(previous_process->context_ptr(), next_process->context_ptr());
+    } else {
+        context_switch(previous_process->context_ptr(), next_process->context_ptr());
+    }
 }
 
 void ProcessManager::yield()

@@ -30,6 +30,31 @@ context_switch:
     pop ebx
     pop ebp
 
+    ret
+    // mov al, 0x20
+    // out 0x20, al
+    // sti
+    // iret
+
+
+.global context_switch_new
+context_switch_new:
+    push ebp
+    push ebx
+    push esi
+    push edi
+
+    mov eax, [esp + 20]
+    mov edx, [esp + 24]
+
+    mov [eax], esp
+    mov esp, [edx]
+
+    pop edi
+    pop esi
+    pop ebx
+    pop ebp
+
     mov al, 0x20
     out 0x20, al
     sti

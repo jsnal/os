@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2024, Jason Long <jasonlongball@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #include <Kernel/Boot/multiboot.h>
 #include <Kernel/CPU/GDT.h>
 #include <Kernel/CPU/IDT.h>
@@ -38,15 +44,15 @@
     dbgprintf("Kernel", "Running a simple process 3!\n");
     auto disk = PATADisk::create(PATADisk::Primary, PATADisk::Master);
     if (disk.ptr() != nullptr) {
-        // u8 write_buffer[256] = {};
-        // write_buffer[0] = 'T';
-        // write_buffer[1] = 'a';
-        // write_buffer[2] = 'y';
-        // write_buffer[3] = 'l';
-        // write_buffer[4] = 'o';
-        // write_buffer[5] = 'r';
+        u8 write_buffer[256] = {};
+        write_buffer[0] = 'T';
+        write_buffer[1] = 'a';
+        write_buffer[2] = 'y';
+        write_buffer[3] = 'l';
+        write_buffer[4] = 'o';
+        write_buffer[5] = 'r';
 
-        // disk->write_sector(write_buffer, 0);
+        disk->write_sector(write_buffer, 0);
 
         u8 read_buffer[256] = {};
         dbgprintf("Kernel", "About to read!\n");

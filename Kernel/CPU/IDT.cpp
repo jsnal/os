@@ -45,6 +45,7 @@ extern "C" void isr_handler(InterruptFrame* frame)
 
         dbgprintf("IDT", "Interrupt fired: %d\n", frame->interrupt_number);
         IDT::dump_interrupt_frame(*frame);
+        panic("");
     } else {
         IRQHandler::handle_all_irqs(*frame);
     }
