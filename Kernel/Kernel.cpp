@@ -42,7 +42,7 @@
 [[noreturn]] void simple_process_runnable3()
 {
     dbgprintf("Kernel", "Running a simple process 3!\n");
-    auto disk = PATADisk::create(PATADisk::Primary, PATADisk::Master);
+    auto disk = PATADisk::create(PATADisk::Secondary, PATADisk::Master);
     if (disk.ptr() != nullptr) {
         u8 write_buffer[256] = {};
         write_buffer[0] = 'T';
@@ -50,14 +50,24 @@
         write_buffer[2] = 'y';
         write_buffer[3] = 'l';
         write_buffer[4] = 'o';
-        write_buffer[5] = 'r';
+        write_buffer[5] = 'a';
+        disk->write_sectors(write_buffer, 0, 1);
 
-        disk->write_sector(write_buffer, 0);
+        u8 read_buffer[1024] = {};
+        disk->read_sectors(read_buffer, 0, 1);
+        for (u16 i = 0; i < 32; i++) {
+            dbgprintf("Kernel", "read: %c\n", read_buffer[i]);
+        }
 
-        u8 read_buffer[256] = {};
-        dbgprintf("Kernel", "About to read!\n");
-        disk->read_sector(read_buffer, 0);
+        write_buffer[0] = 'J';
+        write_buffer[1] = 'a';
+        write_buffer[2] = 's';
+        write_buffer[3] = 'o';
+        write_buffer[4] = 'n';
+        write_buffer[5] = 'a';
+        disk->write_sectors(write_buffer, 0, 1);
 
+        disk->read_sectors(read_buffer, 0, 1);
         for (u16 i = 0; i < 32; i++) {
             dbgprintf("Kernel", "read: %c\n", read_buffer[i]);
         }
@@ -68,9 +78,9 @@
 
 [[noreturn]] static void kernel_main()
 {
-    ProcessManager::the().create_kernel_process(simple_process_runnable1, "simple1");
-    ProcessManager::the().create_kernel_process(simple_process_runnable2, "simple2");
-    ProcessManager::the().create_kernel_process(simple_process_runnable3, "simple3");
+    PM.create_kernel_process(simple_process_runnable1, "simple1");
+    PM.create_kernel_process(simple_process_runnable2, "simple2");
+    PM.create_kernel_process(simple_process_runnable3, "simple3");
 
     // Storage::ATA::init();
 
@@ -78,7 +88,7 @@
 
     vga_write("System Booted!");
 
-    ProcessManager::the().init();
+    PM.init();
 
     while (true)
         ;

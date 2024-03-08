@@ -13,6 +13,8 @@
 #include <Kernel/Process/WaitingStatus.h>
 #include <Universal/Result.h>
 
+#define SECTOR_SIZE 512
+
 class PATADisk final : public IRQHandler {
 public:
     enum Channel {
@@ -29,9 +31,9 @@ public:
 
     static UniquePtr<PATADisk> create(Channel, Type);
 
-    Result read_sector(u8* buffer, u32 lba);
+    Result read_sectors(u8* buffer, u32 lba, u32 sectors);
 
-    Result write_sector(const u8* buffer, u32 lba);
+    Result write_sectors(const u8* buffer, u32 lba, u32 sectors);
 
     void clear_interrupts() const;
 

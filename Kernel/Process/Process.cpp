@@ -55,14 +55,15 @@ void Process::set_ready()
 
 void Process::set_waiting(WaitingStatus& waiting_status)
 {
-    dbgprintf("Process", "Setting waiting this: %x other: %x\n", this, waiting_status.process());
+    PM.enter_critical();
     if (waiting_status.is_ready()) {
         set_ready();
         return;
     }
-    dbgprintf("Process", "Yielding\n");
     m_state = Waiting;
-    ProcessManager::the().yield();
+    PM.exit_critical();
+
+    PM.yield();
 }
 
 void Process::dump_stack() const

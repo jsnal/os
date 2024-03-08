@@ -17,6 +17,7 @@ SET(KERNEL_SOURCES
     Memory/Zone.cpp
     Process/Process.cpp
     Process/ProcessManager.cpp
+    Process/WaitingStatus.cpp
     Process/context.S
     Runtime.cpp
     Stdlib.cpp

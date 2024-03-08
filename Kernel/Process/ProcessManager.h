@@ -12,6 +12,8 @@
 #include <Universal/SharedPtr.h>
 #include <Universal/Types.h>
 
+#define PM ProcessManager::the()
+
 class ProcessManager final {
 
 public:

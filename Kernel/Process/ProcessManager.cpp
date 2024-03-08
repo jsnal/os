@@ -101,12 +101,12 @@ void ProcessManager::schedule()
     }
 
     s_current_process = next_process;
-    if (next_process->m_new) {
-        next_process->m_new = false;
-        context_switch_new(previous_process->context_ptr(), next_process->context_ptr());
-    } else {
-        context_switch(previous_process->context_ptr(), next_process->context_ptr());
-    }
+    context_switch_new(previous_process->context_ptr(), next_process->context_ptr());
+    // if (next_process->m_new) {
+    //     next_process->m_new = false;
+    // } else {
+    //     context_switch(previous_process->context_ptr(), next_process->context_ptr());
+    // }
 }
 
 void ProcessManager::yield()

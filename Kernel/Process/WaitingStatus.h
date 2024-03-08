@@ -22,11 +22,11 @@ public:
 
     Process* process() { return m_process; }
 
-    [[gnu::always_inline]] inline void set_waiting() { m_is_waiting = true; };
-    [[gnu::always_inline]] inline void set_ready() { m_is_waiting = false; };
+    void set_waiting();
+    void set_ready();
 
-    [[gnu::always_inline]] inline bool is_waiting() { return m_is_waiting; };
-    [[gnu::always_inline]] inline bool is_ready() { return !m_is_waiting; };
+    bool is_waiting() const;
+    bool is_ready() const;
 
 private:
     Process* m_process;

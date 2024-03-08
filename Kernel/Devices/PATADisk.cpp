@@ -108,44 +108,56 @@ PATADisk::PATADisk(Bus::PCI::Address address, Channel channel, Type type)
 {
 }
 
-Result PATADisk::read_sector(u8* buffer, u32 lba)
+Result PATADisk::read_sectors(u8* buffer, u32 lba, u32 sectors)
 {
-    dbgprintf("PATADisk", "reading\n");
     ScopedSpinlock scoped_lock(s_lock);
 
-    initiate_command(ATA_CMD_READ_PIO, lba, 1);
+    initiate_command(ATA_CMD_READ_PIO, lba, sectors);
 
-    ProcessManager::current_process()->set_waiting(s_waiting_status);
-    ProcessManager::the().enter_critical();
+    for (u32 i = 0; i < sectors; i++) {
+        ProcessManager::current_process()->set_waiting(s_waiting_status);
+        ProcessManager::the().enter_critical();
 
-    u16* ptr = (u16*)buffer;
-    for (u16 i = 0; i < 256; ++i) {
-        ptr[i] = IO::inw(m_io_base);
+        u16* ptr = (u16*)buffer;
+        for (u16 j = 0; j < 256; j++) {
+            ptr[j] = IO::inw(m_io_base);
+        }
+        buffer += SECTOR_SIZE;
+
+        s_waiting_status.set_waiting();
+        ProcessManager::the().exit_critical();
     }
 
     disable_irq();
-    ProcessManager::the().exit_critical();
 
     return Result(Result::OK);
 }
 
-Result PATADisk::write_sector(const u8* buffer, u32 lba)
+Result PATADisk::write_sectors(const u8* buffer, u32 lba, u32 sectors)
 {
-    dbgprintf("PATADisk", "writing\n");
     ScopedSpinlock scoped_lock(s_lock);
 
-    initiate_command(ATA_CMD_WRITE_PIO, lba, 1);
+    initiate_command(ATA_CMD_WRITE_PIO, lba, sectors);
 
-    dbgprintf("PATADisk", "Waiting: %d\n", s_waiting_status.is_waiting());
-    ProcessManager::current_process()->set_waiting(s_waiting_status);
-    ProcessManager::the().enter_critical();
+    for (u32 i = 0; i < sectors; i++) {
+        ProcessManager::the().enter_critical();
+        wait_until_ready();
 
-    for (u16 i = 0; i < 256; i++) {
-        IO::outw(m_io_base + ATA_REG_DATA, buffer[i * 2] + (buffer[i * 2 + 1] << 8));
+        for (u16 j = 0; j < 256; j++) {
+            IO::outw(m_io_base + ATA_REG_DATA, buffer[j * 2] + (buffer[j * 2 + 1] << 8));
+        }
+        buffer += SECTOR_SIZE;
+
+        s_waiting_status.set_waiting();
+        ProcessManager::the().exit_critical();
+
+        ProcessManager::current_process()->set_waiting(s_waiting_status);
     }
 
     disable_irq();
-    ProcessManager::the().exit_critical();
+
+    IO::outb(m_io_base + ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH);
+    wait_until_ready();
 
     return Result(Result::OK);
 }
@@ -153,7 +165,9 @@ Result PATADisk::write_sector(const u8* buffer, u32 lba)
 void PATADisk::clear_interrupts() const
 {
     u8 status = IO::inb(m_io_base + ATA_REG_STATUS);
+#ifdef DEBUG_PATA_DISK
     dbgprintf("PATADisk", "Cleared status register: DRQ=%d BSY=%d DRDY=%d ERR=%d\n", (status & ATA_SR_DRQ) == 0, (status & ATA_SR_BSY) == 0, (status & ATA_SR_DRDY) == 0, (status & ATA_SR_ERR) == 0);
+#endif
 }
 
 void PATADisk::initiate_command(u8 command, u32 lba, u8 sectors)
@@ -192,8 +206,9 @@ void PATADisk::wait_until_ready() const
 
 void PATADisk::handle()
 {
+#ifdef DEBUG_PATA_DISK
     dbgprintf("PATADisk", "Received an interrupt while waiting\n");
+#endif
     clear_interrupts();
-
-    PATADisk::s_waiting_status.set_ready();
+    s_waiting_status.set_ready();
 }
