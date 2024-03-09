@@ -193,7 +193,9 @@ void PATADisk::initiate_command(u8 command, u32 lba, u8 sectors)
     ProcessManager::the().exit_critical();
     IO::outb(m_io_base + ATA_REG_COMMAND, command);
 
+#ifdef DEBUG_PATA_DISK
     dbgprintf("PATADisk", "Done initiating command\n");
+#endif
 }
 
 void PATADisk::wait_until_ready() const

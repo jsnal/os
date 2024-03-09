@@ -1,4 +1,5 @@
 #include <Kernel/CPU/IDT.h>
+#include <Kernel/CPU/PIC.h>
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Process/ProcessManager.h>
@@ -73,8 +74,6 @@ void ProcessManager::schedule()
     Process* previous_process = s_current_process;
     Process* p = s_current_process;
 
-    enter_critical();
-
     if (s_current_process == s_kernel_process) {
         p = s_processes->head();
     }
@@ -114,7 +113,9 @@ void ProcessManager::schedule()
 void ProcessManager::yield()
 {
     // TODO: This should check for more conditions
+    enter_critical();
     schedule();
+    exit_critical();
 }
 
 void ProcessManager::enter_critical()

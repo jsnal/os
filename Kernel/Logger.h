@@ -50,4 +50,4 @@
 #endif
 
 // #define DEBUG_KEYBOARD
-#define DEBUG_PATA_DISK
+// #define DEBUG_PATA_DISK

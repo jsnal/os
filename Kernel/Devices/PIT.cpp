@@ -54,6 +54,10 @@ void PIT::handle()
         s_seconds_since_boot++;
     }
 
+    // NOTE: Go ahead and send the end-of-interrupt just in case a process is about to yield, in
+    //       which case it would never be sent and the system would hang.
+    eoi();
+
     for (int i = 0; i < m_wakeup_routine_count; i++) {
         if (m_wakeup_routines[i].wakeup_routine != nullptr && s_milliseconds_since_boot % m_wakeup_routines[i].milliseconds == 0) {
             m_wakeup_routines[i].wakeup_routine();

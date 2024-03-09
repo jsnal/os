@@ -42,36 +42,36 @@
 [[noreturn]] void simple_process_runnable3()
 {
     dbgprintf("Kernel", "Running a simple process 3!\n");
-    // auto disk = PATADisk::create(PATADisk::Secondary, PATADisk::Master);
-    //    if (disk.ptr() != nullptr) {
-    //        u8 write_buffer[256] = {};
-    //        write_buffer[0] = 'T';
-    //        write_buffer[1] = 'a';
-    //        write_buffer[2] = 'y';
-    //        write_buffer[3] = 'l';
-    //        write_buffer[4] = 'o';
-    //        write_buffer[5] = 'a';
-    //        disk->write_sectors(write_buffer, 0, 1);
+    auto disk = PATADisk::create(PATADisk::Secondary, PATADisk::Master);
+    if (disk.ptr() != nullptr) {
+        u8 write_buffer[256] = {};
+        write_buffer[0] = 'T';
+        write_buffer[1] = 'a';
+        write_buffer[2] = 'y';
+        write_buffer[3] = 'l';
+        write_buffer[4] = 'o';
+        write_buffer[5] = 'a';
+        disk->write_sectors(write_buffer, 0, 1);
 
-    //        u8 read_buffer[1024] = {};
-    //        disk->read_sectors(read_buffer, 0, 1);
-    //        for (u16 i = 0; i < 32; i++) {
-    //            dbgprintf("Kernel", "read: %c\n", read_buffer[i]);
-    //        }
+        u8 read_buffer[1024] = {};
+        disk->read_sectors(read_buffer, 0, 1);
+        for (u16 i = 0; i < 32; i++) {
+            dbgprintf("Kernel", "read: %c\n", read_buffer[i]);
+        }
 
-    //        write_buffer[0] = 'f';
-    //        write_buffer[1] = 'u';
-    //        write_buffer[2] = 'u';
-    //        write_buffer[3] = 'c';
-    //        write_buffer[4] = 'k';
-    //        write_buffer[5] = 'a';
-    //        disk->write_sectors(write_buffer, 0, 1);
+        write_buffer[0] = 'f';
+        write_buffer[1] = 'u';
+        write_buffer[2] = 'u';
+        write_buffer[3] = 'c';
+        write_buffer[4] = 'k';
+        write_buffer[5] = 'a';
+        disk->write_sectors(write_buffer, 0, 1);
 
-    //        disk->read_sectors(read_buffer, 0, 1);
-    //        for (u16 i = 0; i < 32; i++) {
-    //            dbgprintf("Kernel", "read: %c\n", read_buffer[i]);
-    //        }
-    //    }
+        disk->read_sectors(read_buffer, 0, 1);
+        for (u16 i = 0; i < 32; i++) {
+            dbgprintf("Kernel", "read: %c\n", read_buffer[i]);
+        }
+    }
     while (true) {
     }
 }

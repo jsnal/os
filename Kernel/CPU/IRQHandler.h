@@ -28,6 +28,8 @@ protected:
 
     bool enabled() const { return m_enabled; }
 
+    void eoi();
+
     void enable_irq();
     void disable_irq();
 
@@ -37,4 +39,5 @@ private:
     u8 m_irq { 0 };
 
     bool m_enabled { false };
+    bool m_eoi_sent { false };
 };

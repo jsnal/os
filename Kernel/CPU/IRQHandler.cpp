@@ -26,18 +26,22 @@ IRQHandler::~IRQHandler()
 void IRQHandler::handle_all_irqs(const InterruptFrame& frame)
 {
     IRQHandler* handler = s_handlers[frame.interrupt_number - 32];
-    if (handler != nullptr && handler->enabled()) {
+    ASSERT(handler != nullptr);
+
+    handler->m_eoi_sent = false;
+
+    if (handler->enabled()) {
         handler->handle();
     }
 
-    if (frame.interrupt_number == 46) {
-        dbgprintf("IRQ", "Got disk drive interrupt 46\n");
+    handler->eoi();
+}
+void IRQHandler::eoi()
+{
+    if (!m_eoi_sent) {
+        PIC::eoi(m_irq);
+        m_eoi_sent = true;
     }
-    if (frame.interrupt_number == 47) {
-        dbgprintf("IRQ", "Got disk drive interrupt 47\n");
-    }
-
-    PIC::eoi(frame.interrupt_number - 32);
 }
 
 void IRQHandler::enable_irq()
