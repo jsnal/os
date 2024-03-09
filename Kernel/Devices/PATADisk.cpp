@@ -32,7 +32,6 @@ UniquePtr<PATADisk> PATADisk::create(Channel channel, Type type)
         return nullptr;
     }
 
-    dbgprintf("PATADisk", "Creating '%s' disk using PCI device %x:%x\n", channel == Primary ? "Primary" : "Secondary", ide_controller_id.vendor, ide_controller_id.device);
     UniquePtr<PATADisk> disk = make_unique_ptr<PATADisk>(ide_controller_address, channel, type);
 
     IO::outb(disk->m_io_base + ATA_REG_HDDEVSEL, 0xA0 | (type == Slave ? 0x10 : 0x00));
@@ -90,7 +89,8 @@ UniquePtr<PATADisk> PATADisk::create(Channel channel, Type type)
 
     ATAIdentity* ata_info = reinterpret_cast<ATAIdentity*>(identity_buffer);
     disk->m_addressable_blocks = ata_info->user_addressable_sectors;
-    dbgprintf("PATADisk", "Disk '%s' created with %d blocks\n", disk->m_model_number, disk->m_addressable_blocks);
+    dbgprintf("PATADisk", "%s Disk '%s' created with %d blocks\n", channel == Primary ? "Primary" : "Secondary", disk->m_model_number, disk->m_addressable_blocks);
+    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Disk at PCI id %x:%x\n", ide_controller_id.vendor, ide_controller_id.device);
 
     // NOTE: The IDENTIFY command generates an interrupt that needs to be cleared before
     //       issuing any other commands to the controller.
@@ -116,7 +116,7 @@ Result PATADisk::read_sectors(u8* buffer, u32 lba, u32 sectors)
 
     for (u32 i = 0; i < sectors; i++) {
         ProcessManager::current_process()->set_waiting(s_waiting_status);
-        ProcessManager::the().enter_critical();
+        PM.enter_critical();
 
         u16* ptr = (u16*)buffer;
         for (u16 j = 0; j < 256; j++) {
@@ -125,7 +125,7 @@ Result PATADisk::read_sectors(u8* buffer, u32 lba, u32 sectors)
         buffer += SECTOR_SIZE;
 
         s_waiting_status.set_waiting();
-        ProcessManager::the().exit_critical();
+        PM.exit_critical();
     }
 
     disable_irq();
@@ -140,7 +140,7 @@ Result PATADisk::write_sectors(const u8* buffer, u32 lba, u32 sectors)
     initiate_command(ATA_CMD_WRITE_PIO, lba, sectors);
 
     for (u32 i = 0; i < sectors; i++) {
-        ProcessManager::the().enter_critical();
+        PM.enter_critical();
         wait_until_ready();
 
         for (u16 j = 0; j < 256; j++) {
@@ -149,7 +149,7 @@ Result PATADisk::write_sectors(const u8* buffer, u32 lba, u32 sectors)
         buffer += SECTOR_SIZE;
 
         s_waiting_status.set_waiting();
-        ProcessManager::the().exit_critical();
+        PM.exit_critical();
 
         ProcessManager::current_process()->set_waiting(s_waiting_status);
     }
@@ -165,14 +165,12 @@ Result PATADisk::write_sectors(const u8* buffer, u32 lba, u32 sectors)
 void PATADisk::clear_interrupts() const
 {
     u8 status = IO::inb(m_io_base + ATA_REG_STATUS);
-#ifdef DEBUG_PATA_DISK
-    dbgprintf("PATADisk", "Cleared status register: DRQ=%d BSY=%d DRDY=%d ERR=%d\n", (status & ATA_SR_DRQ) == 0, (status & ATA_SR_BSY) == 0, (status & ATA_SR_DRDY) == 0, (status & ATA_SR_ERR) == 0);
-#endif
+    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Cleared status register: DRQ=%d BSY=%d DRDY=%d ERR=%d\n", (status & ATA_SR_DRQ) == 0, (status & ATA_SR_BSY) == 0, (status & ATA_SR_DRDY) == 0, (status & ATA_SR_ERR) == 0);
 }
 
 void PATADisk::initiate_command(u8 command, u32 lba, u8 sectors)
 {
-    ProcessManager::the().enter_critical();
+    PM.enter_critical();
     s_waiting_status = WaitingStatus(ProcessManager::current_process());
 
     wait_until_ready();
@@ -190,12 +188,10 @@ void PATADisk::initiate_command(u8 command, u32 lba, u8 sectors)
     wait_until_ready();
 
     enable_irq();
-    ProcessManager::the().exit_critical();
+    PM.exit_critical();
     IO::outb(m_io_base + ATA_REG_COMMAND, command);
 
-#ifdef DEBUG_PATA_DISK
-    dbgprintf("PATADisk", "Done initiating command\n");
-#endif
+    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Done initiating command\n");
 }
 
 void PATADisk::wait_until_ready() const
@@ -208,9 +204,7 @@ void PATADisk::wait_until_ready() const
 
 void PATADisk::handle()
 {
-#ifdef DEBUG_PATA_DISK
-    dbgprintf("PATADisk", "Received an interrupt while waiting\n");
-#endif
+    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Received an interrupt while waiting\n");
     clear_interrupts();
     s_waiting_status.set_ready();
 }

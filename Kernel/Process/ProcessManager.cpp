@@ -85,12 +85,13 @@ void ProcessManager::schedule()
             p = p->next();
         }
 
-        dbgprintf("ProcessManager", "Process '%s' state %d\n", p->name(), p->state());
+        dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Process '%s' state %d\n", p->name(), p->state());
         if (p->state() == Process::Ready || p->state() == Process::Created) {
             next_process = p;
             break;
         }
     }
+    dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Picked Process '%s'\n", p->name());
 
     if (next_process == nullptr) {
         s_current_process = s_kernel_process;

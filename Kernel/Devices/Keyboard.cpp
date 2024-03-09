@@ -138,9 +138,7 @@ void Keyboard::handle()
     bool pressed = (scan_code & 0x80) == 0;
     // char converted_character = 0;
 
-#ifdef DEBUG_KEYBOARD
-    dbgprintf("Keyboard", "Key pressed: modifier=%x scan_code=%d %s\n", m_modifier, scan_code, pressed ? "down" : "up");
-#endif
+    dbgprintf_if(DEBUG_KEYBOARD, "Keyboard", "Key pressed: modifier=%x scan_code=%d %s\n", m_modifier, scan_code, pressed ? "down" : "up");
 
     switch (scan_code) {
         case 0x2A:

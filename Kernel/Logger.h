@@ -5,18 +5,20 @@
 #include <stdarg.h>
 
 #define ENABLE_COLOR
-#define DEBUG
 
-#ifdef DEBUG
-#    define dbgprintf(tag, format, ...)                                                                                                      \
-        do {                                                                                                                                 \
-            kprintf(FORMAT_BOLD "[Kernel:%u]:" FORMAT_DEBUG "%s: " FORMAT_RESET format, PIT::milliseconds_since_boot(), tag, ##__VA_ARGS__); \
-        } while (0)
-#else
-#    define dbgprintf(format, ...) \
-        do {                       \
-        } while (0)
-#endif
+#define DEBUG_KEYBOARD 0
+#define DEBUG_PATA_DISK 0
+#define DEBUG_PROCESS_MANAGER 0
+
+#define dbgprintf(tag, format, ...)                                                                                                      \
+    do {                                                                                                                                 \
+        kprintf(FORMAT_BOLD "[Kernel:%u]:" FORMAT_DEBUG "%s: " FORMAT_RESET format, PIT::milliseconds_since_boot(), tag, ##__VA_ARGS__); \
+    } while (0)
+
+#define dbgprintf_if(condition, tag, format, ...) \
+    if (condition) {                              \
+        dbgprintf(tag, format, ##__VA_ARGS__);    \
+    }
 
 #define infoprintf(format, ...)                                                   \
     do {                                                                          \
@@ -48,6 +50,3 @@
 #    define FORMAT_ERR ""
 #    define FORMAT_RESET ""
 #endif
-
-// #define DEBUG_KEYBOARD
-// #define DEBUG_PATA_DISK
