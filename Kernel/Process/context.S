@@ -31,14 +31,11 @@ context_switch:
     pop ebp
 
     ret
-    // mov al, 0x20
-    // out 0x20, al
-    // sti
-    // iret
 
-
-.global context_switch_new
-context_switch_new:
+// Artifically simulate an interrupt return by setting up the EFLAGS and CS
+// register before this routine is called so 'iret' works as expected
+.global context_switch_to_created
+context_switch_to_created:
     push ebp
     push ebx
     push esi
@@ -57,5 +54,4 @@ context_switch_new:
 
     mov al, 0x20
     out 0x20, al
-    sti
-    ret
+    iret

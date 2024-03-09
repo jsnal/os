@@ -14,7 +14,7 @@ LinkedList<Process>* ProcessManager::s_processes;
 extern "C" void context_run(Process::Context* context);
 
 extern "C" void context_switch(Process::Context** old_context, Process::Context** new_context);
-extern "C" void context_switch_new(Process::Context** old_context, Process::Context** new_context);
+extern "C" void context_switch_to_created(Process::Context** old_context, Process::Context** new_context);
 
 static void pit_schedule_wakeup()
 {
@@ -54,7 +54,6 @@ void ProcessManager::init()
 void ProcessManager::create_kernel_process(void (*entry_point)(), const char* name)
 {
     auto kernel_process = new Process(entry_point, get_next_pid(), name, true);
-    kernel_process->set_state(Process::Ready);
     s_processes->add_first(kernel_process);
 }
 
@@ -88,7 +87,7 @@ void ProcessManager::schedule()
         }
 
         dbgprintf("ProcessManager", "Process '%s' state %d\n", p->name(), p->state());
-        if (p->state() == Process::Ready) {
+        if (p->state() == Process::Ready || p->state() == Process::Created) {
             next_process = p;
             break;
         }
@@ -100,13 +99,16 @@ void ProcessManager::schedule()
         return;
     }
 
+    previous_process->set_state(Process::Ready);
     s_current_process = next_process;
-    context_switch_new(previous_process->context_ptr(), next_process->context_ptr());
-    // if (next_process->m_new) {
-    //     next_process->m_new = false;
-    // } else {
-    //     context_switch(previous_process->context_ptr(), next_process->context_ptr());
-    // }
+
+    if (next_process->state() == Process::Created) {
+        next_process->set_state(Process::Running);
+        context_switch_to_created(previous_process->context_ptr(), next_process->context_ptr());
+    } else {
+        next_process->set_state(Process::Running);
+        context_switch(previous_process->context_ptr(), next_process->context_ptr());
+    }
 }
 
 void ProcessManager::yield()
