@@ -13,6 +13,7 @@
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/Devices/VGA.h>
+#include <Kernel/Filesystem/Ext2Filesystem.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Process/ProcessManager.h>
@@ -43,46 +44,25 @@
 {
     dbgprintf("Kernel", "Running a simple process 3!\n");
     auto disk = PATADisk::create(PATADisk::Secondary, PATADisk::Master);
-    if (disk.ptr() != nullptr) {
-        u8 write_buffer[256] = {};
-        write_buffer[0] = 'T';
-        write_buffer[1] = 'a';
-        write_buffer[2] = 'y';
-        write_buffer[3] = 'l';
-        write_buffer[4] = 'o';
-        write_buffer[5] = 'a';
-        disk->write_sectors(write_buffer, 0, 1);
 
-        u8 read_buffer[1024] = {};
-        disk->read_sectors(read_buffer, 0, 1);
-        for (u16 i = 0; i < 32; i++) {
-            dbgprintf("Kernel", "read: %c\n", read_buffer[i]);
-        }
-
-        write_buffer[0] = 'f';
-        write_buffer[1] = 'u';
-        write_buffer[2] = 'u';
-        write_buffer[3] = 'c';
-        write_buffer[4] = 'k';
-        write_buffer[5] = 'a';
-        disk->write_sectors(write_buffer, 0, 1);
-
-        disk->read_sectors(read_buffer, 0, 1);
-        for (u16 i = 0; i < 32; i++) {
-            dbgprintf("Kernel", "read: %c\n", read_buffer[i]);
-        }
+    if (disk.ptr() == nullptr) {
+        panic("Unable to find Disk!\n");
     }
+
+    auto ext2_filesystem = Ext2Filesystem(disk.leak_ptr());
+    auto super_block = ext2_filesystem.super_block();
+    dbgprintf("Kernel", "total blocks: %d\n", super_block.total_blocks);
+    dbgprintf("Kernel", "total inodes: %d\n", super_block.total_inodes);
     while (true) {
     }
 }
 
 [[noreturn]] static void kernel_main()
 {
+
     PM.create_kernel_process(simple_process_runnable1, "simple1");
     PM.create_kernel_process(simple_process_runnable2, "simple2");
     PM.create_kernel_process(simple_process_runnable3, "simple3");
-
-    // Storage::ATA::init();
 
     Keyboard::the();
 

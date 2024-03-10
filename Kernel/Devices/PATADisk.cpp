@@ -133,6 +133,11 @@ Result PATADisk::read_sectors(u8* buffer, u32 lba, u32 sectors)
     return Result(Result::OK);
 }
 
+Result PATADisk::read_block(u8* buffer, u32 lba)
+{
+    return read_sectors(buffer, lba, 1);
+}
+
 Result PATADisk::write_sectors(const u8* buffer, u32 lba, u32 sectors)
 {
     ScopedSpinlock scoped_lock(s_lock);
@@ -160,6 +165,11 @@ Result PATADisk::write_sectors(const u8* buffer, u32 lba, u32 sectors)
     wait_until_ready();
 
     return Result(Result::OK);
+}
+
+Result PATADisk::write_block(const u8* buffer, u32 lba)
+{
+    return write_sectors(buffer, lba, 1);
 }
 
 void PATADisk::clear_interrupts() const

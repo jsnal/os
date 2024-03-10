@@ -8,6 +8,7 @@
 
 #define DEBUG_KEYBOARD 0
 #define DEBUG_PATA_DISK 0
+#define DEBUG_PROCESS 0
 #define DEBUG_PROCESS_MANAGER 0
 
 #define dbgprintf(tag, format, ...)                                                                                                      \

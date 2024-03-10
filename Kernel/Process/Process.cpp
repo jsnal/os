@@ -49,7 +49,7 @@ Process::Process(void (*entry_point)(), u32 pid, const char* name, bool is_kerne
 
 void Process::set_ready()
 {
-    dbgprintf("Process", "Setting '%s' to Ready\n", name());
+    dbgprintf_if(DEBUG_PROCESS, "Process", "Setting '%s' to Ready\n", name());
     m_state = Ready;
 }
 

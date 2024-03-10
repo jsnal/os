@@ -11,6 +11,7 @@ SET(KERNEL_SOURCES
     Devices/PATADisk.cpp
     Devices/PIT.cpp
     Devices/VGA.cpp
+    Filesystem/Ext2Filesystem.cpp
     Kernel.cpp
     Memory/MemoryManager.cpp
     Memory/PMM.cpp

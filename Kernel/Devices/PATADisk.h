@@ -32,8 +32,10 @@ public:
     static UniquePtr<PATADisk> create(Channel, Type);
 
     Result read_sectors(u8* buffer, u32 lba, u32 sectors);
+    Result read_block(u8* buffer, u32 lba);
 
     Result write_sectors(const u8* buffer, u32 lba, u32 sectors);
+    Result write_block(const u8* buffer, u32 lba);
 
     void clear_interrupts() const;
 
