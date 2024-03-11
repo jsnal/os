@@ -18,6 +18,8 @@ public:
     {
     }
 
+    Result init();
+
     Ext2Superblock& super_block();
 
 private:

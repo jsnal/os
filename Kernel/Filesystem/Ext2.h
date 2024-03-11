@@ -8,6 +8,8 @@
 
 #include <Universal/Types.h>
 
+#define EXT2_SUPER_BLOCK_SIGNATURE 0xEF53
+
 struct [[gnu::packed]] Ext2Superblock {
     u32 total_inodes;
     u32 total_blocks;

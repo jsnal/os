@@ -6,6 +6,16 @@
 
 #include <Kernel/Filesystem/Ext2Filesystem.h>
 
+Result Ext2Filesystem::init()
+{
+    auto& super_block = this->super_block();
+    if (super_block.signature != EXT2_SUPER_BLOCK_SIGNATURE) {
+        return Result::Failure;
+    }
+
+    return Result::OK;
+}
+
 Ext2Superblock& Ext2Filesystem::super_block()
 {
     if (m_super_block == nullptr) {
