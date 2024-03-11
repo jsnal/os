@@ -15,6 +15,8 @@
 #define MB (KB * KB)
 #define GB (KB * KB * KB)
 
+#define U8_MAX 255
+
 namespace std {
 typedef decltype(nullptr) nullptr_t;
 }

@@ -43,4 +43,6 @@ private:
     static Process* s_current_process;
     static Process* s_kernel_process;
     static LinkedList<Process>* s_processes;
+
+    u8 m_critical_count { 0 };
 };

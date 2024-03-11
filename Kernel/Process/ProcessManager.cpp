@@ -122,9 +122,15 @@ void ProcessManager::yield()
 void ProcessManager::enter_critical()
 {
     cli();
+    if ((u32)m_critical_count + 1 > U8_MAX) {
+        panic("Too many critical sections!\n");
+    }
+    m_critical_count++;
 }
 
 void ProcessManager::exit_critical()
 {
-    sti();
+    if (--m_critical_count == 0) {
+        sti();
+    }
 }
