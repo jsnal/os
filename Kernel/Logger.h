@@ -6,10 +6,11 @@
 
 #define ENABLE_COLOR
 
-#define DEBUG_KEYBOARD 1
+#define DEBUG_KEYBOARD 0
 #define DEBUG_PATA_DISK 0
 #define DEBUG_PROCESS 0
 #define DEBUG_PROCESS_MANAGER 0
+#define DEBUG_EXT2_FILESYSTEM 1
 
 #define dbgprintf(tag, format, ...)                                                                                                      \
     do {                                                                                                                                 \

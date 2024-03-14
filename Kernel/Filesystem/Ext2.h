@@ -10,6 +10,9 @@
 
 #define EXT2_SUPER_BLOCK_SIGNATURE 0xEF53
 
+#define BLOCK_SIZE(s) (1024 << s)
+#define FRAGMENT_SIZE(s) (1024 << s)
+
 struct [[gnu::packed]] Ext2Superblock {
     u32 total_inodes;
     u32 total_blocks;
@@ -56,4 +59,21 @@ struct [[gnu::packed]] Ext2Superblock {
     u32 journal_device;
     u32 orphan_inode_head;
     u8 extra[276];
+};
+
+struct [[gnu::packed]] Ext2BlockGroupDescriptor {
+    u32 block_usage_bitmap;
+    u32 inode_usage_bitmap;
+    u32 inode_table;
+    u16 free_blocks;
+    u16 free_inodes;
+    u16 used_directories_count;
+    u8 unused[14];
+};
+
+struct [[gnu::packed]] Ext2Directory {
+    u32 inode;
+    u16 size;
+    u8 name_length;
+    u8 type;
 };

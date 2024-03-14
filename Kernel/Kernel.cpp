@@ -50,9 +50,10 @@
     }
 
     auto ext2_filesystem = Ext2Filesystem(disk.leak_ptr());
-    auto super_block = ext2_filesystem.super_block();
-    dbgprintf("Kernel", "total blocks: %d\n", super_block.total_blocks);
-    dbgprintf("Kernel", "total inodes: %d\n", super_block.total_inodes);
+    if (ext2_filesystem.init().is_error()) {
+        panic("Unable to initialize root filesystem\n");
+    }
+
     while (true) {
     }
 }
