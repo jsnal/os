@@ -56,6 +56,26 @@ Ext2BlockGroupDescriptor& Ext2Filesystem::block_group_descriptor(u32 group_index
     return reinterpret_cast<Ext2BlockGroupDescriptor*>(m_block_group_descriptor_table)[group_index - 1];
 }
 
+Inode* Ext2Filesystem::inode(ino_t id)
+{
+    return new Inode(*this, id);
+}
+
+ResultOr<u8*> Ext2Filesystem::read_inode_block(ino_t inode, u32& block_index, u32& offset)
+{
+    auto& super_block = this->super_block();
+
+    if (inode != EXT2_ROOT_INO && inode < super_block.first_inode) {
+        return Result(Result::Failure);
+    }
+
+    if (inode > super_block.total_inodes) {
+        return Result(Result::Failure);
+    }
+
+    auto block_group_descriptor = this->block_group_descriptor(0);
+}
+
 u8* Ext2Filesystem::read_blocks(u32 index, u32 count)
 {
     if (count == 0) {

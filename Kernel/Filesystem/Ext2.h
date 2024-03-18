@@ -10,6 +10,9 @@
 
 #define EXT2_SUPER_BLOCK_SIGNATURE 0xEF53
 
+#define EXT2_BAD_INO 1
+#define EXT2_ROOT_INO 2
+
 #define BLOCK_SIZE(s) (1024 << s)
 #define FRAGMENT_SIZE(s) (1024 << s)
 
@@ -69,6 +72,30 @@ struct [[gnu::packed]] Ext2BlockGroupDescriptor {
     u16 free_inodes;
     u16 used_directories_count;
     u8 unused[14];
+};
+
+struct [[gnu::packed]] Ext2Inode {
+    u16 mode;
+    uid_t uid;
+    u32 size;
+    u32 atime;
+    u32 ctime;
+    u32 mtime;
+    u32 dtime;
+    gid_t gid;
+    u16 hard_links;
+    u32 logical_blocks;
+    u32 flags;
+    u32 os_specific_1;
+    u32 block_pointers[12];
+    u32 s_pointer;
+    u32 d_pointer;
+    u32 t_pointer;
+    u32 generation;
+    u32 file_acl;
+    u32 dir_acl;
+    u32 fragment_address;
+    u32 os_specific_2[3];
 };
 
 struct [[gnu::packed]] Ext2Directory {

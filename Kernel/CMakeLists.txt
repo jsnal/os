@@ -12,6 +12,7 @@ SET(KERNEL_SOURCES
     Devices/PIT.cpp
     Devices/VGA.cpp
     Filesystem/Ext2Filesystem.cpp
+    Filesystem/Inode.cpp
     Kernel.cpp
     Memory/MemoryManager.cpp
     Memory/PMM.cpp
