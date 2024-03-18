@@ -28,6 +28,11 @@
         check_equal(name, passed, nullptr, actual); \
     } while (0)
 
+#define CHECK_NONNULL(actual)                           \
+    do {                                                \
+        check_not_equal(name, passed, nullptr, actual); \
+    } while (0)
+
 #define CHECK_EQUAL(expected, actual)                \
     do {                                             \
         check_equal(name, passed, expected, actual); \
@@ -37,11 +42,32 @@ template<typename T>
 static void check_equal(const char* name, bool* passed, T expected, T actual)
 {
     bool local_passed = expected == actual;
-
     if (!local_passed) {
         std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << " Expected: " << expected << " Actual: " << actual << std::endl;
         *passed = false;
     }
+}
+
+template<typename T>
+static void check_equal(const char* name, bool* passed, std::nullptr_t, T actual)
+{
+    check_equal(name, passed, (T) nullptr, actual);
+}
+
+template<typename T>
+static void check_not_equal(const char* name, bool* passed, T expected, T actual)
+{
+    bool local_passed = expected != actual;
+    if (!local_passed) {
+        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << " Expected: " << expected << " Actual: " << actual << std::endl;
+        *passed = false;
+    }
+}
+
+template<typename T>
+static void check_not_equal(const char* name, bool* passed, std::nullptr_t, T actual)
+{
+    check_not_equal(name, passed, (T) nullptr, actual);
 }
 
 #define TEST_CASE(test_name) \
