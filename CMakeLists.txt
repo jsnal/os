@@ -2,6 +2,9 @@ cmake_minimum_required (VERSION 3.17)
 project (os C CXX ASM)
 
 include_directories(.)
+
+add_subdirectory(Tests)
+
 include_directories(LibC/include)
 
 set(CMAKE_CXX_STANDARD 17)
