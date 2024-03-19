@@ -38,6 +38,11 @@
         check_equal(name, passed, expected, actual); \
     } while (0)
 
+#define CHECK_NOT_EQUAL(expected, actual)                \
+    do {                                                 \
+        check_not_equal(name, passed, expected, actual); \
+    } while (0)
+
 template<typename T>
 static void check_equal(const char* name, bool* passed, T expected, T actual)
 {
@@ -85,12 +90,12 @@ static void check_not_equal(const char* name, bool* passed, std::nullptr_t, T ac
         }                                                                                                       \
     } while (0)
 
-#define TEST_MAIN(test_suite, enumerate_tests)                                               \
-    int main(void)                                                                           \
-    {                                                                                        \
-        const char* test_suite_name = #test_suite;                                           \
-        int tests_passed = 0;                                                                \
-        int tests_failed = 0;                                                                \
-        enumerate_tests();                                                                   \
-        std::cout << "Passed: " << tests_passed << " Failed: " << tests_failed << std::endl; \
+#define TEST_MAIN(test_suite, enumerate_tests)                                                                    \
+    int main(void)                                                                                                \
+    {                                                                                                             \
+        const char* test_suite_name = #test_suite;                                                                \
+        int tests_passed = 0;                                                                                     \
+        int tests_failed = 0;                                                                                     \
+        enumerate_tests();                                                                                        \
+        std::cout << test_suite_name << ": Passed: " << tests_passed << " Failed: " << tests_failed << std::endl; \
     }

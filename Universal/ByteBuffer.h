@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Universal/Number.h>
 #include <Universal/Result.h>
 #include <Universal/Stdlib.h>
 #include <Universal/Types.h>
@@ -35,15 +36,30 @@ public:
         // TODO: Add a resize operation
 
         memcpy(m_buffer + m_size, data, data_size);
+        m_size += data_size;
+        return Result::OK;
+    }
+
+    Result set(size_t index, u8 data)
+    {
+        if (!number_between_inclusive(index, (size_t)0, m_capacity)) {
+            return Result::Failure;
+        }
+
+        m_buffer[index] = data;
         return Result::OK;
     }
 
     void operator+=(ByteBuffer const& other) { append(other.ptr(), other.size()); }
 
+    u8& operator[](size_t index) { return m_buffer[index]; }
+    const u8& operator[](size_t index) const { return m_buffer[index]; }
+
     void clear()
     {
         if (m_buffer != nullptr) {
-            delete[] m_buffer;
+            delete m_buffer;
+            m_buffer = nullptr;
         }
         m_size = 0;
     }

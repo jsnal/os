@@ -14,7 +14,7 @@ namespace Universal {
 class Result {
 public:
     constexpr static int OK = 0;
-    constexpr static int Failure = 0;
+    constexpr static int Failure = 1;
 
     Result(int error_value)
         : m_error_value(error_value)
