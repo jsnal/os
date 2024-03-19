@@ -5,11 +5,20 @@
  */
 
 #include <Kernel/Filesystem/Inode.h>
+#include <Universal/Stdlib.h>
 
-Inode::Inode(Ext2Filesystem& fs, ino_t id)
-    : m_fs(fs)
-    , m_id(id)
+ResultOr<Inode*> Inode::create(Ext2Filesystem& fs, ino_t id)
 {
+    Inode* inode = new Inode(fs, id);
+    auto result = fs.read_blocks(inode->block(), 1);
+    if (result.is_error()) {
+        delete inode;
+        return result.error();
+    }
+
+    memcpy(reinterpret_cast<u8*>(&inode->m_raw_data), result.value(), sizeof(Ext2Inode));
+
+    return inode;
 }
 
 u32 Inode::block_group() const

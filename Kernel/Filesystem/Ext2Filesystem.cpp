@@ -20,6 +20,7 @@ Result Ext2Filesystem::init()
     dbgprintf_if(DEBUG_EXT2_FILESYSTEM, "Ext2Filesystem", "%u inodes, %u blocks\n", super_block.total_inodes, super_block.total_blocks);
     dbgprintf_if(DEBUG_EXT2_FILESYSTEM, "Ext2Filesystem", "block size = %u\n", BLOCK_SIZE(super_block.block_size));
     dbgprintf_if(DEBUG_EXT2_FILESYSTEM, "Ext2Filesystem", "block group count = %u\n", m_block_group_count);
+    dbgprintf_if(DEBUG_EXT2_FILESYSTEM, "Ext2Filesystem", "first inode = %u\n", super_block.first_inode);
 
     if (m_block_group_count == 0) {
         dbgprintf_if(DEBUG_EXT2_FILESYSTEM, "Ext2Filesystem", "No block groups found\n");
@@ -50,7 +51,8 @@ Ext2BlockGroupDescriptor& Ext2Filesystem::block_group_descriptor(u32 group_index
     if (m_block_group_descriptor_table == nullptr) {
         u32 blocks_to_read = ceiling_divide(m_block_group_count * (u32)sizeof(Ext2BlockGroupDescriptor), m_block_size);
         u8 first_block = m_block_size == 1024 ? 2 : 1;
-        m_block_group_descriptor_table = read_blocks(first_block, blocks_to_read);
+        auto result = read_blocks(first_block, blocks_to_read);
+        m_block_group_descriptor_table = result.value();
     }
 
     return reinterpret_cast<Ext2BlockGroupDescriptor*>(m_block_group_descriptor_table)[group_index - 1];
@@ -58,7 +60,7 @@ Ext2BlockGroupDescriptor& Ext2Filesystem::block_group_descriptor(u32 group_index
 
 Inode* Ext2Filesystem::inode(ino_t id)
 {
-    return new Inode(*this, id);
+    return Inode::create(*this, id).value();
 }
 
 ResultOr<u8*> Ext2Filesystem::read_inode_block(ino_t inode, u32& block_index, u32& offset)
@@ -76,10 +78,10 @@ ResultOr<u8*> Ext2Filesystem::read_inode_block(ino_t inode, u32& block_index, u3
     auto block_group_descriptor = this->block_group_descriptor(0);
 }
 
-u8* Ext2Filesystem::read_blocks(u32 index, u32 count)
+ResultOr<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)
 {
     if (count == 0) {
-        return nullptr;
+        return Result(Result::Failure);
     }
 
     u8* blocks = new u8[count * m_block_size];
@@ -87,7 +89,7 @@ u8* Ext2Filesystem::read_blocks(u32 index, u32 count)
     u32 sector = ceiling_divide(index * m_block_size, m_disk->block_size());
     if (m_disk->read_sectors(blocks, sector, sectors_to_read).is_error()) {
         delete[] blocks;
-        return nullptr;
+        return Result(Result::Failure);
     }
 
     return blocks;

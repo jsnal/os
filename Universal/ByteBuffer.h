@@ -13,6 +13,31 @@
 
 class ByteBuffer {
 public:
+    ByteBuffer() = default;
+
+    ByteBuffer(ByteBuffer const& other)
+    {
+        memcpy(m_buffer, other.m_buffer, other.m_size);
+    }
+
+    ByteBuffer(ByteBuffer&& other)
+    {
+        m_size = other.m_size;
+        m_capacity = other.m_capacity;
+        memcpy(m_buffer, other.m_buffer, other.m_size);
+
+        other.m_size = 0;
+        other.m_capacity = 0;
+    }
+
+    ByteBuffer& operator=(ByteBuffer const& other)
+    {
+        memcpy(m_buffer, other.m_buffer, other.m_size);
+        return *this;
+    }
+
+    ~ByteBuffer() { clear(); }
+
     static ByteBuffer create(size_t size)
     {
         return ByteBuffer(size);
@@ -24,8 +49,6 @@ public:
         memset(buffer.m_buffer, 0, size);
         return buffer;
     }
-
-    ~ByteBuffer() { clear(); }
 
     Result append(void const* data, size_t data_size)
     {

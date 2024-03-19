@@ -53,8 +53,8 @@
     if (ext2_filesystem.init().is_error()) {
         panic("Unable to initialize root filesystem\n");
     }
-    auto inode1 = ext2_filesystem.inode(11);
-    dbgprintf("Kernel", "block: %u\n", inode1->block());
+    auto inode1 = ext2_filesystem.inode(12);
+    dbgprintf("Kernel", "block: %x\n", inode1->data().mode);
 
     while (true) {
     }

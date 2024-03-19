@@ -14,13 +14,21 @@ class Ext2Filesystem;
 
 class Inode {
 public:
-    Inode(Ext2Filesystem&, ino_t);
+    static ResultOr<Inode*> create(Ext2Filesystem&, ino_t);
+
+    const Ext2Inode& data() const { return m_raw_data; }
 
     u32 block_group() const;
     u32 index() const;
     u32 block() const;
 
 private:
+    Inode(Ext2Filesystem& fs, ino_t id)
+        : m_fs(fs)
+        , m_id(id)
+    {
+    }
+
     Ext2Inode m_raw_data;
     Ext2Filesystem& m_fs;
     ino_t m_id;

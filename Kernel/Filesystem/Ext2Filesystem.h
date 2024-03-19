@@ -9,12 +9,15 @@
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Filesystem/Ext2.h>
 #include <Kernel/Filesystem/Inode.h>
+#include <Universal/Result.h>
 #include <Universal/Stdlib.h>
 #include <Universal/UniquePtr.h>
 
 class Inode;
 
 class Ext2Filesystem {
+    friend Inode;
+
 public:
     Ext2Filesystem(UniquePtr<PATADisk> disk)
         : m_disk(move(disk))
@@ -36,7 +39,7 @@ public:
 private:
     ResultOr<u8*> read_inode_block(ino_t inode, u32& block_index, u32& offset);
 
-    u8* read_blocks(u32 index, u32 count);
+    ResultOr<u8*> read_blocks(u32 index, u32 count);
 
     UniquePtr<PATADisk> m_disk;
 

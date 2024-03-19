@@ -5,7 +5,7 @@
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/kmalloc.h>
 
-#define QUANTUM_IN_MILLISECONDS 100
+#define QUANTUM_IN_MILLISECONDS 50
 
 pid_t ProcessManager::s_current_pid;
 Process* ProcessManager::s_current_process;
