@@ -27,7 +27,7 @@ Result Ext2Filesystem::init()
         return Result::Failure;
     }
 
-    for (u32 i = 1; i <= m_block_group_count; i++) {
+    for (u32 i = 0; i < m_block_group_count; i++) {
         auto& group = block_group_descriptor(i);
         dbgprintf_if(DEBUG_EXT2_FILESYSTEM, "Ext2Filesystem", "group %u: [block_bitmap %u, inode_bitmap %u, inode_table: %u]\n",
             i, group.block_usage_bitmap, group.inode_usage_bitmap, group.inode_table);
@@ -55,27 +55,12 @@ Ext2BlockGroupDescriptor& Ext2Filesystem::block_group_descriptor(u32 group_index
         m_block_group_descriptor_table = result.value();
     }
 
-    return reinterpret_cast<Ext2BlockGroupDescriptor*>(m_block_group_descriptor_table)[group_index - 1];
+    return reinterpret_cast<Ext2BlockGroupDescriptor*>(m_block_group_descriptor_table)[group_index];
 }
 
 Inode* Ext2Filesystem::inode(ino_t id)
 {
-    return Inode::create(*this, id).value();
-}
-
-ResultOr<u8*> Ext2Filesystem::read_inode_block(ino_t inode, u32& block_index, u32& offset)
-{
-    auto& super_block = this->super_block();
-
-    if (inode != EXT2_ROOT_INO && inode < super_block.first_inode) {
-        return Result(Result::Failure);
-    }
-
-    if (inode > super_block.total_inodes) {
-        return Result(Result::Failure);
-    }
-
-    auto block_group_descriptor = this->block_group_descriptor(0);
+    return new Inode(*this, id);
 }
 
 ResultOr<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)
@@ -93,4 +78,19 @@ ResultOr<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)
     }
 
     return blocks;
+}
+
+Result Ext2Filesystem::read_blocks(u32 index, u32 count, u8* buffer)
+{
+    if (count == 0) {
+        return Result::Failure;
+    }
+
+    u32 sectors_to_read = ceiling_divide(count * m_block_size, m_disk->block_size());
+    u32 sector = ceiling_divide(index * m_block_size, m_disk->block_size());
+    if (m_disk->read_sectors(buffer, sector, sectors_to_read).is_error()) {
+        return Result(Result::Failure);
+    }
+
+    return Result::OK;
 }
