@@ -105,11 +105,38 @@ u32 Inode::get_block_pointer(u32 index) const
     return 0;
 }
 
-Result Inode::read(u8* buffer)
+Result Inode::read(size_t start, size_t length, u8* buffer)
 {
-    dbgprintf("Inode", "Number of block pointers %d\n", m_block_pointers.size());
-    dbgprintf("Inode", "reading: %d\n", m_block_pointers[0]);
-    m_fs.read_blocks(m_block_pointers[0], 1, buffer);
+    if (length == 0 || m_raw_data.size == 0 || start > m_raw_data.size) {
+        return Result::Failure;
+    }
+
+    if (start + length > m_raw_data.size) {
+        length = m_raw_data.size - start;
+    }
+
+    size_t first_block = start / m_fs.block_size();
+    // size_t first_block_start = start % m_fs.block_size();
+    size_t bytes_left = length;
+    size_t block_index = first_block;
+
+    while (bytes_left > 0) {
+        auto result = m_fs.read_blocks(m_block_pointers[block_index], 1, buffer);
+
+        if (bytes_left < m_fs.block_size()) {
+            memset(buffer + bytes_left, 0, m_fs.block_size() - bytes_left);
+            bytes_left = 0;
+        } else {
+            bytes_left -= m_fs.block_size();
+        }
+
+        buffer += m_fs.block_size();
+        block_index++;
+    }
+
+    // dbgprintf("Inode", "Number of block pointers %d\n", m_block_pointers.size());
+    // dbgprintf("Inode", "reading: %d\n", m_block_pointers[0]);
+    // m_fs.read_blocks(m_block_pointers[0], 1, buffer);
 
     return Result::OK;
 }

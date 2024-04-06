@@ -33,7 +33,7 @@ public:
 
     u32 get_block_pointer(u32 index) const;
 
-    Result read(u8* buffer);
+    Result read(size_t start, size_t length, u8* buffer);
 
 private:
     Ext2Inode m_raw_data;

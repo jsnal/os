@@ -57,9 +57,8 @@
     auto inode1 = ext2_filesystem.inode(12);
     dbgprintf("Kernel", "type: %x\n", inode1->data().mode);
     dbgprintf("Kernel", "size: %d\n", inode1->data().size);
-    u8 buffer[128] = {};
-    inode1->read(buffer);
-
+    u8* buffer = new u8[4096];
+    inode1->read(0, 30, buffer);
     dbgprintf("Kernel", "file contents: %s\n", buffer);
 
     while (true) {
