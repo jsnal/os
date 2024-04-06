@@ -34,6 +34,8 @@ public:
 
     u32 block_group_count() const { return m_block_group_count; }
 
+    u32 block_pointers_per_block() const;
+
     Inode* inode(ino_t);
 
 private:

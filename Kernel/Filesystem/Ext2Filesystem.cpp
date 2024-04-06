@@ -58,6 +58,11 @@ Ext2BlockGroupDescriptor& Ext2Filesystem::block_group_descriptor(u32 group_index
     return reinterpret_cast<Ext2BlockGroupDescriptor*>(m_block_group_descriptor_table)[group_index];
 }
 
+u32 Ext2Filesystem::block_pointers_per_block() const
+{
+    return block_size() / sizeof(32);
+}
+
 Inode* Ext2Filesystem::inode(ino_t id)
 {
     return new Inode(*this, id);
