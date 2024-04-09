@@ -86,7 +86,7 @@ static void enumerate_functions(u8 bus, u8 slot, u8 functions, EnumerateCallback
     Address functions_address = { bus, slot, functions };
 
     u16 type = (read8(functions_address, PCI_CLASS) << 8) + read8(functions_address, PCI_SUBCLASS);
-    if (type == PCI_TYPE_BRIDGE) {
+    if (type == Type::Bridge) {
         u8 second_bus = read8(functions_address, PCI_SECONDARY_BUS);
         enumerate_bus(second_bus, callback);
     }

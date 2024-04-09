@@ -21,7 +21,7 @@ UniquePtr<PATADisk> PATADisk::create(Channel channel, Type type)
     Bus::PCI::ID ide_controller_id = {};
 
     Bus::PCI::enumerate_devices([&](Bus::PCI::Address address, Bus::PCI::ID id, u16 type) {
-        if (type == PCI_TYPE_IDE_CONTROLLER) {
+        if (type == Bus::PCI::Type::MassStorage) {
             ide_controller_address = address;
             ide_controller_id = id;
             return;

@@ -11,8 +11,18 @@
 
 namespace Bus::PCI {
 
-#define PCI_TYPE_BRIDGE 0x0604
-#define PCI_TYPE_IDE_CONTROLLER 0x0101
+enum Type {
+    Bridge = 0x0604,
+    MassStorage = 0x0101,
+    Display = 0x0300,
+};
+
+enum VendorId {
+    VirtIO = 0x1af4,
+    Intel = 0x8086,
+    LegacyEmulator = 0x1234,
+    VirtualBox = 0x80ee
+};
 
 struct Address {
     u8 bus;

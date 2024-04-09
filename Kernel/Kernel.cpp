@@ -14,6 +14,7 @@
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/Devices/VGA.h>
 #include <Kernel/Filesystem/Ext2Filesystem.h>
+#include <Kernel/Graphics/GraphicsManager.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Process/ProcessManager.h>
@@ -54,12 +55,12 @@
         panic("Unable to initialize root filesystem\n");
     }
 
-    auto inode1 = ext2_filesystem.inode(12);
-    dbgprintf("Kernel", "type: %x\n", inode1->data().mode);
-    dbgprintf("Kernel", "size: %d\n", inode1->data().size);
-    u8* buffer = new u8[4096];
-    inode1->read(0, 30, buffer);
-    dbgprintf("Kernel", "file contents: %s\n", buffer);
+    // auto inode1 = ext2_filesystem.inode(12);
+    // dbgprintf("Kernel", "type: %x\n", inode1->data().mode);
+    // dbgprintf("Kernel", "size: %d\n", inode1->data().size);
+    // u8* buffer = new u8[4096];
+    // inode1->read(0, 30, buffer);
+    // dbgprintf("Kernel", "file contents: %s\n", buffer);
 
     while (true) {
     }
@@ -67,6 +68,7 @@
 
 [[noreturn]] static void kernel_main()
 {
+    GraphicsManager::the().init();
 
     PM.create_kernel_process(simple_process_runnable1, "simple1");
     PM.create_kernel_process(simple_process_runnable2, "simple2");

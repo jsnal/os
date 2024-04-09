@@ -13,6 +13,8 @@ SET(KERNEL_SOURCES
     Devices/VGA.cpp
     Filesystem/Ext2Filesystem.cpp
     Filesystem/Inode.cpp
+    Graphics/GraphicsManager.cpp
+    Graphics/LegacyEmulatorGraphicsCard.cpp
     Kernel.cpp
     Memory/MemoryManager.cpp
     Memory/PMM.cpp
