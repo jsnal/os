@@ -12,13 +12,13 @@
 #include <Kernel/Devices/Keyboard.h>
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Devices/PIT.h>
-#include <Kernel/Devices/VGA.h>
 #include <Kernel/Filesystem/Ext2Filesystem.h>
 #include <Kernel/Graphics/GraphicsManager.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/Process/Spinlock.h>
+#include <Kernel/TTY/VirtualConsole.h>
 #include <Kernel/panic.h>
 #include <Universal/Bitmap.h>
 #include <Universal/Types.h>
@@ -76,8 +76,6 @@
 
     Keyboard::the();
 
-    vga_write("System Booted!");
-
     PM.init();
 
     while (true)
@@ -103,8 +101,6 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
     PIC::init();
 
     PIT::the();
-
-    vga_init();
 
     MemoryManager::the().init(boot_page_directory, multiboot);
 

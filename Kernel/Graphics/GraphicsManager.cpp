@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <Kernel/Graphics/EmulatorVGAGraphicsCard.h>
 #include <Kernel/Graphics/GraphicsManager.h>
-#include <Kernel/Graphics/LegacyEmulatorGraphicsCard.h>
 #include <Kernel/Logger.h>
 
 GraphicsManager& GraphicsManager::the()
@@ -14,12 +14,12 @@ GraphicsManager& GraphicsManager::the()
     return s_the;
 }
 
-Result GraphicsManager::init_graphics_device(Bus::PCI::ID const& id)
+Result GraphicsManager::init_graphics_device(Bus::PCI::Address const& address, Bus::PCI::ID const& id)
 {
-    SharedPtr<LegacyEmulatorGraphicsCard> graphics_card;
+    SharedPtr<EmulatorVGAGraphicsCard> graphics_card;
     switch (id.vendor) {
         case Bus::PCI::VendorId::LegacyEmulator:
-            graphics_card = LegacyEmulatorGraphicsCard::create(id);
+            graphics_card = EmulatorVGAGraphicsCard::create(address, id);
             break;
         default:
             dbgprintf("GraphicsManager", "Unable to find graphics card (%x:%x)\n", id.vendor, id.device);
@@ -37,7 +37,7 @@ Result GraphicsManager::init()
     Bus::PCI::enumerate_devices([&](Bus::PCI::Address address, Bus::PCI::ID id, u16 type) {
         if (type == Bus::PCI::Type::Display) {
             dbgprintf("GraphicsManager", "%x:%x type: %x\n", id.device, id.vendor, type);
-            init_graphics_device(id);
+            init_graphics_device(address, id);
         }
     });
 

@@ -26,14 +26,14 @@ public:
 
     const PMM& pmm() const { return *m_pmm; }
 
+    [[nodiscard]] Result map_kernel_page(VirtualAddress, PhysicalAddress);
+
+    [[nodiscard]] Result unmap_kernel_page(VirtualAddress);
+
 private:
     void internal_init(u32* boot_page_directory, const multiboot_information_t*);
 
     PageTableEntry& get_page_table_entry(PageDirectory&, VirtualAddress, bool is_kernel);
-
-    [[nodiscard]] Result map_kernel_page(VirtualAddress, PhysicalAddress);
-
-    [[nodiscard]] Result unmap_kernel_page(VirtualAddress);
 
     void flush_tlb();
 

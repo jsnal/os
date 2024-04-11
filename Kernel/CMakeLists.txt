@@ -14,7 +14,7 @@ SET(KERNEL_SOURCES
     Filesystem/Ext2Filesystem.cpp
     Filesystem/Inode.cpp
     Graphics/GraphicsManager.cpp
-    Graphics/LegacyEmulatorGraphicsCard.cpp
+    Graphics/EmulatorVGAGraphicsCard.cpp
     Kernel.cpp
     Memory/MemoryManager.cpp
     Memory/PMM.cpp
@@ -25,6 +25,7 @@ SET(KERNEL_SOURCES
     Process/context.S
     Runtime.cpp
     Stdlib.cpp
+    TTY/VirtualConsole.cpp
     kmalloc.cpp
     kprintf.cpp
 )

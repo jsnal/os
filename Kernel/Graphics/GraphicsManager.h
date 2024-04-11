@@ -15,7 +15,7 @@ public:
 
     static GraphicsManager& the();
 
-    Result init_graphics_device(Bus::PCI::ID const&);
+    Result init_graphics_device(Bus::PCI::Address const&, Bus::PCI::ID const&);
 
     Result init();
 };

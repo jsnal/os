@@ -58,6 +58,12 @@ typedef Function<void(Address, ID, u16)> EnumerateCallback;
 u8 read8(Address, u8 field);
 u16 read16(Address, u8 field);
 u32 read32(Address, u8 field);
+u32 read_BAR0(Address);
+u32 read_BAR1(Address);
+u32 read_BAR2(Address);
+u32 read_BAR3(Address);
+u32 read_BAR4(Address);
+u32 read_BAR5(Address);
 
 void write8(Address, u8 field, u8 value);
 void write16(Address, u8 field, u16 value);

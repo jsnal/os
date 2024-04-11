@@ -24,6 +24,13 @@
 #define PCI_SLOTS_ON_BUS 32
 #define PCI_FUNCTIONS_ON_SLOT 8
 
+#define PCI_BAR0 0x10
+#define PCI_BAR1 0x14
+#define PCI_BAR2 0x18
+#define PCI_BAR3 0x1C
+#define PCI_BAR4 0x20
+#define PCI_BAR5 0x24
+
 namespace Bus::PCI {
 
 static void enumerate_functions(u8 bus, u8 slot, u8 functions, EnumerateCallback& callback);
@@ -52,6 +59,36 @@ u32 read32(Address address, u8 field)
 
     IO::outl(PCI_ADDRESS_PORT, get_io_address(address, field));
     return IO::inl(PCI_DATA_PORT);
+}
+
+u32 read_BAR0(Address address)
+{
+    return read32(address, PCI_BAR0);
+}
+
+u32 read_BAR1(Address address)
+{
+    return read32(address, PCI_BAR1);
+}
+
+u32 read_BAR2(Address address)
+{
+    return read32(address, PCI_BAR2);
+}
+
+u32 read_BAR3(Address address)
+{
+    return read32(address, PCI_BAR3);
+}
+
+u32 read_BAR4(Address address)
+{
+    return read32(address, PCI_BAR4);
+}
+
+u32 read_BAR5(Address address)
+{
+    return read32(address, PCI_BAR5);
 }
 
 void write8(Address address, u8 field, u8 value)
