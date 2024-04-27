@@ -6,6 +6,7 @@
 #include <Kernel/kmalloc.h>
 #include <Kernel/panic.h>
 #include <Universal/Assert.h>
+#include <Universal/Number.h>
 #include <Universal/Stdlib.h>
 
 using namespace Memory;
@@ -44,6 +45,12 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
     m_kernel_page_directory = PageDirectory::create_kernel_page_table(boot_page_directory);
     m_kernel_page_table = reinterpret_cast<PageTableEntry*>((u8*)boot_page_directory + Types::PageSize);
 
+    // Physical Memory Layout (4 MiB):
+    //     Kernel Image (Varies)
+    //     kmalloc Space (1 MiB)
+    //     User physical memory region bitmap
+    //     Kernel physical memory region bitmap
+    //     Free kernel pages
     kmalloc_init();
 
     m_pmm = new PMM(multiboot);
@@ -52,11 +59,13 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
     dbgprintf("MemoryManager", "kernel_page_table=%x\n", m_kernel_page_table);
     dbgprintf("MemoryManager", "kernel_page_directory[0]=%x\n", m_kernel_page_directory.entries()[0]);
     dbgprintf("MemoryManager", "kernel_page_directory[768]=%x\n", m_kernel_page_directory.entries()[768]);
-    dbgprintf("MemoryManager", "kernel_zone bitmap=%x\n", pmm().kernel_zone().bitmap().data());
-    dbgprintf("MemoryManager", "user_zone bitmap=%x\n", pmm().user_zone().bitmap().data());
+    dbgprintf("MemoryManager", "kernel_zone bitmap=%x\n", pmm().kernel_region().bitmap().data());
+    dbgprintf("MemoryManager", "user_zone bitmap=%x\n", pmm().user_region().bitmap().data());
+
+    m_kernel_virtual_region = Region<VirtualAddress>((u32)&g_kernel_end, (KERNEL_VIRTUAL_BASE + KERNEL_REGION_LENGTH) - (u32)&g_kernel_end);
 
     // auto& pte = get_page_table_entry(m_kernel_page_directory, 0xD03FF000, true);
-    ASSERT(map_kernel_page(0xC03FF000, 0x000B8000).is_ok());
+    // ASSERT(map_kernel_page(0xC03FF000, 0x000B8000).is_ok());
 
     // dbgprintf("pte: %x\n", pte.physical_page_base());
     // dbgprintf("pte: %x\n", pte.address());
@@ -69,7 +78,7 @@ PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_director
     PageDirectoryEntry& page_directory_entry = page_directory.entries()[page_directory_index];
 
     if (!page_directory_entry.is_present()) {
-        auto page_table = is_kernel ? pmm().kernel_zone().allocate_frame() : pmm().user_zone().allocate_frame();
+        auto page_table = is_kernel ? pmm().kernel_region().allocate_frame() : pmm().user_region().allocate_frame();
 
         memset(page_table.value().ptr(), 0, Types::PageSize);
 
@@ -85,6 +94,17 @@ PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_director
     }
 
     return page_directory_entry.page_table_base()[page_table_index];
+}
+
+ResultOr<VirtualAddress> MemoryManager::map_kernel_region(PhysicalAddress physical_address, size_t size)
+{
+    u32 pages_needed = ceiling_divide(size, Types::PageSize);
+    return Result(Result::Failure);
+}
+
+Result MemoryManager::unmap_kernel_region(PhysicalAddress, size_t)
+{
+    return Result::OK;
 }
 
 Result MemoryManager::map_kernel_page(VirtualAddress virtual_address, PhysicalAddress physical_address)

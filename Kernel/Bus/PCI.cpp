@@ -56,7 +56,6 @@ u16 read16(Address address, u8 field)
 
 u32 read32(Address address, u8 field)
 {
-
     IO::outl(PCI_ADDRESS_PORT, get_io_address(address, field));
     return IO::inl(PCI_DATA_PORT);
 }

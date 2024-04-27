@@ -26,6 +26,10 @@ public:
 
     const PMM& pmm() const { return *m_pmm; }
 
+    ResultOr<VirtualAddress> map_kernel_region(PhysicalAddress, size_t);
+
+    Result unmap_kernel_region(PhysicalAddress, size_t);
+
     [[nodiscard]] Result map_kernel_page(VirtualAddress, PhysicalAddress);
 
     [[nodiscard]] Result unmap_kernel_page(VirtualAddress);
@@ -44,4 +48,6 @@ private:
     PageTableEntry* m_kernel_page_table;
 
     const PMM* m_pmm;
+
+    Region<VirtualAddress> m_kernel_virtual_region;
 };

@@ -20,10 +20,10 @@ public:
 
     PMM(const multiboot_information_t*);
 
-    Zone& kernel_zone() const { return *m_kernel_zone; }
-    Zone& user_zone() const { return *m_user_zone; }
+    Region<PhysicalAddress>& kernel_region() const { return *m_kernel_region; }
+    Region<PhysicalAddress>& user_region() const { return *m_user_region; }
 
 private:
-    Zone* m_kernel_zone;
-    Zone* m_user_zone;
+    Region<PhysicalAddress>* m_kernel_region;
+    Region<PhysicalAddress>* m_user_region;
 };

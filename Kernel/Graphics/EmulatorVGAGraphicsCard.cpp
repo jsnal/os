@@ -46,7 +46,7 @@ EmulatorVGAGraphicsCard::EmulatorVGAGraphicsCard(Bus::PCI::Address const& addres
     PhysicalAddress framebuffer_phyiscal_address = find_framebuffer_address();
     dbgprintf("EmulatorVGAGraphicsCard", "Framebuffer located @ 0x%x\n", framebuffer_phyiscal_address);
 
-    MemoryManager::the().map_kernel_page(framebuffer_phyiscal_address);
+    // MemoryManager::the().map_kernel_page(framebuffer_phyiscal_address)
     // framebuffer_phyiscal_address.ptr()[1] = 'A';
 }
 

@@ -18,7 +18,6 @@ SET(KERNEL_SOURCES
     Kernel.cpp
     Memory/MemoryManager.cpp
     Memory/PMM.cpp
-    Memory/Zone.cpp
     Process/Process.cpp
     Process/ProcessManager.cpp
     Process/WaitingStatus.cpp

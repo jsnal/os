@@ -59,15 +59,17 @@ PMM::PMM(const multiboot_information_t* multiboot)
         panic("Unable to find any regions to allocate\n");
     }
 
-    if (physical_region_length < KERNEL_ZONE_LENGTH) {
+    if (physical_region_length < KERNEL_REGION_LENGTH) {
         panic("Unable to find region big enough to allocate the Kernel\n");
     }
 
     u32 kernel_image_size = (u32)&g_kernel_end - KERNEL_VIRTUAL_BASE;
 
-    m_kernel_zone = new Zone(Types::virtual_to_physical((u32)&g_kernel_end), KERNEL_ZONE_LENGTH - kernel_image_size);
-    m_user_zone = new Zone(m_kernel_zone->upper_address(), physical_region_length - KERNEL_ZONE_LENGTH);
+    dbgprintf("PMM", "Kernel end: %x\n", (u32)&g_kernel_end);
 
-    ASSERT(m_kernel_zone != nullptr && m_user_zone != nullptr);
-    dbgprintf("PMM", "Initialized PMM: kernel_zone=0x%x user_zone=0x%x\n", m_kernel_zone, m_user_zone);
+    m_kernel_region = new Region<PhysicalAddress>(Types::virtual_to_physical((u32)&g_kernel_end), KERNEL_REGION_LENGTH - kernel_image_size);
+    m_user_region = new Region<PhysicalAddress>(m_kernel_region->upper_address(), physical_region_length - KERNEL_REGION_LENGTH);
+
+    ASSERT(m_kernel_region != nullptr && m_user_region != nullptr);
+    dbgprintf("PMM", "Initialized PMM: kernel_zone=0x%x user_zone=0x%x\n", m_kernel_region, m_user_region);
 }
