@@ -9,6 +9,9 @@
 #include <Kernel/Boot/multiboot.h>
 #include <Kernel/Memory/PMM.h>
 #include <Kernel/Memory/Paging.h>
+#include <Kernel/Memory/PhysicalRegion.h>
+#include <Universal/ArrayList.h>
+#include <Universal/PtrArrayList.h>
 #include <Universal/Result.h>
 #include <Universal/Types.h>
 
@@ -46,6 +49,9 @@ private:
     PageDirectory m_kernel_page_directory;
 
     PageTableEntry* m_kernel_page_table;
+
+    ArrayList<SharedPtr<PhysicalRegion>> m_kernel_physical_regions;
+    ArrayList<PhysicalRegion> m_user_physical_regions;
 
     const PMM* m_pmm;
 

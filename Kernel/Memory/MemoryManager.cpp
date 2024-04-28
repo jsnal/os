@@ -3,7 +3,6 @@
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Memory/PMM.h>
 #include <Kernel/Memory/Types.h>
-#include <Kernel/kmalloc.h>
 #include <Kernel/panic.h>
 #include <Universal/Assert.h>
 #include <Universal/Number.h>
@@ -42,6 +41,10 @@ void MemoryManager::init(u32* boot_page_directory, const multiboot_information_t
 
 void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_information_t* multiboot)
 {
+    if (g_kernel_end > 3 * MB) {
+        panic("Kernel image is greater then 3 MB\n");
+    }
+
     m_kernel_page_directory = PageDirectory::create_kernel_page_table(boot_page_directory);
     m_kernel_page_table = reinterpret_cast<PageTableEntry*>((u8*)boot_page_directory + Types::PageSize);
 
@@ -51,16 +54,76 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
     //     User physical memory region bitmap
     //     Kernel physical memory region bitmap
     //     Free kernel pages
-    kmalloc_init();
+
+    u32 physical_region_base = 0;
+    u32 physical_region_length = 0;
+
+    dbgprintf("MemoryMananger", "System Memory Map: lower_mem=%d KiB upper_mem=%d MiB\n", multiboot->memory_lower, multiboot->memory_upper / 1024);
+    for (u32 position = 0, i = 0; position < multiboot->memory_map_length; position += sizeof(multiboot_mmap_t), i++) {
+        multiboot_mmap_t* mmap = multiboot->memory_map + i;
+
+        dbgprintf("PMM", "  %x%x:%x%x %d (%s)\n",
+            (u32)(mmap->base_address >> 32),
+            (u32)(mmap->base_address & 0xffffffff),
+            (u32)(mmap->length >> 32),
+            (u32)(mmap->length & 0xffffffff),
+            mmap->type,
+            mmap->type == 1 ? "available" : "reserved");
+
+        if (mmap->type != MULTIBOOT_MEMORY_AVAILABLE || mmap->base_address < (1 * MB)) {
+            continue;
+        }
+
+        u32 address_remainder = (u32)(mmap->base_address % Types::PageSize);
+        u32 length_remainder = (u32)(mmap->length % Types::PageSize);
+
+        if (address_remainder != 0) {
+            dbgprintf("MemoryManager", "  Region does not start on page boundary, correcting by %d bytes\n", address_remainder);
+            address_remainder = Types::PageSize - address_remainder;
+            mmap->base_address += address_remainder;
+            mmap->length -= address_remainder;
+        }
+
+        if (length_remainder != 0) {
+            dbgprintf("MemoryManager", "  Region does not end on page boundary, correcting by %d bytes\n", length_remainder);
+            mmap->length -= length_remainder;
+        }
+
+        if (mmap->length < Types::PageSize) {
+            dbgprintf("MemoryManager", "  Region is smaller than a page... skipping");
+            continue;
+        }
+
+        physical_region_base = (u32)(mmap->base_address & 0xffffffff);
+        physical_region_length = (u32)(mmap->length & 0xffffffff);
+
+        for (size_t page_base = physical_region_base; page_base < (physical_region_base + physical_region_length); page_base += Types::PageSize) {
+            auto address = PhysicalAddress(page_base);
+
+            // Assuming this is Kernel image for now
+            if (page_base < 3 * MB) {
+                continue;
+            }
+
+            if (page_base >= 3 * MB && page_base <= 4 * MB) {
+                dbgprintf("MemoryManager", "Found kernel page at %x\n", address);
+                // m_kernel_physical_regions.add_last(PhysicalRegion::create(address, address));
+            } else {
+            }
+        }
+
+        // TODO: There may be multiple non-contiguous regions that should be mapped.
+        break;
+    }
 
     m_pmm = new PMM(multiboot);
 
-    dbgprintf("MemoryManager", "kernel_page_directory=%x\n", m_kernel_page_directory);
-    dbgprintf("MemoryManager", "kernel_page_table=%x\n", m_kernel_page_table);
-    dbgprintf("MemoryManager", "kernel_page_directory[0]=%x\n", m_kernel_page_directory.entries()[0]);
-    dbgprintf("MemoryManager", "kernel_page_directory[768]=%x\n", m_kernel_page_directory.entries()[768]);
-    dbgprintf("MemoryManager", "kernel_zone bitmap=%x\n", pmm().kernel_region().bitmap().data());
-    dbgprintf("MemoryManager", "user_zone bitmap=%x\n", pmm().user_region().bitmap().data());
+    // dbgprintf("MemoryManager", "kernel_page_directory=%x\n", m_kernel_page_directory);
+    // dbgprintf("MemoryManager", "kernel_page_table=%x\n", m_kernel_page_table);
+    // dbgprintf("MemoryManager", "kernel_page_directory[0]=%x\n", m_kernel_page_directory.entries()[0]);
+    // dbgprintf("MemoryManager", "kernel_page_directory[768]=%x\n", m_kernel_page_directory.entries()[768]);
+    // dbgprintf("MemoryManager", "kernel_zone bitmap=%x\n", pmm().kernel_region().bitmap().data());
+    // dbgprintf("MemoryManager", "user_zone bitmap=%x\n", pmm().user_region().bitmap().data());
 
     m_kernel_virtual_region = Region<VirtualAddress>((u32)&g_kernel_end, (KERNEL_VIRTUAL_BASE + KERNEL_REGION_LENGTH) - (u32)&g_kernel_end);
 
@@ -99,6 +162,14 @@ PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_director
 ResultOr<VirtualAddress> MemoryManager::map_kernel_region(PhysicalAddress physical_address, size_t size)
 {
     u32 pages_needed = ceiling_divide(size, Types::PageSize);
+    auto result = m_kernel_virtual_region.allocate_contiguous_frame(pages_needed);
+    if (result.is_error()) {
+        dbgprintf("MemoryManager", "Unable to map kernel region of %u bytes (%u pages)\n", size, pages_needed);
+        return result.error();
+    }
+
+    dbgprintf("MemoryManager", "Found %d contiguous pages @ 0x%x\n", pages_needed, result.value());
+
     return Result(Result::Failure);
 }
 

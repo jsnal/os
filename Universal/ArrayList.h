@@ -6,6 +6,10 @@
 
 #pragma once
 
+#ifdef KERNEL
+#endif
+#include <Kernel/kmalloc.h>
+
 #include <Universal/Result.h>
 #include <Universal/Types.h>
 

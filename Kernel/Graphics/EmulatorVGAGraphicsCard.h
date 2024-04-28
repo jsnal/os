@@ -27,6 +27,8 @@ public:
     size_t get_width() override;
     size_t get_height() override;
 
+    size_t framebuffer_size() const;
+
 private:
     PhysicalAddress find_framebuffer_address();
 

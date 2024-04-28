@@ -102,6 +102,8 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     PIT::the();
 
+    kmalloc_init();
+
     MemoryManager::the().init(boot_page_directory, multiboot);
 
     kernel_main();

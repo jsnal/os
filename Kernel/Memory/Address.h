@@ -28,6 +28,7 @@ public:
 
     u32 get() const { return m_address; }
     void set(u32 address) { m_address = address; }
+    VirtualAddress offset(u32 offset) const { return VirtualAddress(m_address + offset); }
 
     u8* ptr() { return reinterpret_cast<u8*>(m_address); }
     const u8* ptr() const { return reinterpret_cast<const u8*>(m_address); }

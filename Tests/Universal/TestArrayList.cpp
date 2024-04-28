@@ -5,7 +5,9 @@
  */
 
 #include <Tests/Macros.h>
+#include <Tests/Universal/IntSharedPtr.h>
 #include <Universal/ArrayList.h>
+#include <Universal/SharedPtr.h>
 
 TEST_CASE(create)
 {
@@ -141,6 +143,27 @@ TEST_CASE(pointers)
     CHECK_EQUAL((char*)"string2", array_list[1]);
     CHECK_EQUAL((char*)"string3", array_list[2]);
     CHECK_EQUAL((char*)"string4", array_list[3]);
+}
+
+TEST_CASE(shared_pointers)
+{
+    auto shared_point1 = adopt(*new IntSharedPointer(1));
+    auto shared_point2 = adopt(*new IntSharedPointer(2));
+    auto shared_point3 = adopt(*new IntSharedPointer(3));
+    auto shared_point4 = adopt(*new IntSharedPointer(4));
+
+    auto array_list = ArrayList<SharedPtr<IntSharedPointer>>();
+    CHECK_TRUE(array_list.empty());
+
+    array_list.add(0, shared_point1);
+    array_list.add(1, shared_point2);
+    array_list.add(2, shared_point3);
+    array_list.add(3, shared_point4);
+
+    CHECK_EQUAL((int)1, array_list[0]->value());
+    CHECK_EQUAL((int)2, array_list[1]->value());
+    CHECK_EQUAL((int)3, array_list[2]->value());
+    CHECK_EQUAL((int)4, array_list[3]->value());
 }
 
 TEST_MAIN(TestArrayList, [&]() {

@@ -17,6 +17,7 @@ SET(KERNEL_SOURCES
     Graphics/EmulatorVGAGraphicsCard.cpp
     Kernel.cpp
     Memory/MemoryManager.cpp
+    Memory/PhysicalRegion.cpp
     Memory/PMM.cpp
     Process/Process.cpp
     Process/ProcessManager.cpp

@@ -37,6 +37,36 @@ public:
         dbgprintf("Region", "%d KiB Zone created from %x to %x\n", (m_upper_address - m_lower_address) / 1024, m_lower_address, m_upper_address);
     }
 
+    [[nodiscard]] ResultOr<AddressType> allocate_contiguous_frame(u32 number_of_pages)
+    {
+        u32 contigous_pages_start = 0;
+        u32 contigous_pages_found = 0;
+
+        for (u32 i = 0; i < m_pages_in_range && contigous_pages_found != number_of_pages; i++) {
+            if (!m_bitmap.get(i)) {
+                contigous_pages_found++;
+                if (contigous_pages_found == 0) {
+                    contigous_pages_start = i;
+                }
+            } else {
+                contigous_pages_found = 0;
+            }
+        }
+
+        if (contigous_pages_found != number_of_pages) {
+            return Result(Types::OutOfMemory);
+        }
+
+        for (u32 i = contigous_pages_start; i < number_of_pages; i++) {
+            m_bitmap.set(i, true);
+
+            // TODO: May be able to add this like in the other allocate method?
+            // m_last_allocated_frame_index = i;
+        }
+
+        return m_lower_address.offset(Types::PageSize * contigous_pages_start);
+    }
+
     [[nodiscard]] Result allocate_frame(const AddressType address, AddressType* allocations, u32 number_of_pages)
     {
         if (address < m_lower_address || address > m_upper_address) {

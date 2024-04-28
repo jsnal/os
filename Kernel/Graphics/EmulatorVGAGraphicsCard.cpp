@@ -44,9 +44,12 @@ EmulatorVGAGraphicsCard::EmulatorVGAGraphicsCard(Bus::PCI::Address const& addres
     set_resolution(VBE_DEFAULT_WIDTH, VBE_DEFAULT_HEIGHT);
 
     PhysicalAddress framebuffer_phyiscal_address = find_framebuffer_address();
-    dbgprintf("EmulatorVGAGraphicsCard", "Framebuffer located @ 0x%x\n", framebuffer_phyiscal_address);
+    size_t framebuffer_size = this->framebuffer_size();
 
-    // MemoryManager::the().map_kernel_page(framebuffer_phyiscal_address)
+    dbgprintf("EmulatorVGAGraphicsCard", "Framebuffer of size %u located @ 0x%x\n", framebuffer_size, framebuffer_phyiscal_address);
+    dbgprintf("EmulatorVGAGraphicsCard", "Framebuffer %ux%u\n", m_width, m_height);
+
+    MemoryManager::the().map_kernel_region(framebuffer_phyiscal_address, framebuffer_size);
     // framebuffer_phyiscal_address.ptr()[1] = 'A';
 }
 
@@ -69,6 +72,11 @@ size_t EmulatorVGAGraphicsCard::get_width()
 size_t EmulatorVGAGraphicsCard::get_height()
 {
     return 0;
+}
+
+size_t EmulatorVGAGraphicsCard::framebuffer_size() const
+{
+    return m_width * m_height * sizeof(u32);
 }
 
 PhysicalAddress EmulatorVGAGraphicsCard::find_framebuffer_address()
