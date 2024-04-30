@@ -6,12 +6,10 @@
 
 #pragma once
 
-#ifdef KERNEL
-#endif
-#include <Kernel/kmalloc.h>
-
 #include <Universal/Result.h>
 #include <Universal/Types.h>
+
+#include <stdio.h>
 
 namespace Universal {
 
@@ -29,6 +27,14 @@ public:
     ArrayList()
         : ArrayList(1)
     {
+    }
+
+    ~ArrayList()
+    {
+        printf("HERE\n");
+        if (m_data != nullptr) {
+            // delete m_data;
+        }
     }
 
     Result add(u32 index, T element)
@@ -120,7 +126,7 @@ private:
             new_data[i] = m_data[i];
         }
 
-        delete m_data;
+        // delete m_data;
         m_data = new_data;
     }
 

@@ -8,7 +8,7 @@
 
 #include <Universal/ShareCounted.h>
 
-class IntSharedPointer : public ShareCounted<int> {
+class IntSharedPointer : public ShareCounted<IntSharedPointer> {
 public:
     IntSharedPointer(int value)
         : m_value(value)

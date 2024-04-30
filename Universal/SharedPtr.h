@@ -40,6 +40,26 @@ public:
     {
     }
 
+    template<typename U>
+    SharedPtr(SharedPtr<U>&& other)
+        : m_ptr(static_cast<T*>(other.leak_ref()))
+    {
+    }
+
+    SharedPtr(const SharedPtr& other)
+        : m_ptr(const_cast<T*>(other.ptr()))
+    {
+    }
+
+    template<typename U>
+    SharedPtr(const SharedPtr<U>& other)
+        : m_ptr(static_cast<T*>(const_cast<U*>(other.ptr())))
+    {
+        if (m_ptr != nullptr) {
+            m_ptr->ref();
+        }
+    }
+
     T* leak_ref()
     {
         return exchange(m_ptr, nullptr);
