@@ -45,7 +45,7 @@ class ShareCounted : public ShareCountedImpl {
 public:
     void unref()
     {
-        printf("HERE\n");
+        // printf("HERE\n");
         u32 ref_count = deref_base();
         if (ref_count == 0) {
             delete static_cast<const T*>(this);

@@ -25,7 +25,7 @@ public:
     }
 
     SharedPtr(const T& object)
-        : m_ptr(const_cast<T*>(object))
+        : m_ptr(const_cast<T*>(&object))
     {
         m_ptr->ref();
     }
@@ -47,8 +47,11 @@ public:
     }
 
     SharedPtr(const SharedPtr& other)
-        : m_ptr(const_cast<T*>(other.ptr()))
+        : m_ptr(other.m_ptr)
     {
+        if (m_ptr != nullptr) {
+            m_ptr->ref();
+        }
     }
 
     template<typename U>
@@ -103,8 +106,9 @@ public:
 
     [[gnu::always_inline]] inline void clear()
     {
-        if (m_ptr != nullptr) {
-            m_ptr->unref();
+        auto* p = exchange(m_ptr, nullptr);
+        if (p != nullptr) {
+            p->unref();
         }
         m_ptr = nullptr;
     }
