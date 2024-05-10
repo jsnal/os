@@ -11,31 +11,31 @@ __attribute__((section(".heap"))) static u8 kmalloc_initial_heap[KMALLOC_INITIAL
 static KmallocTracker* s_kmalloc_tracker;
 alignas(KmallocTracker) static u8 s_kmalloc_tracker_heap[sizeof(KmallocTracker)];
 
-void* operator new(size_t, void* ptr) noexcept
+void* operator new(size_t, void* ptr)
 {
     return ptr;
 }
 
-void* operator new(size_t size) noexcept
-{
-    void* ptr = kmalloc(size);
-    ASSERT(ptr != nullptr);
-    return ptr;
-}
-
-void* operator new[](size_t size) noexcept
+void* operator new(size_t size)
 {
     void* ptr = kmalloc(size);
     ASSERT(ptr != nullptr);
     return ptr;
 }
 
-void operator delete(void* ptr) noexcept
+void* operator new[](size_t size)
+{
+    void* ptr = kmalloc(size);
+    ASSERT(ptr != nullptr);
+    return ptr;
+}
+
+void operator delete(void* ptr)
 {
     kfree(ptr);
 }
 
-void operator delete[](void* ptr) noexcept
+void operator delete[](void* ptr)
 {
     kfree(ptr);
 }
