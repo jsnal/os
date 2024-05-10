@@ -11,7 +11,6 @@
 #include <Kernel/Memory/Paging.h>
 #include <Kernel/Memory/PhysicalRegion.h>
 #include <Universal/ArrayList.h>
-#include <Universal/PtrArrayList.h>
 #include <Universal/Result.h>
 #include <Universal/Types.h>
 

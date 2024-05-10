@@ -144,7 +144,7 @@ public:
     bool is_null() const { return !m_ptr; }
 
 private:
-    T* m_ptr;
+    T* m_ptr { nullptr };
 };
 
 template<typename T>

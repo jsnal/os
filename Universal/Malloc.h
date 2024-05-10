@@ -8,24 +8,17 @@
 
 #ifdef KERNEL
 #    include <Kernel/kmalloc.h>
+
+inline void* malloc(size_t size)
+{
+    return kmalloc(size);
+}
+
+inline void free(void* ptr)
+{
+    kfree(ptr);
+}
+
 #else
 #    include <stdlib.h>
 #endif
-
-void* malloc(size_t size)
-{
-#ifdef KERNEL
-    return kmalloc(size);
-#else
-    return malloc(size);
-#endif
-}
-
-void free(void* ptr)
-{
-#ifdef KERNEL
-    kfree(ptr);
-#else
-    free(ptr);
-#endif
-}

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2024, Jason Long <jasonlongball@gmail.com>
  *
@@ -91,7 +90,7 @@ TEST_CASE(swap)
     CHECK_EQUAL((u32)1, shared_pointer1->ref_count());
 }
 
-TEST_MAIN(TestArrayList, [&]() {
+TEST_MAIN(TestSharedPtr, [&]() {
     ENUMERATE_TEST(create);
     ENUMERATE_TEST(multiple_refs);
     ENUMERATE_TEST(assign_ref);
