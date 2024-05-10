@@ -6,14 +6,12 @@
 
 #pragma once
 
+#include <Universal/Malloc.h>
 #include <Universal/Result.h>
+#include <Universal/Stdlib.h>
 #include <Universal/Types.h>
 
-#include <stdio.h>
-
 namespace Universal {
-
-// TODO: Make this better suited for storing heap allocated data
 
 template<typename T>
 class ArrayList {
@@ -21,20 +19,20 @@ public:
     ArrayList(size_t capacity)
         : m_capacity(capacity)
     {
-        m_data = new T[capacity];
+        ensure_capacity(capacity);
     }
 
     ArrayList()
-        : ArrayList(1)
+        : ArrayList(0)
     {
     }
 
     ~ArrayList()
     {
-        printf("HERE\n");
-        if (m_data != nullptr) {
-            // delete m_data;
+        for (size_t i = 0; i < m_size; i++) {
+            m_data[i].~T();
         }
+        free(m_data);
     }
 
     Result add(u32 index, T element)
@@ -43,7 +41,7 @@ public:
             return Result::Failure;
         }
 
-        enure_capacity(m_size + 1);
+        ensure_capacity(m_size + 1);
 
         for (int i = m_size - 1; i >= static_cast<int>(index); i--) {
             m_data[i + 1] = m_data[i];
@@ -109,7 +107,7 @@ public:
 private:
     bool check_index(u32 index) const { return index < 0 || index >= m_size; }
 
-    void enure_capacity(int minimum_capacity)
+    void ensure_capacity(int minimum_capacity)
     {
         if (minimum_capacity < m_capacity) {
             return;
@@ -120,17 +118,18 @@ private:
             m_capacity = minimum_capacity;
         }
 
-        T* new_data = new T[m_capacity];
+        T* new_data = reinterpret_cast<T*>(malloc(m_capacity * sizeof(T)));
 
         for (size_t i = 0; i < m_size; i++) {
-            new_data[i] = m_data[i];
+            new (&new_data[i]) T(move(get(i)));
+            get(i).~T();
         }
 
-        // delete m_data;
+        free(m_data);
         m_data = new_data;
     }
 
-    T* m_data;
+    T* m_data { nullptr };
     size_t m_size { 0 };
     size_t m_capacity { 0 };
 };

@@ -156,23 +156,23 @@ TEST_CASE(shared_pointers)
     CHECK_TRUE(array_list.empty());
 
     array_list.add(0, shared_point1);
-    // array_list.add(1, shared_point2);
-    // array_list.add(2, shared_point3);
-    // array_list.add(3, shared_point4);
+    array_list.add(1, shared_point2);
+    array_list.add(2, shared_point3);
+    array_list.add(3, shared_point4);
 
-    // CHECK_EQUAL((int)1, array_list[0]->value());
-    // CHECK_EQUAL((int)2, array_list[1]->value());
-    // CHECK_EQUAL((int)3, array_list[2]->value());
-    // CHECK_EQUAL((int)4, array_list[3]->value());
+    CHECK_EQUAL((int)1, array_list[0]->value());
+    CHECK_EQUAL((int)2, array_list[1]->value());
+    CHECK_EQUAL((int)3, array_list[2]->value());
+    CHECK_EQUAL((int)4, array_list[3]->value());
 }
 
 TEST_MAIN(TestArrayList, [&]() {
-    // ENUMERATE_TEST(create);
-    // ENUMERATE_TEST(add);
-    // ENUMERATE_TEST(remove);
-    // ENUMERATE_TEST(set);
-    // ENUMERATE_TEST(get);
-    // ENUMERATE_TEST(first_and_last);
+    ENUMERATE_TEST(create);
+    ENUMERATE_TEST(add);
+    ENUMERATE_TEST(remove);
+    ENUMERATE_TEST(set);
+    ENUMERATE_TEST(get);
+    ENUMERATE_TEST(first_and_last);
     ENUMERATE_TEST(shared_pointers);
-    // ENUMERATE_TEST(pointers);
+    ENUMERATE_TEST(pointers);
 })

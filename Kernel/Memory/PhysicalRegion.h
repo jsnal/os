@@ -18,6 +18,8 @@ public:
 
     PhysicalRegion() { }
 
+    PhysicalRegion(PhysicalRegion&&) { }
+
     void expand(PhysicalAddress lower, PhysicalAddress upper);
 
     u32 commit();

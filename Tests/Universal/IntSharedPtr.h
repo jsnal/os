@@ -15,6 +15,8 @@ public:
     {
     }
 
+    void value(int v) { m_value = v; }
+
     const int value() const { return m_value; }
 
 private:

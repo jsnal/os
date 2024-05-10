@@ -8,6 +8,7 @@
 
 #ifdef KERNEL
 #    include <Kernel/Stdlib.h>
+#    include <Kernel/kmalloc.h>
 #else
 #    include <stdlib.h>
 #    include <string.h>
