@@ -35,6 +35,7 @@ void PhysicalRegion::expand(PhysicalAddress lower, PhysicalAddress upper)
 
 u32 PhysicalRegion::commit()
 {
+    m_total_pages = (m_upper - m_lower) / Types::PageSize;
     u8* bitmap_address = static_cast<u8*>(kcalloc(m_total_pages / 8));
     m_bitmap = Bitmap::wrap(bitmap_address, m_total_pages);
 

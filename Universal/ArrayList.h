@@ -121,8 +121,8 @@ private:
         T* new_data = reinterpret_cast<T*>(malloc(m_capacity * sizeof(T)));
 
         for (size_t i = 0; i < m_size; i++) {
-            new (&new_data[i]) T(move(get(i)));
-            get(i).~T();
+            new (&new_data[i]) T(move(m_data[i]));
+            m_data[i].~T();
         }
 
         free(m_data);

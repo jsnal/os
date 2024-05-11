@@ -55,7 +55,7 @@
         panic("Unable to initialize root filesystem\n");
     }
 
-    // auto inode1 = ext2_filesystem.inode(12);
+    // auto inode1 = ext2_filesystem.inode(20);
     // dbgprintf("Kernel", "type: %x\n", inode1->data().mode);
     // dbgprintf("Kernel", "size: %d\n", inode1->data().size);
     // u8* buffer = new u8[4096];

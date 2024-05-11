@@ -13,12 +13,15 @@ SET(KERNEL_SOURCES
     Devices/VGA.cpp
     Filesystem/Ext2Filesystem.cpp
     Filesystem/Inode.cpp
-    Graphics/GraphicsManager.cpp
     Graphics/EmulatorVGAGraphicsCard.cpp
+    Graphics/GraphicsManager.cpp
     Kernel.cpp
+    Memory/AddressAllocator.cpp
     Memory/MemoryManager.cpp
-    Memory/PhysicalRegion.cpp
     Memory/PMM.cpp
+    Memory/PhysicalRegion.cpp
+    Memory/VMObject.cpp
+    Memory/VirtualRegion.cpp
     Process/Process.cpp
     Process/ProcessManager.cpp
     Process/WaitingStatus.cpp

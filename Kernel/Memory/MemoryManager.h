@@ -10,6 +10,8 @@
 #include <Kernel/Memory/PMM.h>
 #include <Kernel/Memory/Paging.h>
 #include <Kernel/Memory/PhysicalRegion.h>
+#include <Kernel/Memory/VMObject.h>
+#include <Kernel/Memory/VirtualRegion.h>
 #include <Universal/ArrayList.h>
 #include <Universal/Result.h>
 #include <Universal/Types.h>
@@ -36,6 +38,12 @@ public:
 
     [[nodiscard]] Result unmap_kernel_page(VirtualAddress);
 
+    void add_vm_object(VMObject&);
+    void remove_vm_object(VMObject&);
+
+    void add_virtual_region(VirtualRegion&);
+    void remove_virtual_region(VirtualRegion&);
+
 private:
     void internal_init(u32* boot_page_directory, const multiboot_information_t*);
 
@@ -50,7 +58,12 @@ private:
     PageTableEntry* m_kernel_page_table;
 
     ArrayList<SharedPtr<PhysicalRegion>> m_kernel_physical_regions;
-    ArrayList<PhysicalRegion> m_user_physical_regions;
+    ArrayList<SharedPtr<PhysicalRegion>> m_user_physical_regions;
+
+    LinkedList<VirtualRegion> m_kernel_virtual_regions;
+    LinkedList<VirtualRegion> m_user_virtual_regions;
+
+    LinkedList<VMObject> m_vm_objects;
 
     const PMM* m_pmm;
 

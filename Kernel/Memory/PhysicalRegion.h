@@ -28,6 +28,9 @@ public:
 
     Result free_page(PhysicalAddress);
 
+    const PhysicalAddress lower() const { return m_lower; }
+    const PhysicalAddress upper() const { return m_upper; }
+
 private:
     PhysicalRegion(PhysicalAddress lower, PhysicalAddress upper);
 

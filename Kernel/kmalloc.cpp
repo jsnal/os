@@ -49,23 +49,33 @@ void KmallocTracker::add_heap(u8* heap, size_t heap_size)
 void* kmalloc(size_t size)
 {
     ASSERT(s_kmalloc_tracker != nullptr);
+    if (size == 0) {
+        dbgprintf_if(DEBUG_KMALLOC, "kmalloc", "Ignoring 0 byte allocation\n");
+        return 0;
+    }
+
     void* address = s_kmalloc_tracker->heap().allocate(size);
-    dbgprintf("kmalloc", "%d byte allocation @ 0x%x\n", size, address);
+    dbgprintf_if(DEBUG_KMALLOC, "kmalloc", "%d byte allocation @ 0x%x\n", size, address);
     return address;
 }
 
 void* kcalloc(size_t size)
 {
     ASSERT(s_kmalloc_tracker != nullptr);
+    if (size == 0) {
+        dbgprintf_if(DEBUG_KMALLOC, "kmalloc", "Ignoring 0 byte allocation\n");
+        return 0;
+    }
+
     void* address = s_kmalloc_tracker->heap().allocate(size);
-    dbgprintf("kmalloc", "%d byte allocation @ 0x%x\n", size, address);
+    dbgprintf_if(DEBUG_KMALLOC, "kmalloc", "%d byte allocation @ 0x%x\n", size, address);
     memset(address, 0, size);
     return address;
 }
 
 void kfree(void* ptr)
 {
-    dbgprintf("kmalloc", "free @ 0x%x\n", ptr);
+    dbgprintf_if(DEBUG_KMALLOC, "kmalloc", "free @ 0x%x\n", ptr);
     s_kmalloc_tracker->heap().deallocate(ptr);
 }
 

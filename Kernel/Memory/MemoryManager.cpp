@@ -97,6 +97,9 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
         physical_region_base = (u32)(mmap->base_address & 0xffffffff);
         physical_region_length = (u32)(mmap->length & 0xffffffff);
 
+        SharedPtr<PhysicalRegion> current_region;
+        bool current_region_is_kernel = false;
+
         for (size_t page_base = physical_region_base; page_base < (physical_region_base + physical_region_length); page_base += Types::PageSize) {
             auto address = PhysicalAddress(page_base);
 
@@ -106,14 +109,35 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
             }
 
             if (page_base >= 3 * MB && page_base <= 4 * MB) {
-                dbgprintf("MemoryManager", "Found kernel page at %x\n", address);
-                // m_kernel_physical_regions.add_last(PhysicalRegion::create(address, address));
+                if (!current_region_is_kernel || current_region.is_null() || current_region->upper().offset(Types::PageSize) != address) {
+                    m_kernel_physical_regions.add_last(PhysicalRegion::create(address, address));
+                    current_region = m_kernel_physical_regions.last();
+                    current_region_is_kernel = true;
+                } else {
+                    current_region->expand(current_region->lower(), address);
+                }
             } else {
+                if (current_region_is_kernel || current_region.is_null() || current_region->upper().offset(Types::PageSize) != address) {
+                    m_user_physical_regions.add_last(PhysicalRegion::create(address, address));
+                    current_region = m_user_physical_regions.last();
+                    current_region_is_kernel = false;
+                } else {
+                    current_region->expand(current_region->lower(), address);
+                }
             }
         }
+    }
 
-        // TODO: There may be multiple non-contiguous regions that should be mapped.
-        break;
+    dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Physical Kernel Regions:\n");
+    for (size_t i = 0; i < m_kernel_physical_regions.size(); i++) {
+        m_kernel_physical_regions[i]->commit();
+        dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "  Region %u: 0x%x:0x%x\n", i, m_kernel_physical_regions[i]->lower(), m_kernel_physical_regions[i]->upper());
+    }
+
+    dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Physical User Regions:\n");
+    for (size_t i = 0; i < m_user_physical_regions.size(); i++) {
+        m_user_physical_regions[i]->commit();
+        dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "  Region %u: 0x%x:0x%x\n", i, m_user_physical_regions[i]->lower(), m_user_physical_regions[i]->upper());
     }
 
     m_pmm = new PMM(multiboot);
@@ -212,6 +236,34 @@ Result MemoryManager::unmap_kernel_page(VirtualAddress virtual_address)
 
     page_directory_entry.page_table_base()[page_table_index].set_present(false);
     return Result::OK;
+}
+
+void MemoryManager::add_vm_object(VMObject& vm_object)
+{
+    m_vm_objects.add_last(&vm_object);
+}
+
+void MemoryManager::remove_vm_object(VMObject& vm_object)
+{
+    m_vm_objects.remove(&vm_object);
+}
+
+void MemoryManager::add_virtual_region(VirtualRegion& virtual_region)
+{
+    if (virtual_region.upper() >= KERNEL_VIRTUAL_BASE) {
+        m_kernel_virtual_regions.add_last(&virtual_region);
+    } else {
+        m_user_virtual_regions.add_last(&virtual_region);
+    }
+}
+
+void MemoryManager::remove_virtual_region(VirtualRegion& virtual_region)
+{
+    if (virtual_region.upper() >= KERNEL_VIRTUAL_BASE) {
+        m_kernel_virtual_regions.remove(&virtual_region);
+    } else {
+        m_user_virtual_regions.remove(&virtual_region);
+    }
 }
 
 void MemoryManager::flush_tlb()
