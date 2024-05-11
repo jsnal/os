@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Universal/Malloc.h>
+#include <Universal/Function.h>
 #include <Universal/Result.h>
 #include <Universal/Stdlib.h>
 #include <Universal/Types.h>
@@ -29,10 +29,7 @@ public:
 
     ~ArrayList()
     {
-        for (size_t i = 0; i < m_size; i++) {
-            m_data[i].~T();
-        }
-        free(m_data);
+        delete[] m_data;
     }
 
     Result add(u32 index, T element)
@@ -92,6 +89,25 @@ public:
         return m_data[index];
     }
 
+    // TODO: Replace this with quick-sort
+    void sort(Function<bool(T&, T&)> compare)
+    {
+        bool swapped;
+        for (int i = 0; i < m_size - 1; i++) {
+            swapped = false;
+            for (int j = 0; j < m_size - i - 1; j++) {
+                if (compare(m_data[j], m_data[j + 1])) {
+                    swap(m_data[j], m_data[j + 1]);
+                    swapped = true;
+                }
+            }
+
+            if (!swapped) {
+                break;
+            }
+        }
+    }
+
     const T& operator[](u32 index) const { return m_data[index]; }
     T& operator[](u32 index) { return m_data[index]; }
 
@@ -118,14 +134,14 @@ private:
             m_capacity = minimum_capacity;
         }
 
-        T* new_data = reinterpret_cast<T*>(malloc(m_capacity * sizeof(T)));
+        T* new_data = new T[m_capacity]();
 
         for (size_t i = 0; i < m_size; i++) {
             new (&new_data[i]) T(move(m_data[i]));
             m_data[i].~T();
         }
 
-        free(m_data);
+        delete[] m_data;
         m_data = new_data;
     }
 
