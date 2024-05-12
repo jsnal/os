@@ -11,8 +11,8 @@ VirtualRegion::VirtualRegion()
 {
     MemoryManager::the().add_virtual_region(*this);
 }
+
 VirtualRegion::~VirtualRegion()
 {
-
     MemoryManager::the().remove_virtual_region(*this);
 }
