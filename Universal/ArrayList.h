@@ -11,6 +11,10 @@
 #include <Universal/Stdlib.h>
 #include <Universal/Types.h>
 
+#ifdef KERNEL
+#    include <Kernel/kmalloc.h>
+#endif
+
 namespace Universal {
 
 template<typename T>

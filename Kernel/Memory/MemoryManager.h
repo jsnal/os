@@ -24,7 +24,7 @@ public:
 
     MemoryManager();
 
-    const PageDirectory& kernel_page_directory() const { return m_kernel_page_directory; }
+    const PageDirectory& kernel_page_directory() const { return *m_kernel_page_directory; }
 
     const PageTableEntry& kernel_page_table() const { return *m_kernel_page_table; }
 
@@ -53,7 +53,7 @@ private:
 
     void invalidate_page(VirtualAddress);
 
-    PageDirectory m_kernel_page_directory;
+    SharedPtr<PageDirectory> m_kernel_page_directory;
 
     PageTableEntry* m_kernel_page_table;
 

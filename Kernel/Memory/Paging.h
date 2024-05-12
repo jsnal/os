@@ -7,6 +7,9 @@
 #pragma once
 
 #include <Kernel/Memory/Address.h>
+#include <Kernel/Memory/AddressAllocator.h>
+#include <Universal/ShareCounted.h>
+#include <Universal/SharedPtr.h>
 #include <Universal/Types.h>
 
 class PageTableEntry {
@@ -103,22 +106,31 @@ private:
     VirtualAddress m_address;
 };
 
-class PageDirectory {
+class PageDirectory : public ShareCounted<PageDirectory> {
 public:
-    static PageDirectory create_kernel_page_table(u32* address)
+    static SharedPtr<PageDirectory> create_kernel_page_table(PhysicalAddress address)
     {
-        return PageDirectory(address);
+        return adopt(*new PageDirectory(address));
     }
 
-    PageDirectory() { }
+    PageDirectory()
+        : m_directory_page_base()
+        , m_address_allocator(0, 0)
+    {
+    }
 
-    PageDirectoryEntry* entries() { return reinterpret_cast<PageDirectoryEntry*>(m_directory_page); }
+    PageDirectoryEntry* entries() { return reinterpret_cast<PageDirectoryEntry*>(m_directory_page_base.get()); }
+
+    AddressAllocator& address_allocator() { return m_address_allocator; }
 
 private:
-    PageDirectory(u32* address)
-        : m_directory_page(address)
+    PageDirectory(PhysicalAddress address)
+        : m_directory_page_base(address)
+        , m_address_allocator(KERNEL_VIRTUAL_BASE, 0x3F000000)
     {
     }
 
-    u32* m_directory_page;
+    PhysicalAddress m_directory_page_base;
+
+    AddressAllocator m_address_allocator;
 };

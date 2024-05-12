@@ -13,6 +13,8 @@
 
 class AddressRange {
 public:
+    AddressRange() { }
+
     AddressRange(VirtualAddress base, size_t length)
         : m_base(base)
         , m_length(length)
@@ -20,10 +22,10 @@ public:
     }
 
     const size_t length() const { return m_length; }
+    void set_length(size_t length) { m_length = length; }
 
-    const VirtualAddress lower() const { return VirtualAddress(m_base + m_length); }
-
-    const VirtualAddress upper() const { return m_base; }
+    const VirtualAddress upper() const { return VirtualAddress(m_base + m_length); }
+    const VirtualAddress lower() const { return m_base; }
 
 private:
     VirtualAddress m_base;
@@ -41,7 +43,7 @@ public:
     Result free(AddressRange);
 
 private:
-    void sort();
+    void dump();
 
     ArrayList<AddressRange> m_ranges;
 };

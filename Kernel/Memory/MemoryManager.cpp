@@ -45,8 +45,15 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
         panic("Kernel image is greater then 3 MB\n");
     }
 
-    m_kernel_page_directory = PageDirectory::create_kernel_page_table(boot_page_directory);
+    m_kernel_page_directory = PageDirectory::create_kernel_page_table(PhysicalAddress(reinterpret_cast<u32>(boot_page_directory)));
     m_kernel_page_table = reinterpret_cast<PageTableEntry*>((u8*)boot_page_directory + Types::PageSize);
+
+    auto range1 = m_kernel_page_directory->address_allocator().allocate(64);
+    dbgprintf("MemoryManager", "Range: 0x%x - 0x%x\n", range1.value().lower(), range1.value().upper());
+    auto range2 = m_kernel_page_directory->address_allocator().allocate(64);
+    dbgprintf("MemoryManager", "Range: 0x%x - 0x%x\n", range2.value().lower(), range2.value().upper());
+
+    m_kernel_page_directory->address_allocator().free(range1.value());
 
     // Physical Memory Layout (4 MiB):
     //     Kernel Image (Varies)
@@ -58,7 +65,7 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
     u32 physical_region_base = 0;
     u32 physical_region_length = 0;
 
-    dbgprintf("MemoryMananger", "System Memory Map: lower_mem=%d KiB upper_mem=%d MiB\n", multiboot->memory_lower, multiboot->memory_upper / 1024);
+    dbgprintf("MemoryManager", "System Memory Map: lower_mem=%d KiB upper_mem=%d MiB\n", multiboot->memory_lower, multiboot->memory_upper / 1024);
     for (u32 position = 0, i = 0; position < multiboot->memory_map_length; position += sizeof(multiboot_mmap_t), i++) {
         multiboot_mmap_t* mmap = multiboot->memory_map + i;
 
@@ -208,7 +215,7 @@ Result MemoryManager::map_kernel_page(VirtualAddress virtual_address, PhysicalAd
         return Types::AddressOutOfRange;
     }
 
-    PageTableEntry& page_table_entry = get_page_table_entry(m_kernel_page_directory, virtual_address, true);
+    PageTableEntry& page_table_entry = get_page_table_entry(*m_kernel_page_directory, virtual_address, true);
     page_table_entry.set_physical_page_base(physical_address);
     page_table_entry.set_present(true);
     page_table_entry.set_read_write(true);
@@ -228,7 +235,7 @@ Result MemoryManager::unmap_kernel_page(VirtualAddress virtual_address)
 
     u16 page_directory_index = PAGE_DIRECTORY_INDEX(virtual_address);
     u16 page_table_index = PAGE_TABLE_INDEX(virtual_address);
-    PageDirectoryEntry& page_directory_entry = m_kernel_page_directory.entries()[page_directory_index];
+    PageDirectoryEntry& page_directory_entry = m_kernel_page_directory->entries()[page_directory_index];
 
     if (!page_directory_entry.is_present()) {
         return Types::AddressOutOfRange;
