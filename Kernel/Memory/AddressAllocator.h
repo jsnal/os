@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Kernel/Logger.h>
 #include <Kernel/Memory/Address.h>
 #include <Universal/ArrayList.h>
 #include <Universal/Result.h>
@@ -21,8 +22,8 @@ public:
     {
     }
 
-    const size_t length() const { return m_length; }
-    void set_length(size_t length) { m_length = length; }
+    size_t length() const { return m_length; }
+    void add_length(size_t length) { m_length += length; }
 
     const VirtualAddress upper() const { return VirtualAddress(m_base + m_length); }
     const VirtualAddress lower() const { return m_base; }
@@ -43,7 +44,9 @@ public:
     Result free(AddressRange);
 
 private:
+#if DEBUG_ADDRESS_ALLOCATOR
     void dump();
+#endif
 
     ArrayList<AddressRange> m_ranges;
 };

@@ -48,13 +48,6 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
     m_kernel_page_directory = PageDirectory::create_kernel_page_table(PhysicalAddress(reinterpret_cast<u32>(boot_page_directory)));
     m_kernel_page_table = reinterpret_cast<PageTableEntry*>((u8*)boot_page_directory + Types::PageSize);
 
-    auto range1 = m_kernel_page_directory->address_allocator().allocate(64);
-    dbgprintf("MemoryManager", "Range: 0x%x - 0x%x\n", range1.value().lower(), range1.value().upper());
-    auto range2 = m_kernel_page_directory->address_allocator().allocate(64);
-    dbgprintf("MemoryManager", "Range: 0x%x - 0x%x\n", range2.value().lower(), range2.value().upper());
-
-    m_kernel_page_directory->address_allocator().free(range1.value());
-
     // Physical Memory Layout (4 MiB):
     //     Kernel Image (Varies)
     //     kmalloc Space (1 MiB)

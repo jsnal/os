@@ -9,8 +9,6 @@
 #include <Universal/ArrayList.h>
 #include <Universal/SharedPtr.h>
 
-#include <iostream>
-
 TEST_CASE(create)
 {
     auto array_list = ArrayList<u32>();
