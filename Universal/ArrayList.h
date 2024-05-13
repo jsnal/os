@@ -31,6 +31,33 @@ public:
     {
     }
 
+    ArrayList(ArrayList&& other)
+        : m_data(other.m_data)
+        , m_size(other.m_size)
+        , m_capacity(other.m_capacity)
+
+    {
+        other.m_data = nullptr;
+        other.m_capacity = 0;
+        other.m_size = 0;
+    }
+
+    ArrayList& operator=(ArrayList&& other)
+    {
+        if (this != &other) {
+            delete[] m_data;
+
+            m_data = other.m_data;
+            m_size = other.m_size;
+            m_capacity = other.m_capacity;
+
+            other.m_data = nullptr;
+            other.m_capacity = 0;
+            other.m_size = 0;
+        }
+        return *this;
+    }
+
     ~ArrayList()
     {
         delete[] m_data;

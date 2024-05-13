@@ -9,6 +9,8 @@
 #include <Universal/ArrayList.h>
 #include <Universal/SharedPtr.h>
 
+#include <iostream>
+
 TEST_CASE(create)
 {
     auto array_list = ArrayList<u32>();
@@ -213,6 +215,39 @@ TEST_CASE(sort_objects)
     CHECK_EQUAL((int)4, array_list[3]->value());
 }
 
+TEST_CASE(move)
+{
+    auto array_list = ArrayList<int>();
+    CHECK_TRUE(array_list.empty());
+
+    array_list.add_last(0);
+    array_list.add_last(4);
+    array_list.add_last(3);
+
+    CHECK_EQUAL((int)0, array_list[0]);
+    CHECK_EQUAL((int)4, array_list[1]);
+    CHECK_EQUAL((int)3, array_list[2]);
+
+    auto array_list_construct = ArrayList<int>(move(array_list));
+    CHECK_FALSE(array_list_construct.empty());
+    CHECK_EQUAL((size_t)7, array_list_construct.capacity());
+
+    CHECK_EQUAL((int)0, array_list_construct[0]);
+    CHECK_EQUAL((int)4, array_list_construct[1]);
+    CHECK_EQUAL((int)3, array_list_construct[2]);
+
+    auto array_list_equals = ArrayList<int>(array_list_construct.size());
+    CHECK_TRUE(array_list_equals.empty());
+    CHECK_EQUAL((size_t)7, array_list_equals.capacity());
+
+    array_list_equals = move(array_list_construct);
+
+    CHECK_TRUE(array_list.empty());
+    CHECK_EQUAL((int)0, array_list_equals[0]);
+    CHECK_EQUAL((int)4, array_list_equals[1]);
+    CHECK_EQUAL((int)3, array_list_equals[2]);
+}
+
 TEST_MAIN(TestArrayList, [&]() {
     ENUMERATE_TEST(create);
     ENUMERATE_TEST(add);
@@ -224,4 +259,5 @@ TEST_MAIN(TestArrayList, [&]() {
     ENUMERATE_TEST(shared_pointers);
     ENUMERATE_TEST(sort);
     ENUMERATE_TEST(sort_objects);
+    ENUMERATE_TEST(move);
 })
