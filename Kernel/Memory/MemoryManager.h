@@ -15,6 +15,7 @@
 #include <Universal/ArrayList.h>
 #include <Universal/Result.h>
 #include <Universal/Types.h>
+#include <Universal/UniquePtr.h>
 
 class MemoryManager final {
 public:
@@ -29,6 +30,15 @@ public:
     const PageTableEntry& kernel_page_table() const { return *m_kernel_page_table; }
 
     const PMM& pmm() const { return *m_pmm; }
+
+    PhysicalAddress allocate_physical_kernel_page();
+
+    UniquePtr<VirtualRegion> allocate_kernel_region(size_t size);
+    UniquePtr<VirtualRegion> allocate_kernel_region_at(PhysicalAddress physical_address, size_t size);
+
+    void identity_map(PageDirectory&, VirtualAddress, size_t);
+
+    PageTableEntry& get_page_table_entry(PageDirectory&, VirtualAddress, bool is_kernel);
 
     ResultOr<VirtualAddress> map_kernel_region(PhysicalAddress, size_t);
 
@@ -46,8 +56,6 @@ public:
 
 private:
     void internal_init(u32* boot_page_directory, const multiboot_information_t*);
-
-    PageTableEntry& get_page_table_entry(PageDirectory&, VirtualAddress, bool is_kernel);
 
     void flush_tlb();
 

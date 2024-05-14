@@ -97,9 +97,9 @@ private:
     void set_bit(u32 bit, bool value)
     {
         if (value) {
-            m_address.set(m_address | bit);
+            m_address = m_address | bit;
         } else {
-            m_address.set(m_address & ~bit);
+            m_address = m_address & ~bit;
         }
     }
 
@@ -126,7 +126,7 @@ public:
 private:
     PageDirectory(PhysicalAddress address)
         : m_directory_page_base(address)
-        , m_address_allocator(KERNEL_VIRTUAL_BASE, 0x3F000000)
+        , m_address_allocator(KERNEL_VIRTUAL_BASE + KERNEL_IMAGE_LENGTH, 0x3F000000)
     {
     }
 

@@ -8,8 +8,8 @@
 
 #include <Universal/Types.h>
 
-#define PAGE_DIRECTORY_INDEX(virtual_address) (((u32)virtual_address.get()) >> 22)
-#define PAGE_TABLE_INDEX(virtual_address) ((((u32)virtual_address.get()) & 0x3fffff) >> 12)
+#define PAGE_DIRECTORY_INDEX(virtual_address) ((((u32)virtual_address.get()) >> 22) & 0x3ff);
+#define PAGE_TABLE_INDEX(virtual_address) ((((u32)virtual_address.get()) >> 12) & 0x3fffff)
 
 class VirtualAddress {
 public:

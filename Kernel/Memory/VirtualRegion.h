@@ -6,31 +6,47 @@
 
 #pragma once
 
-#include <Kernel/Memory/VMObject.h>
+#include <Kernel/Memory/AddressAllocator.h>
+#include <Kernel/Memory/Paging.h>
+#include <Universal/Array.h>
 #include <Universal/LinkedList.h>
+#include <Universal/Number.h>
+#include <Universal/UniquePtr.h>
 
 class VirtualRegion : public LinkedListNode<VirtualRegion> {
 public:
-    VirtualRegion();
+    VirtualRegion(const AddressRange&, u8 access);
     ~VirtualRegion();
 
+    static UniquePtr<VirtualRegion> create_kernel_region(const AddressRange& address_range, u8 access);
+    static UniquePtr<VirtualRegion> create_kernel_region_at(PhysicalAddress, const AddressRange& address_range, u8 access);
+
     enum Access {
-        Read,
-        Write,
-        Execute
+        Read = 1,
+        Write = 2,
+        Execute = 4,
     };
 
-    const VirtualAddress lower() const { return m_lower; }
-    const VirtualAddress upper() const { return m_upper; }
+    const AddressRange& address_range() const { return m_address_range; }
+
+    void map(PageDirectory&);
+
+    inline size_t page_count() { return ceiling_divide(m_address_range.length(), Types::PageSize); }
+
+    VirtualAddress lower() const { return m_address_range.lower(); }
+    VirtualAddress upper() const { return m_address_range.upper(); }
 
     VirtualRegion* m_next { nullptr };
     VirtualRegion* m_previous { nullptr };
 
 private:
-    SharedPtr<VMObject> m_vm_object;
+    void invalidate_page(VirtualAddress);
 
-    VirtualAddress m_lower;
-    VirtualAddress m_upper;
+    AddressRange m_address_range;
 
-    Access m_access { Read };
+    Array<PhysicalAddress> m_physical_pages;
+    SharedPtr<PageDirectory> m_page_directory;
+
+    u8 m_access { Read };
+    bool m_is_kernel_region { false };
 };

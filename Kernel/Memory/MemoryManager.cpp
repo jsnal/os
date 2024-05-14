@@ -10,6 +10,8 @@
 
 using namespace Memory;
 
+extern u32 g_kernel_end;
+
 MemoryManager& MemoryManager::the()
 {
     static MemoryManager s_the;
@@ -104,11 +106,11 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
             auto address = PhysicalAddress(page_base);
 
             // Assuming this is Kernel image for now
-            if (page_base < 3 * MB) {
+            if (page_base < KERNEL_IMAGE_LENGTH) {
                 continue;
             }
 
-            if (page_base >= 3 * MB && page_base <= 4 * MB) {
+            if (page_base >= KERNEL_IMAGE_LENGTH && page_base < KERNEL_IMAGE_LENGTH + (1 * MB)) {
                 if (!current_region_is_kernel || current_region.is_null() || current_region->upper().offset(Types::PageSize) != address) {
                     m_kernel_physical_regions.add_last(PhysicalRegion::create(address, address));
                     current_region = m_kernel_physical_regions.last();
@@ -151,11 +153,54 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
 
     m_kernel_virtual_region = Region<VirtualAddress>((u32)&g_kernel_end, (KERNEL_VIRTUAL_BASE + KERNEL_REGION_LENGTH) - (u32)&g_kernel_end);
 
+    allocate_kernel_region_at(0xfd000000, Types::PageSize * 5);
+
     // auto& pte = get_page_table_entry(m_kernel_page_directory, 0xD03FF000, true);
     // ASSERT(map_kernel_page(0xC03FF000, 0x000B8000).is_ok());
 
     // dbgprintf("pte: %x\n", pte.physical_page_base());
     // dbgprintf("pte: %x\n", pte.address());
+}
+
+PhysicalAddress MemoryManager::allocate_physical_kernel_page()
+{
+    ResultOr<PhysicalAddress> page_result;
+    for (int i = 0; i < m_kernel_physical_regions.size(); i++) {
+        page_result = m_kernel_physical_regions[i]->allocate_page();
+        if (page_result.is_ok()) {
+            break;
+        }
+    }
+
+    ASSERT(page_result.is_ok());
+    memset(page_result.value().ptr(), 0, Types::PageSize);
+    return page_result.value();
+}
+
+UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_region(size_t size)
+{
+    auto address_range = m_kernel_page_directory->address_allocator().allocate(size);
+    ASSERT(address_range.is_ok());
+
+    auto virtual_region = VirtualRegion::create_kernel_region(address_range.value(), VirtualRegion::Read | VirtualRegion::Write | VirtualRegion::Execute);
+    dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Allocated Kernel region from 0x%x to 0x%x\n", virtual_region->lower(), virtual_region->upper());
+    virtual_region->map(*m_kernel_page_directory);
+    return virtual_region;
+}
+
+UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_region_at(PhysicalAddress physical_address, size_t size)
+{
+    auto address_range = m_kernel_page_directory->address_allocator().allocate(size);
+    ASSERT(address_range.is_ok());
+
+    auto virtual_region = VirtualRegion::create_kernel_region_at(physical_address, address_range.value(), VirtualRegion::Read | VirtualRegion::Write | VirtualRegion::Execute);
+    dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Allocated Kernel region from 0x%x to 0x%x\n", virtual_region->lower(), virtual_region->upper());
+    virtual_region->map(*m_kernel_page_directory);
+    return virtual_region;
+}
+
+void MemoryManager::identity_map(PageDirectory&, VirtualAddress, size_t)
+{
 }
 
 PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_directory, VirtualAddress virtual_address, bool is_kernel)
@@ -165,19 +210,15 @@ PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_director
     PageDirectoryEntry& page_directory_entry = page_directory.entries()[page_directory_index];
 
     if (!page_directory_entry.is_present()) {
-        auto page_table = is_kernel ? pmm().kernel_region().allocate_frame() : pmm().user_region().allocate_frame();
+        auto page_table = allocate_physical_kernel_page();
+        memset(page_table.ptr(), 0, Types::PageSize);
 
-        memset(page_table.value().ptr(), 0, Types::PageSize);
+        dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Allocated page table @ 0x%x\n", page_table);
 
-        ASSERT(page_table.is_ok());
-
-        dbgprintf("MemoryManager", "Allocated new page table at 0x%x\n", page_table.value());
-
-        page_directory_entry.set_page_table_base(page_table.value().get());
+        page_directory_entry.set_page_table_base(page_table.get());
         page_directory_entry.set_user_supervisor(is_kernel);
         page_directory_entry.set_present(true);
         page_directory_entry.set_read_write(true);
-        page_directory.entries()[page_directory_index] = page_table.value().get();
     }
 
     return page_directory_entry.page_table_base()[page_table_index];
