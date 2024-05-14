@@ -108,7 +108,7 @@ private:
 
 class PageDirectory : public ShareCounted<PageDirectory> {
 public:
-    static SharedPtr<PageDirectory> create_kernel_page_table(PhysicalAddress address)
+    static SharedPtr<PageDirectory> create_kernel_page_directory(PhysicalAddress address)
     {
         return adopt(*new PageDirectory(address));
     }
@@ -118,6 +118,8 @@ public:
         , m_address_allocator(0, 0)
     {
     }
+
+    PhysicalAddress base() const { return m_directory_page_base; }
 
     PageDirectoryEntry* entries() { return reinterpret_cast<PageDirectoryEntry*>(m_directory_page_base.get()); }
 

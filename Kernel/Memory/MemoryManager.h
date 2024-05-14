@@ -26,8 +26,6 @@ public:
 
     const PageDirectory& kernel_page_directory() const { return *m_kernel_page_directory; }
 
-    const PageTableEntry& kernel_page_table() const { return *m_kernel_page_table; }
-
     PhysicalAddress allocate_physical_kernel_page();
 
     UniquePtr<VirtualRegion> allocate_kernel_region(size_t size);
@@ -36,6 +34,7 @@ public:
     void free_kernel_region(PhysicalAddress, size_t size);
 
     void protected_map(PageDirectory&, VirtualAddress, size_t);
+    void identity_map(PageDirectory&, VirtualAddress, size_t);
 
     PageTableEntry& get_page_table_entry(PageDirectory&, VirtualAddress, bool is_kernel);
 
@@ -51,8 +50,6 @@ private:
     void flush_tlb();
 
     SharedPtr<PageDirectory> m_kernel_page_directory;
-
-    PageTableEntry* m_kernel_page_table;
 
     ArrayList<SharedPtr<PhysicalRegion>> m_kernel_physical_regions;
     ArrayList<SharedPtr<PhysicalRegion>> m_user_physical_regions;

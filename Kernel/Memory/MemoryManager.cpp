@@ -21,7 +21,7 @@ MemoryManager::MemoryManager()
 {
 }
 
-static void page_fault_exception_handler(const InterruptFrame&)
+static void page_fault_exception_handler(const InterruptFrame& frame)
 {
     u32 fault_address;
     asm volatile("mov %0, cr2"
@@ -30,7 +30,7 @@ static void page_fault_exception_handler(const InterruptFrame&)
     if (fault_address == 0x0) {
         panic("Dereference of null pointer caused page fault\n");
     }
-    panic("Page fault at %x\n", fault_address);
+    panic("Page fault at %x, error %u\n", fault_address, frame.error_number);
 }
 
 void MemoryManager::init(u32* boot_page_directory, const multiboot_information_t* multiboot)
@@ -49,8 +49,7 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
         panic("Kernel image is too large!\n");
     }
 
-    m_kernel_page_directory = PageDirectory::create_kernel_page_table(PhysicalAddress(reinterpret_cast<u32>(boot_page_directory)));
-    m_kernel_page_table = reinterpret_cast<PageTableEntry*>((u8*)boot_page_directory + Types::PageSize);
+    m_kernel_page_directory = PageDirectory::create_kernel_page_directory(PhysicalAddress(reinterpret_cast<u32>(boot_page_directory)));
 
     // Physical Memory Layout (4 MiB):
     //     Kernel Image (Varies)
@@ -58,8 +57,6 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
     //     User physical memory region bitmap
     //     Kernel physical memory region bitmap
     //     Free kernel pages
-
-    protected_map(*m_kernel_page_directory, 0, Types::PageSize);
 
     u32 physical_region_base = 0;
     u32 physical_region_length = 0;
@@ -146,6 +143,12 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
         m_user_physical_regions[i]->commit();
         dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "  Region %u: 0x%x:0x%x\n", i, m_user_physical_regions[i]->lower(), m_user_physical_regions[i]->upper());
     }
+
+    // Ensure that the boot 4 MB are identity mapped
+    identity_map(*m_kernel_page_directory, Types::PageSize, (4 * MB) - Types::PageSize);
+
+    // Ensure null pointer dereferences page fault
+    protected_map(*m_kernel_page_directory, 0, Types::PageSize);
 }
 
 PhysicalAddress MemoryManager::allocate_physical_kernel_page()
@@ -201,6 +204,21 @@ void MemoryManager::protected_map(PageDirectory& page_directory, VirtualAddress 
         page_table_entry.set_user_supervisor(false);
         page_table_entry.set_present(false);
         page_table_entry.set_read_write(false);
+    }
+    flush_tlb();
+}
+
+void MemoryManager::identity_map(PageDirectory& page_directory, VirtualAddress virtual_address, size_t length)
+{
+    ASSERT(virtual_address.is_page_aligned());
+
+    for (size_t i = 0; i < length; i += Types::PageSize) {
+        auto page_table_entry_address = virtual_address.offset(i);
+        auto& page_table_entry = get_page_table_entry(page_directory, page_table_entry_address, true);
+        page_table_entry.set_physical_page_base(page_table_entry_address.get());
+        page_table_entry.set_user_supervisor(false);
+        page_table_entry.set_present(true);
+        page_table_entry.set_read_write(true);
     }
     flush_tlb();
 }

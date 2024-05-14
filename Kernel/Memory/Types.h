@@ -9,6 +9,7 @@
 #include <Universal/Types.h>
 
 #define KERNEL_VIRTUAL_BASE 0xC0000000
+#define KERNEL_PHYSICAL_BASE 0x00100000
 #define KERNEL_IMAGE_LENGTH (3 * MB)
 
 namespace Memory::Types {

@@ -20,9 +20,11 @@
     .skip 16384
     stack_top:
 
-    # Allocate page table and 1 page
+    # Allocate page directory and two page tables
     .align 4096
     boot_page_directory:
+    .skip 4096
+    identity_mapped_boot_page_table:
     .skip 4096
     boot_page_table:
     .skip 4096
@@ -34,39 +36,50 @@
 boot:
     cli
 
-    # Prepare to populate the page table
+    # Prepare to populate the boot page table
     mov edi, offset (boot_page_table - 0xC0000000)
-    mov esi, 0x3 #0x00100000 + 0x300
+    mov esi, 0x3
     mov ecx, 1024
 
-    paging_setup:
-        # Writes a page entry and move to next page. This runs 1024
-        # times to allocate a full page table.
+    boot_page_table_setup:
+        # Write 4096 page entries into the boot page table
         mov [edi], esi
         add edi, 4
-        add esi, 4096 # 0x00100000
-        loop paging_setup
+        add esi, 4096
+        loop boot_page_table_setup
 
-        # Map the page table into virtual address space 0x00000000-0x003fffff
-        mov ecx, offset ((boot_page_table - 0xC0000000) + 3)
-        mov [boot_page_directory - 0xC0000000], ecx
+    # Prepare to populate the identity mapped boot page table
+    mov edi, offset (identity_mapped_boot_page_table - 0xC0000000)
+    mov esi, 0x3
+    mov ecx, 1024
 
-        # Map the same page table into virtual address space 0xc0000000-0xc03fffff
-        mov ecx, offset ((boot_page_table - 0xC0000000) + 3)
-        mov [boot_page_directory - 0xC0000000 + 768 * 4], ecx
+    identity_mapped_boot_page_table_setup:
+        # Write 4096 page entries into the identity mapped boot page table
+        mov [edi], esi
+        add edi, 4
+        add esi, 4096
+        loop identity_mapped_boot_page_table_setup
 
-        # Load the page directory
-        mov ecx, offset (boot_page_directory - 0xC0000000)
-        mov cr3, ecx
+    # Map the identity mapped boot page table to virtual addresses 0x00000000-0x003fffff
+    mov ecx, offset ((identity_mapped_boot_page_table - 0xC0000000) + 3)
+    mov [boot_page_directory - 0xC0000000], ecx
 
-        # Enable paging
-        mov ecx, cr0
-        or ecx, 0x80000001
-        mov cr0, ecx
+    # Map the boot page table to virtual addresses 0xc0000000-0xc03fffff
+    mov ecx, offset ((boot_page_table - 0xC0000000) + 3)
+    mov [boot_page_directory - 0xC0000000 + 768 * 4], ecx
 
-        # Jump to high-half Kernel
-        lea ecx, kernel
-        jmp ecx
+    # Load the page directory
+    mov ecx, offset (boot_page_directory - 0xC0000000)
+    mov cr3, ecx
+
+    # Enable paging
+    mov ecx, cr0
+    or ecx, 0x80000001
+    mov cr0, ecx
+
+    # Jump to high-half Kernel
+    lea ecx, kernel
+    jmp ecx
 
 # Kernel entry point
 .section .text
