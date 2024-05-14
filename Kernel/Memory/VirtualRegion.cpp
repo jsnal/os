@@ -49,12 +49,13 @@ void VirtualRegion::map(PageDirectory& page_directory)
         auto page_virtual_address = m_address_range.lower().offset(i * Types::PageSize);
         auto& page_table_entry = MemoryManager::the().get_page_table_entry(page_directory, page_virtual_address, m_is_kernel_region);
         auto physical_page = m_physical_pages[i];
+
         dbgprintf("VirtualRegion", "Mapping vaddr %x to paddr %x\n", page_virtual_address, physical_page);
 
         page_table_entry.set_physical_page_base(physical_page);
         page_table_entry.set_user_supervisor(m_is_kernel_region);
-        page_table_entry.set_read_write(true);
-        page_table_entry.set_present(true);
+        page_table_entry.set_present(is_readable());
+        page_table_entry.set_read_write(is_writable());
 
         invalidate_page(page_virtual_address);
     }

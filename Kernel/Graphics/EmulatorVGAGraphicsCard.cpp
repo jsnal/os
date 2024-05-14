@@ -49,7 +49,7 @@ EmulatorVGAGraphicsCard::EmulatorVGAGraphicsCard(Bus::PCI::Address const& addres
     dbgprintf("EmulatorVGAGraphicsCard", "Framebuffer of size %u located @ 0x%x\n", framebuffer_size, framebuffer_phyiscal_address);
     dbgprintf("EmulatorVGAGraphicsCard", "Framebuffer %ux%u\n", m_width, m_height);
 
-    MemoryManager::the().map_kernel_region(framebuffer_phyiscal_address, framebuffer_size);
+    // MemoryManager::the().map_kernel_region(framebuffer_phyiscal_address, framebuffer_size);
     // framebuffer_phyiscal_address.ptr()[1] = 'A';
 }
 

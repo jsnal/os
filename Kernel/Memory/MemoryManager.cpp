@@ -1,7 +1,6 @@
 #include <Kernel/CPU/IDT.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
-#include <Kernel/Memory/PMM.h>
 #include <Kernel/Memory/Types.h>
 #include <Kernel/panic.h>
 #include <Universal/Assert.h>
@@ -28,6 +27,9 @@ static void page_fault_exception_handler(const InterruptFrame&)
     asm volatile("mov %0, cr2"
                  : "=r"(fault_address));
 
+    if (fault_address == 0x0) {
+        panic("Dereference of null pointer caused page fault\n");
+    }
     panic("Page fault at %x\n", fault_address);
 }
 
@@ -43,8 +45,8 @@ void MemoryManager::init(u32* boot_page_directory, const multiboot_information_t
 
 void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_information_t* multiboot)
 {
-    if (g_kernel_end > 3 * MB) {
-        panic("Kernel image is greater then 3 MB\n");
+    if (g_kernel_end > KERNEL_IMAGE_LENGTH) {
+        panic("Kernel image is too large!\n");
     }
 
     m_kernel_page_directory = PageDirectory::create_kernel_page_table(PhysicalAddress(reinterpret_cast<u32>(boot_page_directory)));
@@ -57,14 +59,17 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
     //     Kernel physical memory region bitmap
     //     Free kernel pages
 
+    protected_map(*m_kernel_page_directory, 0, Types::PageSize);
+
     u32 physical_region_base = 0;
     u32 physical_region_length = 0;
 
+    dbgprintf("MemoryManager", "Kernel image: 0x%x - 0x%x (%u KiB)\n", KERNEL_VIRTUAL_BASE, &g_kernel_end, ((u32)&g_kernel_end - KERNEL_VIRTUAL_BASE) / 1024);
     dbgprintf("MemoryManager", "System Memory Map: lower_mem=%d KiB upper_mem=%d MiB\n", multiboot->memory_lower, multiboot->memory_upper / 1024);
     for (u32 position = 0, i = 0; position < multiboot->memory_map_length; position += sizeof(multiboot_mmap_t), i++) {
         multiboot_mmap_t* mmap = multiboot->memory_map + i;
 
-        dbgprintf("PMM", "  %x%x:%x%x %d (%s)\n",
+        dbgprintf("MemoryManager", "  %x%x:%x%x %d (%s)\n",
             (u32)(mmap->base_address >> 32),
             (u32)(mmap->base_address & 0xffffffff),
             (u32)(mmap->length >> 32),
@@ -141,25 +146,6 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
         m_user_physical_regions[i]->commit();
         dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "  Region %u: 0x%x:0x%x\n", i, m_user_physical_regions[i]->lower(), m_user_physical_regions[i]->upper());
     }
-
-    m_pmm = new PMM(multiboot);
-
-    // dbgprintf("MemoryManager", "kernel_page_directory=%x\n", m_kernel_page_directory);
-    // dbgprintf("MemoryManager", "kernel_page_table=%x\n", m_kernel_page_table);
-    // dbgprintf("MemoryManager", "kernel_page_directory[0]=%x\n", m_kernel_page_directory.entries()[0]);
-    // dbgprintf("MemoryManager", "kernel_page_directory[768]=%x\n", m_kernel_page_directory.entries()[768]);
-    // dbgprintf("MemoryManager", "kernel_zone bitmap=%x\n", pmm().kernel_region().bitmap().data());
-    // dbgprintf("MemoryManager", "user_zone bitmap=%x\n", pmm().user_region().bitmap().data());
-
-    m_kernel_virtual_region = Region<VirtualAddress>((u32)&g_kernel_end, (KERNEL_VIRTUAL_BASE + KERNEL_REGION_LENGTH) - (u32)&g_kernel_end);
-
-    allocate_kernel_region_at(0xfd000000, Types::PageSize * 5);
-
-    // auto& pte = get_page_table_entry(m_kernel_page_directory, 0xD03FF000, true);
-    // ASSERT(map_kernel_page(0xC03FF000, 0x000B8000).is_ok());
-
-    // dbgprintf("pte: %x\n", pte.physical_page_base());
-    // dbgprintf("pte: %x\n", pte.address());
 }
 
 PhysicalAddress MemoryManager::allocate_physical_kernel_page()
@@ -199,8 +185,24 @@ UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_region_at(PhysicalAddres
     return virtual_region;
 }
 
-void MemoryManager::identity_map(PageDirectory&, VirtualAddress, size_t)
+void MemoryManager::free_kernel_region(PhysicalAddress physical_address, size_t size)
 {
+    ASSERT(false);
+}
+
+void MemoryManager::protected_map(PageDirectory& page_directory, VirtualAddress virtual_address, size_t length)
+{
+    ASSERT(virtual_address.is_page_aligned());
+
+    for (size_t i = 0; i < length; i += Types::PageSize) {
+        auto page_table_entry_address = virtual_address.offset(i);
+        auto& page_table_entry = get_page_table_entry(*m_kernel_page_directory, page_table_entry_address, true);
+        page_table_entry.set_physical_page_base(page_table_entry_address.get());
+        page_table_entry.set_user_supervisor(false);
+        page_table_entry.set_present(false);
+        page_table_entry.set_read_write(false);
+    }
+    flush_tlb();
 }
 
 PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_directory, VirtualAddress virtual_address, bool is_kernel)
@@ -222,61 +224,6 @@ PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_director
     }
 
     return page_directory_entry.page_table_base()[page_table_index];
-}
-
-ResultOr<VirtualAddress> MemoryManager::map_kernel_region(PhysicalAddress physical_address, size_t size)
-{
-    u32 pages_needed = ceiling_divide(size, Types::PageSize);
-    auto result = m_kernel_virtual_region.allocate_contiguous_frame(pages_needed);
-    if (result.is_error()) {
-        dbgprintf("MemoryManager", "Unable to map kernel region of %u bytes (%u pages)\n", size, pages_needed);
-        return result.error();
-    }
-
-    dbgprintf("MemoryManager", "Found %d contiguous pages @ 0x%x\n", pages_needed, result.value());
-
-    return Result(Result::Failure);
-}
-
-Result MemoryManager::unmap_kernel_region(PhysicalAddress, size_t)
-{
-    return Result::OK;
-}
-
-Result MemoryManager::map_kernel_page(VirtualAddress virtual_address, PhysicalAddress physical_address)
-{
-    if (virtual_address.get() < KERNEL_VIRTUAL_BASE) {
-        return Types::AddressOutOfRange;
-    }
-
-    PageTableEntry& page_table_entry = get_page_table_entry(*m_kernel_page_directory, virtual_address, true);
-    page_table_entry.set_physical_page_base(physical_address);
-    page_table_entry.set_present(true);
-    page_table_entry.set_read_write(true);
-    page_table_entry.set_user_supervisor(true);
-
-    invalidate_page(virtual_address);
-
-    dbgprintf("MemoryManager", "Mapped virtual address 0x%x to physical address 0x%x\n", virtual_address, physical_address);
-    return Result::OK;
-}
-
-Result MemoryManager::unmap_kernel_page(VirtualAddress virtual_address)
-{
-    if (virtual_address.get() < KERNEL_VIRTUAL_BASE) {
-        return Types::AddressOutOfRange;
-    }
-
-    u16 page_directory_index = PAGE_DIRECTORY_INDEX(virtual_address);
-    u16 page_table_index = PAGE_TABLE_INDEX(virtual_address);
-    PageDirectoryEntry& page_directory_entry = m_kernel_page_directory->entries()[page_directory_index];
-
-    if (!page_directory_entry.is_present()) {
-        return Types::AddressOutOfRange;
-    }
-
-    page_directory_entry.page_table_base()[page_table_index].set_present(false);
-    return Result::OK;
 }
 
 void MemoryManager::add_vm_object(VMObject& vm_object)
@@ -311,11 +258,4 @@ void MemoryManager::flush_tlb()
 {
     asm volatile("mov eax, cr3; \
                   mov cr3, eax");
-}
-
-void MemoryManager::invalidate_page(VirtualAddress address)
-{
-    asm volatile("invlpg [%0]"
-                 :
-                 : "r"(address.get()));
 }

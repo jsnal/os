@@ -1,5 +1,4 @@
 #include <Kernel/Logger.h>
-#include <Kernel/Memory/PMM.h>
 #include <Kernel/kmalloc.h>
 #include <Universal/Assert.h>
 #include <Universal/Stdlib.h>

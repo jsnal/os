@@ -33,6 +33,10 @@ public:
 
     inline size_t page_count() { return ceiling_divide(m_address_range.length(), Types::PageSize); }
 
+    inline bool is_readable() { return m_access & Read; }
+    inline bool is_writable() { return m_access & Write; }
+    inline bool is_executable() { return m_access & Execute; }
+
     VirtualAddress lower() const { return m_address_range.lower(); }
     VirtualAddress upper() const { return m_address_range.upper(); }
 

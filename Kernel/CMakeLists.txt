@@ -18,7 +18,6 @@ SET(KERNEL_SOURCES
     Kernel.cpp
     Memory/AddressAllocator.cpp
     Memory/MemoryManager.cpp
-    Memory/PMM.cpp
     Memory/PhysicalRegion.cpp
     Memory/VMObject.cpp
     Memory/VirtualRegion.cpp

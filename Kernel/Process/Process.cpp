@@ -19,9 +19,8 @@ Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_
 
     u32* stack_allocation = 0;
     if (stack_size == Types::PageSize) {
-        auto frame = MemoryManager::the().pmm().kernel_region().allocate_frame();
-        ASSERT(frame.is_ok());
-        stack_allocation = (u32*)Memory::Types::physical_to_virtual(frame.value());
+        auto region = MemoryManager::the().allocate_physical_kernel_page();
+        stack_allocation = (u32*)Memory::Types::physical_to_virtual(region);
     } else {
         stack_allocation = (u32*)kmalloc(stack_size);
     }
