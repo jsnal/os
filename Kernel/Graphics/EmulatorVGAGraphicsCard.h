@@ -9,6 +9,7 @@
 #include <Kernel/Bus/PCI.h>
 #include <Kernel/Graphics/VGAGraphicsCard.h>
 #include <Kernel/Memory/Address.h>
+#include <Kernel/Memory/VirtualRegion.h>
 #include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
 
@@ -39,6 +40,8 @@ private:
 
     Bus::PCI::Address m_pci_address;
     Bus::PCI::ID m_pci_id;
+
+    UniquePtr<VirtualRegion> m_frame_buffer;
 
     u16 m_width;
     u16 m_height;

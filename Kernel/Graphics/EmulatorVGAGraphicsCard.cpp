@@ -49,8 +49,16 @@ EmulatorVGAGraphicsCard::EmulatorVGAGraphicsCard(Bus::PCI::Address const& addres
     dbgprintf("EmulatorVGAGraphicsCard", "Framebuffer of size %u located @ 0x%x\n", framebuffer_size, framebuffer_phyiscal_address);
     dbgprintf("EmulatorVGAGraphicsCard", "Framebuffer %ux%u\n", m_width, m_height);
 
-    // MemoryManager::the().map_kernel_region(framebuffer_phyiscal_address, framebuffer_size);
-    // framebuffer_phyiscal_address.ptr()[1] = 'A';
+    m_frame_buffer = MemoryManager::the().allocate_kernel_region_at(framebuffer_phyiscal_address, framebuffer_size);
+
+    dbgprintf("EmulatorVGAGraphicsCard", "Frame buffer 0x%x - 0x%x\n", m_frame_buffer->lower(), m_frame_buffer->upper());
+
+    for (size_t x = 0; x < m_width; x++) {
+        for (size_t y = 0; y < m_height; y++) {
+            m_frame_buffer->lower().ptr()[x + y * m_height] = 'a';
+            dbgprintf("EmulatorVGAGraphicsCard", "x=%u y=%u\n", x, y);
+        }
+    }
 }
 
 SharedPtr<EmulatorVGAGraphicsCard> EmulatorVGAGraphicsCard::create(Bus::PCI::Address const& address, Bus::PCI::ID const& id)

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Kernel/Bus/PCI.h>
+#include <Kernel/Graphics/EmulatorVGAGraphicsCard.h>
 #include <Universal/Result.h>
 
 class GraphicsManager final {
@@ -18,4 +19,7 @@ public:
     Result init_graphics_device(Bus::PCI::Address const&, Bus::PCI::ID const&);
 
     Result init();
+
+private:
+    ArrayList<SharedPtr<EmulatorVGAGraphicsCard>> m_graphics_cards;
 };

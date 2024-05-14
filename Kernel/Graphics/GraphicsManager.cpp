@@ -19,7 +19,7 @@ Result GraphicsManager::init_graphics_device(Bus::PCI::Address const& address, B
     SharedPtr<EmulatorVGAGraphicsCard> graphics_card;
     switch (id.vendor) {
         case Bus::PCI::VendorId::LegacyEmulator:
-            graphics_card = EmulatorVGAGraphicsCard::create(address, id);
+            m_graphics_cards.add_last(EmulatorVGAGraphicsCard::create(address, id));
             break;
         default:
             dbgprintf("GraphicsManager", "Unable to find graphics card (%x:%x)\n", id.vendor, id.device);
@@ -36,7 +36,7 @@ Result GraphicsManager::init()
 
     Bus::PCI::enumerate_devices([&](Bus::PCI::Address address, Bus::PCI::ID id, u16 type) {
         if (type == Bus::PCI::Type::Display) {
-            dbgprintf("GraphicsManager", "%x:%x type: %x\n", id.device, id.vendor, type);
+            dbgprintf("GraphicsManager", "Display device found: %x:%x type: %x\n", id.device, id.vendor, type);
             init_graphics_device(address, id);
         }
     });
