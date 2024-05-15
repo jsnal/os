@@ -23,7 +23,11 @@ public:
     void write(const char* string, size_t length);
 
     void disable_boot_console() { m_boot_console.clear(); }
-    void enable_boot_console() { m_boot_console = GraphicsManager::init_boot_console(); }
+    void enable_boot_console()
+    {
+        m_boot_console = GraphicsManager::init_boot_console();
+        m_boot_console->set_color(VGATextModeGraphicsCard::LightCyan, VGATextModeGraphicsCard::Black);
+    }
 
 private:
     SharedPtr<VGATextModeGraphicsCard> m_boot_console;

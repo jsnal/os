@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <cstring>
 #include <iostream>
 
 #define FORMAT_OK "\x1b[35;1m\x1b[32m"
@@ -33,6 +34,11 @@
         check_not_equal(name, passed, nullptr, actual); \
     } while (0)
 
+#define CHECK_STR_EQUAL(expected, actual)                \
+    do {                                                 \
+        check_str_equal(name, passed, expected, actual); \
+    } while (0)
+
 #define CHECK_EQUAL(expected, actual)                \
     do {                                             \
         check_equal(name, passed, expected, actual); \
@@ -48,7 +54,7 @@ static void check_equal(const char* name, bool* passed, T expected, T actual)
 {
     bool local_passed = expected == actual;
     if (!local_passed) {
-        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << " Expected: " << expected << " Actual: " << actual << std::endl;
+        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << " Expected: '" << expected << "' Actual: '" << actual << "'\n";
         *passed = false;
     }
 }
@@ -64,7 +70,7 @@ static void check_not_equal(const char* name, bool* passed, T expected, T actual
 {
     bool local_passed = expected != actual;
     if (!local_passed) {
-        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << " Expected: " << expected << " Actual: " << actual << std::endl;
+        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << " Expected: '" << expected << "' Actual: '" << actual << "'\n";
         *passed = false;
     }
 }
@@ -73,6 +79,23 @@ template<typename T>
 static void check_not_equal(const char* name, bool* passed, std::nullptr_t, T actual)
 {
     check_not_equal(name, passed, (T) nullptr, actual);
+}
+
+static void check_str_equal(const char* name, bool* passed, const char* expected, const char* actual)
+{
+    bool local_passed = true;
+    size_t length = strlen(expected);
+
+    for (size_t i = 0; i < length; i++) {
+        if (expected[i] != actual[i]) {
+            local_passed = false;
+        }
+    }
+
+    if (!local_passed) {
+        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << " Expected: '" << expected << "' Actual: '" << actual << "'\n";
+        *passed = false;
+    }
 }
 
 #define TEST_CASE(test_name) \
