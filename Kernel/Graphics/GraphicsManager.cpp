@@ -15,6 +15,11 @@ GraphicsManager& GraphicsManager::the()
     return s_the;
 }
 
+SharedPtr<VGATextModeGraphicsCard> GraphicsManager::init_boot_console()
+{
+    return VGATextModeGraphicsCard::create();
+}
+
 Result GraphicsManager::init_graphics_device(Bus::PCI::Address const& address, Bus::PCI::ID const& id)
 {
     SharedPtr<EmulatorVGAGraphicsCard> graphics_card;
@@ -41,8 +46,6 @@ Result GraphicsManager::init()
     //         init_graphics_device(address, id);
     //     }
     // });
-
-    VGATextModeGraphicsCard::create();
 
     return Result::OK;
 }

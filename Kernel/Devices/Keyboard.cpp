@@ -1,5 +1,4 @@
 #include <Kernel/Devices/Keyboard.h>
-#include <Kernel/Devices/VGA.h>
 #include <Kernel/IO.h>
 #include <Kernel/Logger.h>
 

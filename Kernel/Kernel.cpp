@@ -94,6 +94,10 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
         dbgprintf("Kernel", "Loaded by: %s\n", multiboot->bootloader_name);
     }
 
+    kmalloc_init();
+
+    Console::the().enable_boot_console();
+
     GDT::init();
 
     IDT::init();
@@ -101,8 +105,6 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
     PIC::init();
 
     PIT::the();
-
-    kmalloc_init();
 
     MemoryManager::the().init(boot_page_directory, multiboot);
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Kernel/Devices/VGA.h>
 #include <Kernel/kprintf.h>
 #include <Universal/Printf.h>
 #include <stdio.h>

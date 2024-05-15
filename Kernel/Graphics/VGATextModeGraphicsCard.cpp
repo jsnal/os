@@ -68,6 +68,17 @@ void VGATextModeGraphicsCard::put_string(const char* string)
 {
     size_t length = strlen(string);
     for (size_t i = 0; i < length; i++) {
+        // Skip past ANSI color codes
+        if (string[i] == '\x1b') {
+            for (size_t j = i; j < length; j++) {
+                if (string[j] == 'm') {
+                    i = j;
+                    break;
+                }
+            }
+            continue;
+        }
+
         put_char(string[i]);
     }
 }

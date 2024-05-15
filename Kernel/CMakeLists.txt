@@ -10,7 +10,6 @@ SET(KERNEL_SOURCES
     Devices/Keyboard.cpp
     Devices/PATADisk.cpp
     Devices/PIT.cpp
-    Devices/VGA.cpp
     Filesystem/Ext2Filesystem.cpp
     Filesystem/Inode.cpp
     Graphics/EmulatorVGAGraphicsCard.cpp
