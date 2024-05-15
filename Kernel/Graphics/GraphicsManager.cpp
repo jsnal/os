@@ -6,6 +6,7 @@
 
 #include <Kernel/Graphics/EmulatorVGAGraphicsCard.h>
 #include <Kernel/Graphics/GraphicsManager.h>
+#include <Kernel/Graphics/VGATextModeGraphicsCard.h>
 #include <Kernel/Logger.h>
 
 GraphicsManager& GraphicsManager::the()
@@ -34,12 +35,14 @@ Result GraphicsManager::init()
     Bus::PCI::Address ide_controller_address = {};
     Bus::PCI::ID ide_controller_id = {};
 
-    Bus::PCI::enumerate_devices([&](Bus::PCI::Address address, Bus::PCI::ID id, u16 type) {
-        if (type == Bus::PCI::Type::Display) {
-            dbgprintf("GraphicsManager", "Display device found: %x:%x type: %x\n", id.device, id.vendor, type);
-            init_graphics_device(address, id);
-        }
-    });
+    // Bus::PCI::enumerate_devices([&](Bus::PCI::Address address, Bus::PCI::ID id, u16 type) {
+    //     if (type == Bus::PCI::Type::Display) {
+    //         dbgprintf("GraphicsManager", "Display device found: %x:%x type: %x\n", id.device, id.vendor, type);
+    //         init_graphics_device(address, id);
+    //     }
+    // });
+
+    VGATextModeGraphicsCard::create();
 
     return Result::OK;
 }

@@ -7,14 +7,14 @@
 #pragma once
 
 #include <Kernel/Bus/PCI.h>
-#include <Kernel/Graphics/VGAGraphicsCard.h>
+#include <Kernel/Graphics/GraphicsCard.h>
 #include <Kernel/Memory/Address.h>
 #include <Kernel/Memory/VirtualRegion.h>
 #include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
 
 class EmulatorVGAGraphicsCard
-    : public VGAGraphicsCard
+    : public GraphicsCard
     , public ShareCounted<EmulatorVGAGraphicsCard> {
 public:
     static SharedPtr<EmulatorVGAGraphicsCard> create(Bus::PCI::Address const&, Bus::PCI::ID const&);
@@ -23,7 +23,7 @@ public:
 
     void scroll(size_t pixels) override;
     void set_pixel(size_t x, size_t y, u32 value) override;
-    void clear(u32 color) override;
+    void clear() override;
 
     size_t get_width() override;
     size_t get_height() override;

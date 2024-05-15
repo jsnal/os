@@ -155,3 +155,14 @@
     str[length] = '\0';
     return length;
 }
+
+[[gnu::always_inline]] inline int printf_buffer(char* str, size_t size, const char* format, ...)
+{
+    size_t length;
+    va_list ap;
+    va_start(ap, format);
+    length = printf_buffer(str, size, format, ap);
+    va_end(ap);
+
+    return length;
+}

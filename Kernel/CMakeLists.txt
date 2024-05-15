@@ -14,6 +14,7 @@ SET(KERNEL_SOURCES
     Filesystem/Ext2Filesystem.cpp
     Filesystem/Inode.cpp
     Graphics/EmulatorVGAGraphicsCard.cpp
+    Graphics/VGATextModeGraphicsCard.cpp
     Graphics/GraphicsManager.cpp
     Kernel.cpp
     Memory/AddressAllocator.cpp

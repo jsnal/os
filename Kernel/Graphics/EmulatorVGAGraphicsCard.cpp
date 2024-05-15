@@ -37,7 +37,7 @@
 #define VBE_DISPLAY_IOPORT_DATA 0x01cf
 
 EmulatorVGAGraphicsCard::EmulatorVGAGraphicsCard(Bus::PCI::Address const& address, Bus::PCI::ID const& id)
-    : VGAGraphicsCard()
+    : GraphicsCard()
     , m_pci_address(address)
     , m_pci_id(id)
 {
@@ -56,7 +56,6 @@ EmulatorVGAGraphicsCard::EmulatorVGAGraphicsCard(Bus::PCI::Address const& addres
     for (size_t x = 0; x < m_width; x++) {
         for (size_t y = 0; y < m_height; y++) {
             m_frame_buffer->lower().ptr()[x + y * m_height] = 'a';
-            dbgprintf("EmulatorVGAGraphicsCard", "x=%u y=%u\n", x, y);
         }
     }
 }
@@ -70,7 +69,7 @@ void EmulatorVGAGraphicsCard::scroll(size_t pixels) { }
 
 void EmulatorVGAGraphicsCard::set_pixel(size_t x, size_t y, u32 value) { }
 
-void EmulatorVGAGraphicsCard::clear(u32 color) { }
+void EmulatorVGAGraphicsCard::clear() { }
 
 size_t EmulatorVGAGraphicsCard::get_width()
 {

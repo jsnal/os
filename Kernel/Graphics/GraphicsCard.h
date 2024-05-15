@@ -8,15 +8,15 @@
 
 #include <Universal/Types.h>
 
-class VGAGraphicsCard {
+class GraphicsCard {
 public:
-    VGAGraphicsCard() {};
+    GraphicsCard() {};
 
-    ~VGAGraphicsCard() {};
+    ~GraphicsCard() {};
 
     virtual void scroll(size_t pixels) = 0;
     virtual void set_pixel(size_t x, size_t y, u32 value) = 0;
-    virtual void clear(u32 color) = 0;
+    virtual void clear() = 0;
 
     virtual size_t get_width() = 0;
     virtual size_t get_height() = 0;
