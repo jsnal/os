@@ -12,6 +12,8 @@
 #define KERNEL_PHYSICAL_BASE 0x00100000
 #define KERNEL_IMAGE_LENGTH (3 * MB)
 
+#define USERSPACE_VIRTUAL_BASE 0x01000000
+
 namespace Memory::Types {
 
 constexpr static u8 OutOfMemory = 1;

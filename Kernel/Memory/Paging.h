@@ -8,6 +8,7 @@
 
 #include <Kernel/Memory/Address.h>
 #include <Kernel/Memory/AddressAllocator.h>
+#include <Kernel/Process/Process.h>
 #include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/Types.h>
@@ -113,6 +114,11 @@ public:
         return adopt(*new PageDirectory(address));
     }
 
+    static SharedPtr<PageDirectory> create_userspace_page_directory(Process& process)
+    {
+        return adopt(*new PageDirectory(process));
+    }
+
     PageDirectory()
         : m_directory_page_base()
         , m_address_allocator(0, 0)
@@ -126,11 +132,19 @@ public:
     AddressAllocator& address_allocator() { return m_address_allocator; }
 
 private:
+    PageDirectory(Process& process)
+        : m_process(&process)
+        , m_address_allocator(USERSPACE_VIRTUAL_BASE, KERNEL_VIRTUAL_BASE - USERSPACE_VIRTUAL_BASE)
+    {
+    }
+
     PageDirectory(PhysicalAddress address)
         : m_directory_page_base(address)
         , m_address_allocator(KERNEL_VIRTUAL_BASE + KERNEL_IMAGE_LENGTH, 0x3F000000)
     {
     }
+
+    Process* m_process { nullptr };
 
     PhysicalAddress m_directory_page_base;
 

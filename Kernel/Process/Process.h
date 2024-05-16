@@ -10,6 +10,7 @@
 #include <Kernel/Process/WaitingStatus.h>
 #include <Universal/LinkedList.h>
 #include <Universal/ShareCounted.h>
+#include <Universal/String.h>
 #include <Universal/Types.h>
 
 class WaitingStatus;
@@ -40,7 +41,7 @@ public:
     void dump_stack() const;
 
     u32 pid() const { return m_pid; }
-    const char* name() const { return m_name; }
+    const String& name() const { return m_name; }
 
     Context* context() { return m_context; }
     Context** context_ptr() { return &m_context; }
@@ -52,11 +53,11 @@ public:
     void set_waiting(WaitingStatus&);
 
 private:
-    Process(void (*entry_point)(), u32 pid, const char* name, bool is_kernel);
-    Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_size, bool is_kernel);
+    Process(void (*entry_point)(), u32 pid, String&& name, bool is_kernel);
+    Process(void (*entry_point)(), u32 pid, String&& name, size_t stack_size, bool is_kernel);
 
     u32 m_pid;
-    const char* m_name;
+    String m_name;
     bool m_is_kernel { false };
     Context* m_context;
     State m_state;

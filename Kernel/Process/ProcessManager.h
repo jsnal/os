@@ -25,7 +25,9 @@ public:
 
     ProcessManager();
 
-    void create_kernel_process(void (*entry_point)(), const char* name);
+    void create_kernel_process(void (*entry_point)(), String&& name);
+
+    void create_user_process(void (*entry_point)(), String&& name);
 
     ResultOr<Process*> find_by_pid(pid_t) const;
 

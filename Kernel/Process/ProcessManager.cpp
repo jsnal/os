@@ -52,10 +52,14 @@ void ProcessManager::init()
     context_run(s_kernel_process->m_context);
 }
 
-void ProcessManager::create_kernel_process(void (*entry_point)(), const char* name)
+void ProcessManager::create_kernel_process(void (*entry_point)(), String&& name)
 {
-    auto kernel_process = new Process(entry_point, get_next_pid(), name, true);
+    auto kernel_process = new Process(entry_point, get_next_pid(), move(name), true);
     s_processes->add_first(kernel_process);
+}
+
+void ProcessManager::create_user_process(void (*entry_point)(), String&& name)
+{
 }
 
 ResultOr<Process*> ProcessManager::find_by_pid(pid_t pid) const

@@ -71,8 +71,8 @@
     GraphicsManager::the().init();
 
     PM.create_kernel_process(simple_process_runnable1, "simple1");
-    PM.create_kernel_process(simple_process_runnable2, "simple2");
-    PM.create_kernel_process(simple_process_runnable3, "simple3");
+    // PM.create_kernel_process(simple_process_runnable2, "simple2");
+    // PM.create_kernel_process(simple_process_runnable3, "simple3");
 
     Keyboard::the();
 

@@ -6,9 +6,9 @@
 #include <Kernel/Process/ProcessManager.h>
 #include <Universal/Stdlib.h>
 
-Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_size, bool is_kernel)
+Process::Process(void (*entry_point)(), u32 pid, String&& name, size_t stack_size, bool is_kernel)
     : m_pid(pid)
-    , m_name(name)
+    , m_name(move(name))
     , m_is_kernel(is_kernel)
     , m_state(State::Created)
 {
@@ -38,17 +38,17 @@ Process::Process(void (*entry_point)(), u32 pid, const char* name, size_t stack_
     m_context->m_esi = 0;
     m_context->m_edi = 0; // Bottom of the stack-frame
 
-    dbgprintf("Process", "Process %u (%s) spawned at 0x%x with %u bytes of stack\n", m_pid, m_name, entry_point, stack_size);
+    dbgprintf("Process", "Process %u (%s) spawned at 0x%x with %u bytes of stack\n", m_pid, m_name.str(), entry_point, stack_size);
 }
 
-Process::Process(void (*entry_point)(), u32 pid, const char* name, bool is_kernel)
-    : Process(entry_point, pid, name, Types::PageSize, is_kernel)
+Process::Process(void (*entry_point)(), u32 pid, String&& name, bool is_kernel)
+    : Process(entry_point, pid, move(name), Types::PageSize, is_kernel)
 {
 }
 
 void Process::set_ready()
 {
-    dbgprintf_if(DEBUG_PROCESS, "Process", "Setting '%s' to Ready\n", name());
+    dbgprintf_if(DEBUG_PROCESS, "Process", "Setting '%s' to Ready\n", name().str());
     m_state = Ready;
 }
 
