@@ -19,15 +19,15 @@ class ProcessManager final {
 public:
     static ProcessManager& the();
 
-    static void init();
+    void start();
 
-    static Process* current_process() { return s_current_process; }
+    Process* current_process() { return m_current_process; }
 
     ProcessManager();
 
-    void create_kernel_process(void (*entry_point)(), String&& name);
+    void add_process(Process&);
 
-    void create_user_process(void (*entry_point)(), String&& name);
+    pid_t get_next_pid() { return m_current_pid++; }
 
     ResultOr<Process*> find_by_pid(pid_t) const;
 
@@ -39,12 +39,10 @@ public:
     void exit_critical();
 
 private:
-    static pid_t get_next_pid() { return s_current_pid++; }
-
-    static pid_t s_current_pid;
-    static Process* s_current_process;
-    static Process* s_kernel_process;
-    static LinkedList<Process>* s_processes;
+    pid_t m_current_pid { 0 };
+    Process* m_current_process { nullptr };
+    Process* m_kernel_idle_process { nullptr };
+    LinkedList<Process>* m_processes { nullptr };
 
     u8 m_critical_count { 0 };
 };

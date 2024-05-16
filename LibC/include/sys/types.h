@@ -9,6 +9,7 @@
 
 typedef __SIZE_TYPE__ size_t;
 typedef int ssize_t;
+typedef int pid_t;
 typedef unsigned short uid_t;
 typedef unsigned short gid_t;
 typedef unsigned long ino_t;

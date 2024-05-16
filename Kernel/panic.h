@@ -27,7 +27,6 @@ static inline void panic(const char* format, ...)
     printf_buffer(message, PANIC_BUFFER_SIZE, format, ap);
     va_end(ap);
 
-    // vga_printf("*** PANIC ***\n%s", message);
     kprintf("*** PANIC ***\n%s", message);
 
     hang();

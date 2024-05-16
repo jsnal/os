@@ -7,8 +7,10 @@
 #pragma once
 
 #include <Kernel/CPU/TSS.h>
+#include <Kernel/Memory/Types.h>
 #include <Kernel/Process/WaitingStatus.h>
 #include <Universal/LinkedList.h>
+#include <Universal/Result.h>
 #include <Universal/ShareCounted.h>
 #include <Universal/String.h>
 #include <Universal/Types.h>
@@ -38,9 +40,13 @@ public:
         u32 m_eflags { 0 };
     };
 
+    static ResultOr<Process*> create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t, size_t stack_size = Memory::Types::PageSize);
+    static Result create_kernel_process(void (*entry_point)(), String&& name);
+    static Result create_user_process(void (*entry_point)(), uid_t, gid_t, String&& name);
+
     void dump_stack() const;
 
-    u32 pid() const { return m_pid; }
+    pid_t pid() const { return m_pid; }
     const String& name() const { return m_name; }
 
     Context* context() { return m_context; }
@@ -53,11 +59,18 @@ public:
     void set_waiting(WaitingStatus&);
 
 private:
-    Process(void (*entry_point)(), u32 pid, String&& name, bool is_kernel);
-    Process(void (*entry_point)(), u32 pid, String&& name, size_t stack_size, bool is_kernel);
+    Process(void (*entry_point)(), pid_t pid, String&& name);
+    Process(void (*entry_point)(), pid_t, uid_t, gid_t, String&& name);
 
-    u32 m_pid;
+    Result initialize_stack(size_t);
+
     String m_name;
+    pid_t m_pid { 0 };
+    uid_t m_uid { 0 };
+    gid_t m_gid { 0 };
+
+    void (*m_entry_point)();
+
     bool m_is_kernel { false };
     Context* m_context;
     State m_state;

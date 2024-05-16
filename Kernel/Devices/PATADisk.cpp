@@ -117,7 +117,7 @@ Result PATADisk::read_sectors(u8* buffer, u32 lba, u32 sectors)
     initiate_command(ATA_CMD_READ_PIO, lba, sectors);
 
     for (u32 i = 0; i < sectors; i++) {
-        ProcessManager::current_process()->set_waiting(s_waiting_status);
+        PM.current_process()->set_waiting(s_waiting_status);
         PM.enter_critical();
 
         u16* ptr = (u16*)buffer;
@@ -155,7 +155,7 @@ Result PATADisk::write_sectors(const u8* buffer, u32 lba, u32 sectors)
         s_waiting_status.set_waiting();
         PM.exit_critical();
 
-        ProcessManager::current_process()->set_waiting(s_waiting_status);
+        PM.current_process()->set_waiting(s_waiting_status);
     }
 
     disable_irq();
@@ -175,7 +175,7 @@ void PATADisk::clear_interrupts() const
 void PATADisk::initiate_command(u8 command, u32 lba, u8 sectors)
 {
     PM.enter_critical();
-    s_waiting_status = WaitingStatus(ProcessManager::current_process());
+    s_waiting_status = WaitingStatus(PM.current_process());
 
     wait_until_ready();
 

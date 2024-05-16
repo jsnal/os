@@ -41,16 +41,19 @@
     }
 }
 
-[[noreturn]] void simple_process_runnable3()
+[[noreturn]] static void kernel_main()
 {
-    dbgprintf("Kernel", "Running a simple process 3!\n");
-    auto disk = PATADisk::create(PATADisk::Secondary, PATADisk::Master);
+    GraphicsManager::the().init();
 
+    Keyboard::the();
+
+    auto disk = PATADisk::create(PATADisk::Secondary, PATADisk::Master);
     if (disk.ptr() == nullptr) {
         panic("Unable to find Disk!\n");
     }
 
     auto ext2_filesystem = Ext2Filesystem(disk.leak_ptr());
+    dbgprintf("Kernel", "Initialized root filesystem\n");
     if (ext2_filesystem.init().is_error()) {
         panic("Unable to initialize root filesystem\n");
     }
@@ -62,21 +65,7 @@
     // inode1->read(0, 30, buffer);
     // dbgprintf("Kernel", "file contents: %s\n", buffer);
 
-    while (true) {
-    }
-}
-
-[[noreturn]] static void kernel_main()
-{
-    GraphicsManager::the().init();
-
-    PM.create_kernel_process(simple_process_runnable1, "simple1");
-    // PM.create_kernel_process(simple_process_runnable2, "simple2");
-    // PM.create_kernel_process(simple_process_runnable3, "simple3");
-
-    Keyboard::the();
-
-    PM.init();
+    dbgprintf("Kernel", "Operating System booted!\n");
 
     while (true)
         ;
@@ -108,7 +97,10 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     MemoryManager::the().init(boot_page_directory, multiboot);
 
-    kernel_main();
+    Process::create_kernel_process(kernel_main, "kernel_main");
+    Process::create_kernel_process(simple_process_runnable1, "simple1");
+
+    PM.start();
 
     while (true) {
         asm volatile("hlt");

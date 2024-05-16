@@ -7,11 +7,6 @@
 
 #define QUANTUM_IN_MILLISECONDS 50
 
-pid_t ProcessManager::s_current_pid;
-Process* ProcessManager::s_current_process;
-Process* ProcessManager::s_kernel_process;
-LinkedList<Process>* ProcessManager::s_processes;
-
 extern "C" void context_run(Process::Context* context);
 
 extern "C" void context_switch(Process::Context** old_context, Process::Context** new_context);
@@ -32,39 +27,34 @@ static void kernel_idle_process()
 
 ProcessManager& ProcessManager::the()
 {
-    static ProcessManager s_the;
-    return s_the;
+    static ProcessManager m_the;
+    return m_the;
 }
 
 ProcessManager::ProcessManager()
+    : m_processes(new LinkedList<Process>)
 {
-    s_current_pid = 0;
-    s_current_process = nullptr;
-    s_kernel_process = new Process(kernel_idle_process, get_next_pid(), "idle", 512, true);
-    s_processes = new LinkedList<Process>;
+    auto idle_process_result = Process::create_standalone_kernel_process(kernel_idle_process, "idle", get_next_pid(), 512);
+    ASSERT(idle_process_result.is_ok());
+    m_kernel_idle_process = idle_process_result.value();
 }
 
-void ProcessManager::init()
+void ProcessManager::start()
 {
     PIT::the().register_pit_wakeup(QUANTUM_IN_MILLISECONDS, pit_schedule_wakeup);
 
-    s_current_process = s_kernel_process;
-    context_run(s_kernel_process->m_context);
+    m_current_process = m_kernel_idle_process;
+    context_run(m_kernel_idle_process->m_context);
 }
 
-void ProcessManager::create_kernel_process(void (*entry_point)(), String&& name)
+void ProcessManager::add_process(Process& process)
 {
-    auto kernel_process = new Process(entry_point, get_next_pid(), move(name), true);
-    s_processes->add_first(kernel_process);
-}
-
-void ProcessManager::create_user_process(void (*entry_point)(), String&& name)
-{
+    m_processes->add_first(&process);
 }
 
 ResultOr<Process*> ProcessManager::find_by_pid(pid_t pid) const
 {
-    for (Process* p = s_processes->head(); p != nullptr; p = p->next()) {
+    for (Process* p = m_processes->head(); p != nullptr; p = p->next()) {
         if (p->pid() == pid) {
             return p;
         }
@@ -75,36 +65,37 @@ ResultOr<Process*> ProcessManager::find_by_pid(pid_t pid) const
 void ProcessManager::schedule()
 {
     Process* next_process = nullptr;
-    Process* previous_process = s_current_process;
-    Process* p = s_current_process;
+    Process* previous_process = m_current_process;
+    Process* p = m_current_process;
 
-    if (s_current_process == s_kernel_process) {
-        p = s_processes->head();
+    if (m_current_process == m_kernel_idle_process) {
+        p = m_processes->head();
     }
 
-    for (u32 i = 0; i < s_processes->size(); i++) {
+    for (u32 i = 0; i < m_processes->size(); i++) {
         if (p->next() == nullptr) {
-            p = s_processes->head();
+            p = m_processes->head();
         } else {
             p = p->next();
         }
 
-        dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Process '%s' state %d\n", p->name(), p->state());
+        dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Process '%s' state %d\n", p->name().str(), p->state());
         if (p->state() == Process::Ready || p->state() == Process::Created) {
             next_process = p;
             break;
         }
     }
-    dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Picked Process '%s'\n", p->name());
 
     if (next_process == nullptr) {
-        s_current_process = s_kernel_process;
-        context_switch(previous_process->context_ptr(), s_kernel_process->context_ptr());
+        m_current_process = m_kernel_idle_process;
+        context_switch(previous_process->context_ptr(), m_kernel_idle_process->context_ptr());
         return;
     }
 
+    dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Picked Process '%s'\n", next_process->name().str());
+
     previous_process->set_state(Process::Ready);
-    s_current_process = next_process;
+    m_current_process = next_process;
 
     if (next_process->state() == Process::Created) {
         next_process->set_state(Process::Running);
