@@ -25,8 +25,19 @@ IRQHandler::~IRQHandler()
 
 void IRQHandler::handle_all_irqs(const InterruptFrame& frame)
 {
-    IRQHandler* handler = s_handlers[frame.interrupt_number - 32];
-    ASSERT(handler != nullptr);
+    u8 irq_number = frame.interrupt_number - 32;
+    IRQHandler* handler = s_handlers[irq_number];
+
+    if (handler == nullptr) {
+        if (irq_number == 7) {
+            u8 isr = PIC::read_isr();
+            if (!(isr & (1 << 7))) {
+                return;
+            }
+        }
+
+        panic("Unhanled IRQ %u\n", irq_number);
+    }
 
     handler->m_eoi_sent = false;
 

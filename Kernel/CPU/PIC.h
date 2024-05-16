@@ -1,14 +1,17 @@
 #pragma once
 
+#include <Universal/Types.h>
 #include <stdint.h>
 
 namespace PIC {
 
-void mask(uint32_t mask);
+void mask(u32 mask);
 
-void unmask(uint32_t mask);
+void unmask(u32 mask);
 
-void eoi(uint8_t);
+void eoi(u8);
+
+u8 read_isr();
 
 void init();
 

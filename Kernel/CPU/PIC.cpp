@@ -13,10 +13,10 @@
 
 namespace PIC {
 
-void mask(uint32_t mask)
+void mask(u32 mask)
 {
-    uint8_t val;
-    uint16_t port;
+    u8 val;
+    u16 port;
 
     if (mask < 8) {
         port = PIC1_DATA;
@@ -29,10 +29,10 @@ void mask(uint32_t mask)
     IO::outb(port, val);
 }
 
-void unmask(uint32_t mask)
+void unmask(u32 mask)
 {
-    uint8_t val;
-    uint16_t port;
+    u8 val;
+    u16 port;
 
     if (mask < 8) {
         port = PIC1_DATA;
@@ -45,13 +45,20 @@ void unmask(uint32_t mask)
     IO::outb(port, val);
 }
 
-void eoi(uint8_t irq)
+void eoi(u8 irq)
 {
     if (irq >= 8) {
         IO::outb(PIC2_COMMAND, PIC_EOI);
     }
 
     IO::outb(PIC1_COMMAND, PIC_EOI);
+}
+
+u8 read_isr()
+{
+    IO::outb(PIC1_COMMAND, 0x0B);
+    u8 isr = IO::inb(PIC1_COMMAND);
+    return isr;
 }
 
 void init()
