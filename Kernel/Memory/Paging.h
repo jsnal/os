@@ -114,7 +114,7 @@ public:
         return adopt(*new PageDirectory(address));
     }
 
-    static SharedPtr<PageDirectory> create_userspace_page_directory(Process& process)
+    static SharedPtr<PageDirectory> create_user_page_directory(Process& process)
     {
         return adopt(*new PageDirectory(process));
     }

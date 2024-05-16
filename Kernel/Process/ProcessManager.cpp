@@ -8,7 +8,6 @@
 #define QUANTUM_IN_MILLISECONDS 50
 
 extern "C" void context_run(Process::Context* context);
-
 extern "C" void context_switch(Process::Context** old_context, Process::Context** new_context);
 extern "C" void context_switch_to_created(Process::Context** old_context, Process::Context** new_context);
 
@@ -20,7 +19,6 @@ static void pit_schedule_wakeup()
 static void kernel_idle_process()
 {
     dbgprintf("ProcessManager", "Starting the idle process!\n");
-    ProcessManager::the().schedule();
     while (true)
         ;
 }
@@ -87,9 +85,11 @@ void ProcessManager::schedule()
     }
 
     if (next_process == nullptr) {
-        m_current_process = m_kernel_idle_process;
-        context_switch(previous_process->context_ptr(), m_kernel_idle_process->context_ptr());
-        return;
+        if (m_processes->size() == 1) {
+            next_process = m_current_process;
+        } else {
+            next_process = m_kernel_idle_process;
+        }
     }
 
     dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Picked Process '%s'\n", next_process->name().str());

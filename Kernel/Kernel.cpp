@@ -97,8 +97,10 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     MemoryManager::the().init(boot_page_directory, multiboot);
 
-    Process::create_kernel_process(kernel_main, "kernel_main");
-    Process::create_kernel_process(simple_process_runnable1, "simple1");
+    // Process::create_kernel_process(kernel_main, "kernel_main");
+    // Process::create_kernel_process(simple_process_runnable1, "simple1");
+
+    // Process::create_user_process(simple_process_runnable2, 0, 0, "user_process_1");
 
     PM.start();
 

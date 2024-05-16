@@ -14,6 +14,6 @@ GDB_COMMAND="gdb Kernel/Kernel \
    -ex 'fs next'"
 
 tmux \
-    new-session  './Meta/run.sh gdb' \; \
+    new-session  'sudo ./Meta/run.sh gdb' \; \
     set-option -t 0 mouse on \; \
     split-window "$GDB_COMMAND" \; \

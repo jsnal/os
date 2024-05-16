@@ -24,6 +24,7 @@ Process::Process(void (*entry_point)(), pid_t pid, uid_t uid, gid_t gid, String&
     , m_is_kernel(false)
     , m_state(State::Created)
 {
+    m_page_directory = PageDirectory::create_user_page_directory(*this);
 }
 
 ResultOr<Process*> Process::create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t pid, size_t stack_size)

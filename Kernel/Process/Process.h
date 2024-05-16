@@ -12,10 +12,12 @@
 #include <Universal/LinkedList.h>
 #include <Universal/Result.h>
 #include <Universal/ShareCounted.h>
+#include <Universal/SharedPtr.h>
 #include <Universal/String.h>
 #include <Universal/Types.h>
 
 class WaitingStatus;
+class PageDirectory;
 
 class Process : public LinkedListNode<Process> {
     friend class LinkedListNode<Process>;
@@ -72,6 +74,9 @@ private:
     void (*m_entry_point)();
 
     bool m_is_kernel { false };
+
+    SharedPtr<PageDirectory> m_page_directory;
+
     Context* m_context;
     State m_state;
 
