@@ -19,11 +19,11 @@ class ProcessManager final {
 public:
     static ProcessManager& the();
 
+    ProcessManager();
+
     void start();
 
     Process* current_process() { return m_current_process; }
-
-    ProcessManager();
 
     void add_process(Process&);
 

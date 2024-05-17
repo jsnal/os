@@ -20,10 +20,12 @@ context_switch:
     push edi
 
     mov eax, [esp + 20]
-    mov edx, [esp + 24]
+    mov ecx, [esp + 24]
+    mov edx, [esp + 28]
 
     mov [eax], esp
-    mov esp, [edx]
+    mov cr3, edx
+    mov esp, [ecx]
 
     pop edi
     pop esi
@@ -42,10 +44,12 @@ context_switch_to_created:
     push edi
 
     mov eax, [esp + 20]
-    mov edx, [esp + 24]
+    mov ecx, [esp + 24]
+    mov edx, [esp + 28]
 
     mov [eax], esp
-    mov esp, [edx]
+    mov cr3, edx
+    mov esp, [ecx]
 
     pop edi
     pop esi

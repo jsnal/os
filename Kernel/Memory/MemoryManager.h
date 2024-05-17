@@ -16,6 +16,8 @@
 #include <Universal/Types.h>
 #include <Universal/UniquePtr.h>
 
+#define MM MemoryManager::the()
+
 class MemoryManager final {
 public:
     static MemoryManager& the();
@@ -24,17 +26,19 @@ public:
 
     MemoryManager();
 
+    PageDirectory& kernel_page_directory() { return *m_kernel_page_directory; }
     const PageDirectory& kernel_page_directory() const { return *m_kernel_page_directory; }
 
     PhysicalAddress allocate_physical_kernel_page();
 
     UniquePtr<VirtualRegion> allocate_kernel_region(size_t size);
     UniquePtr<VirtualRegion> allocate_kernel_region_at(PhysicalAddress physical_address, size_t size);
-
     void free_kernel_region(PhysicalAddress, size_t size);
 
     void protected_map(PageDirectory&, VirtualAddress, size_t);
     void identity_map(PageDirectory&, VirtualAddress, size_t);
+
+    void copy_kernel_page_directory(PageDirectory&);
 
     PageTableEntry& get_page_table_entry(PageDirectory&, VirtualAddress, bool is_kernel);
 

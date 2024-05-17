@@ -82,6 +82,8 @@ public:
         m_address = m_address | (address & 0xfffff000);
     }
 
+    void copy(const PageDirectoryEntry& other) { m_address = other.m_address; }
+
     const VirtualAddress address() const { return m_address; }
     VirtualAddress address() { return m_address; }
 
@@ -125,6 +127,7 @@ public:
     {
     }
 
+    void set_base(PhysicalAddress base) { m_directory_page_base = base; }
     PhysicalAddress base() const { return m_directory_page_base; }
 
     PageDirectoryEntry* entries() { return reinterpret_cast<PageDirectoryEntry*>(m_directory_page_base.get()); }

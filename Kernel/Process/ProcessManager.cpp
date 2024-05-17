@@ -2,14 +2,15 @@
 #include <Kernel/CPU/PIC.h>
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/Logger.h>
+#include <Kernel/Memory/Paging.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/kmalloc.h>
 
 #define QUANTUM_IN_MILLISECONDS 50
 
 extern "C" void context_run(Process::Context* context);
-extern "C" void context_switch(Process::Context** old_context, Process::Context** new_context);
-extern "C" void context_switch_to_created(Process::Context** old_context, Process::Context** new_context);
+extern "C" void context_switch(Process::Context** old_context, Process::Context** new_context, u32 cr3);
+extern "C" void context_switch_to_created(Process::Context** old_context, Process::Context** new_context, u32 cr3);
 
 static void pit_schedule_wakeup()
 {
@@ -99,10 +100,10 @@ void ProcessManager::schedule()
 
     if (next_process->state() == Process::Created) {
         next_process->set_state(Process::Running);
-        context_switch_to_created(previous_process->context_ptr(), next_process->context_ptr());
+        context_switch_to_created(previous_process->context_ptr(), next_process->context_ptr(), next_process->page_directory().base());
     } else {
         next_process->set_state(Process::Running);
-        context_switch(previous_process->context_ptr(), next_process->context_ptr());
+        context_switch(previous_process->context_ptr(), next_process->context_ptr(), next_process->page_directory().base());
     }
 }
 

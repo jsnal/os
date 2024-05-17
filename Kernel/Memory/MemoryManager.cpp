@@ -49,7 +49,7 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
         panic("Kernel image is too large!\n");
     }
 
-    m_kernel_page_directory = PageDirectory::create_kernel_page_directory(PhysicalAddress(reinterpret_cast<u32>(boot_page_directory)));
+    m_kernel_page_directory = PageDirectory::create_kernel_page_directory(Types::virtual_to_physical(reinterpret_cast<u32>(boot_page_directory)));
 
     // Physical Memory Layout (4 MiB):
     //     Kernel Image (Varies)
@@ -221,6 +221,11 @@ void MemoryManager::identity_map(PageDirectory& page_directory, VirtualAddress v
         page_table_entry.set_read_write(true);
     }
     flush_tlb();
+}
+
+void MemoryManager::copy_kernel_page_directory(PageDirectory& page_directory)
+{
+    // page_directory.
 }
 
 PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_directory, VirtualAddress virtual_address, bool is_kernel)

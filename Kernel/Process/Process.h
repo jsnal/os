@@ -48,8 +48,10 @@ public:
 
     void dump_stack() const;
 
-    pid_t pid() const { return m_pid; }
     const String& name() const { return m_name; }
+    pid_t pid() const { return m_pid; }
+
+    const PageDirectory& page_directory() const { return *m_page_directory; }
 
     Context* context() { return m_context; }
     Context** context_ptr() { return &m_context; }
