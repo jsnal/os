@@ -63,9 +63,14 @@ u32 Ext2Filesystem::block_pointers_per_block() const
     return block_size() / sizeof(32);
 }
 
-Inode* Ext2Filesystem::inode(ino_t id)
+InodeId Ext2Filesystem::root_inode()
 {
-    return new Inode(*this, id);
+    return InodeId(m_filesystem_id, EXT2_ROOT_INO);
+}
+
+SharedPtr<Inode> Ext2Filesystem::inode(const InodeId& inode)
+{
+    return adopt(*new Inode(*this, inode.id()));
 }
 
 ResultOr<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)

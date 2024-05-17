@@ -13,6 +13,7 @@ SET(KERNEL_SOURCES
     Devices/PIT.cpp
     Filesystem/Ext2Filesystem.cpp
     Filesystem/Inode.cpp
+    Filesystem/VFS.cpp
     Graphics/EmulatorVGAGraphicsCard.cpp
     Graphics/VGATextModeGraphicsCard.cpp
     Graphics/GraphicsManager.cpp

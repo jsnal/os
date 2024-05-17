@@ -13,6 +13,7 @@
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/Filesystem/Ext2Filesystem.h>
+#include <Kernel/Filesystem/VFS.h>
 #include <Kernel/Graphics/GraphicsManager.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
@@ -47,16 +48,7 @@
 
     Keyboard::the();
 
-    auto disk = PATADisk::create(PATADisk::Secondary, PATADisk::Master);
-    if (disk.ptr() == nullptr) {
-        panic("Unable to find Disk!\n");
-    }
-
-    auto ext2_filesystem = Ext2Filesystem(disk.leak_ptr());
-    dbgprintf("Kernel", "Initialized root filesystem\n");
-    if (ext2_filesystem.init().is_error()) {
-        panic("Unable to initialize root filesystem\n");
-    }
+    VFS::the().init();
 
     // auto inode1 = ext2_filesystem.inode(20);
     // dbgprintf("Kernel", "type: %x\n", inode1->data().mode);

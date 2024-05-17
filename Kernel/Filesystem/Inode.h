@@ -9,11 +9,14 @@
 #include <Kernel/Filesystem/Ext2.h>
 #include <Kernel/Filesystem/Ext2Filesystem.h>
 #include <Universal/ArrayList.h>
+#include <Universal/ShareCounted.h>
 #include <Universal/Types.h>
 
 class Ext2Filesystem;
 
-class Inode {
+#define MODE_DIRECTORY 0x4000
+
+class Inode : public ShareCounted<Inode> {
 public:
     Inode(Ext2Filesystem& fs, ino_t id);
 
@@ -26,9 +29,8 @@ public:
     u32 block() const;
     u32 number_of_blocks() const;
 
-    void read_single_block_pointer(u32 single_block_pointer, u32& block_index);
-    void read_double_block_pointer(u32 double_block_pointer, u32& block_index);
-    void read_triple_block_pointer(u32 triple_block_pointer, u32& block_index);
+    bool is_directory() const { return (m_raw_data.mode & 0xF000) == MODE_DIRECTORY; };
+
     void read_block_pointers();
 
     u32 get_block_pointer(u32 index) const;
@@ -36,6 +38,10 @@ public:
     Result read(size_t start, size_t length, u8* buffer);
 
 private:
+    void read_single_block_pointer(u32 single_block_pointer, u32& block_index);
+    void read_double_block_pointer(u32 double_block_pointer, u32& block_index);
+    void read_triple_block_pointer(u32 triple_block_pointer, u32& block_index);
+
     Ext2Inode m_raw_data;
     Ext2Filesystem& m_fs;
     ino_t m_id;

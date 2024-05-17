@@ -9,6 +9,8 @@
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Filesystem/Ext2.h>
 #include <Kernel/Filesystem/Inode.h>
+#include <Kernel/Filesystem/InodeId.h>
+#include <Kernel/Filesystem/VFS.h>
 #include <Universal/Result.h>
 #include <Universal/Stdlib.h>
 #include <Universal/UniquePtr.h>
@@ -21,6 +23,7 @@ class Ext2Filesystem {
 public:
     Ext2Filesystem(UniquePtr<PATADisk> disk)
         : m_disk(move(disk))
+        , m_filesystem_id(VFS::the().get_next_filesystem_id())
     {
     }
 
@@ -36,7 +39,8 @@ public:
 
     u32 block_pointers_per_block() const;
 
-    Inode* inode(ino_t);
+    InodeId root_inode();
+    SharedPtr<Inode> inode(const InodeId&);
 
 private:
     Result inode_block_and_offset(const Inode& inode, u32& block_index, u32& offset);
@@ -44,6 +48,8 @@ private:
     ResultOr<u8*> read_blocks(u32 index, u32 count);
 
     Result read_blocks(u32 index, u32 count, u8* buffer);
+
+    u32 m_filesystem_id { 0 };
 
     UniquePtr<PATADisk> m_disk;
 
