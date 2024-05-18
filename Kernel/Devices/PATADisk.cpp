@@ -100,6 +100,7 @@ UniquePtr<PATADisk> PATADisk::create(Channel channel, Type type)
 
 PATADisk::PATADisk(Bus::PCI::Address address, Channel channel, Type type)
     : IRQHandler(channel == Primary ? IRQ_DISK_PRIMARY : IRQ_DISK_SECONDARY)
+    , BlockDevice()
     , m_io_base(channel == Primary ? 0x1F0 : 0x170)
     , m_control_base(channel == Primary ? 0x3F6 : 0x376)
     , m_channel(channel)
@@ -108,15 +109,15 @@ PATADisk::PATADisk(Bus::PCI::Address address, Channel channel, Type type)
 {
 }
 
-Result PATADisk::read_sectors(u8* buffer, u32 lba, u32 sectors)
+Result PATADisk::read_blocks(u32 block, u32 count, u8* buffer)
 {
-    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Reading %u sectors into 0x%x @ sector %u\n", sectors, buffer, lba);
+    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Reading %u sectors into 0x%x @ block %u\n", count, buffer, block);
 
     ScopedSpinlock scoped_lock(s_lock);
 
-    initiate_command(ATA_CMD_READ_PIO, lba, sectors);
+    initiate_command(ATA_CMD_READ_PIO, block, count);
 
-    for (u32 i = 0; i < sectors; i++) {
+    for (u32 i = 0; i < count; i++) {
         PM.current_process()->set_waiting(s_waiting_status);
         PM.enter_critical();
 
@@ -135,15 +136,15 @@ Result PATADisk::read_sectors(u8* buffer, u32 lba, u32 sectors)
     return Result(Result::OK);
 }
 
-Result PATADisk::write_sectors(const u8* buffer, u32 lba, u32 sectors)
+Result PATADisk::write_blocks(u32 block, u32 count, const u8* buffer)
 {
-    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Writing %u sectors from 0x%x @ sector %u\n", sectors, buffer, lba);
+    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Writing %u sectors from 0x%x @ block %u\n", count, buffer, block);
 
     ScopedSpinlock scoped_lock(s_lock);
 
-    initiate_command(ATA_CMD_WRITE_PIO, lba, sectors);
+    initiate_command(ATA_CMD_WRITE_PIO, block, count);
 
-    for (u32 i = 0; i < sectors; i++) {
+    for (u32 i = 0; i < count; i++) {
         PM.enter_critical();
         wait_until_ready();
 

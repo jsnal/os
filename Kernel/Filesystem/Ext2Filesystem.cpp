@@ -40,7 +40,7 @@ Ext2Superblock& Ext2Filesystem::super_block()
 {
     if (m_super_block == nullptr) {
         m_super_block = new u8[1024];
-        ASSERT(m_disk->read_sectors(m_super_block, 2, 2).is_ok());
+        ASSERT(m_disk->read_blocks(2, 2, m_super_block).is_ok());
     }
 
     return *reinterpret_cast<Ext2Superblock*>(m_super_block);
@@ -82,7 +82,7 @@ ResultOr<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)
     u8* blocks = new u8[count * m_block_size];
     u32 sectors_to_read = ceiling_divide(count * m_block_size, m_disk->block_size());
     u32 sector = ceiling_divide(index * m_block_size, m_disk->block_size());
-    if (m_disk->read_sectors(blocks, sector, sectors_to_read).is_error()) {
+    if (m_disk->read_blocks(sector, sectors_to_read, blocks).is_error()) {
         delete[] blocks;
         return Result(Result::Failure);
     }
@@ -98,7 +98,7 @@ Result Ext2Filesystem::read_blocks(u32 index, u32 count, u8* buffer)
 
     u32 sectors_to_read = ceiling_divide(count * m_block_size, m_disk->block_size());
     u32 sector = ceiling_divide(index * m_block_size, m_disk->block_size());
-    if (m_disk->read_sectors(buffer, sector, sectors_to_read).is_error()) {
+    if (m_disk->read_blocks(sector, sectors_to_read, buffer).is_error()) {
         return Result(Result::Failure);
     }
 

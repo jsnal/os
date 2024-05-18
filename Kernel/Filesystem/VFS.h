@@ -8,6 +8,7 @@
 
 #include <Kernel/Filesystem/Inode.h>
 #include <Universal/Result.h>
+#include <Universal/SharedPtr.h>
 
 class Inode;
 

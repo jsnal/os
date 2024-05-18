@@ -6,12 +6,13 @@
 
 #pragma once
 
-#include <Kernel/Devices/PATADisk.h>
+#include <Kernel/Devices/BlockDevice.h>
 #include <Kernel/Filesystem/Ext2.h>
 #include <Kernel/Filesystem/Inode.h>
 #include <Kernel/Filesystem/InodeId.h>
 #include <Kernel/Filesystem/VFS.h>
 #include <Universal/Result.h>
+#include <Universal/SharedPtr.h>
 #include <Universal/Stdlib.h>
 #include <Universal/UniquePtr.h>
 
@@ -21,7 +22,7 @@ class Ext2Filesystem {
     friend Inode;
 
 public:
-    Ext2Filesystem(UniquePtr<PATADisk> disk)
+    Ext2Filesystem(UniquePtr<BlockDevice> disk)
         : m_disk(move(disk))
         , m_filesystem_id(VFS::the().get_next_filesystem_id())
     {
@@ -51,7 +52,7 @@ private:
 
     u32 m_filesystem_id { 0 };
 
-    UniquePtr<PATADisk> m_disk;
+    UniquePtr<BlockDevice> m_disk;
 
     u32 m_block_size { 0 };
 

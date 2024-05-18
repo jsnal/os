@@ -9,13 +9,15 @@
 #include <Kernel/Bus/PCI.h>
 #include <Kernel/CPU/IRQHandler.h>
 #include <Kernel/Devices/ATA.h>
+#include <Kernel/Devices/BlockDevice.h>
 #include <Kernel/Process/Spinlock.h>
 #include <Kernel/Process/WaitingStatus.h>
 #include <Universal/Result.h>
 
 #define SECTOR_SIZE 512
 
-class PATADisk final : public IRQHandler {
+class PATADisk final : public IRQHandler
+    , public BlockDevice {
 public:
     enum Channel {
         Primary,
@@ -31,13 +33,12 @@ public:
 
     static UniquePtr<PATADisk> create(Channel, Type);
 
-    Result read_sectors(u8* buffer, u32 lba, u32 sectors);
-
-    Result write_sectors(const u8* buffer, u32 lba, u32 sectors);
+    Result read_blocks(u32 block, u32 count, u8* buffer) override;
+    Result write_blocks(u32 block, u32 count, const u8* buffer) override;
 
     void clear_interrupts() const;
 
-    constexpr u32 block_size() const { return SECTOR_SIZE; }
+    size_t block_size() const override { return SECTOR_SIZE; }
 
     Bus::PCI::Address pci_address() const { return m_pci_address; }
 

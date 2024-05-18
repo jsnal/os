@@ -7,6 +7,7 @@ SET(KERNEL_SOURCES
     CPU/PIC.cpp
     CPU/lgdt.S
     CPU/lidt.S
+    Devices/PartitionDevice.cpp
     Devices/Console.cpp
     Devices/Keyboard.cpp
     Devices/PATADisk.cpp
