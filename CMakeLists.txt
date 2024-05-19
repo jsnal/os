@@ -33,7 +33,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sized-deallocation -Wno-address-of-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffreestanding -fno-sized-deallocation -fno-exceptions -fno-rtti")
 
 set(CMAKE_CXX_LINK_EXECUTABLE
-    "<CMAKE_LINKER> <LINK_FLAGS> <OBJECTS> -o <TARGET>")
+    "<CMAKE_LINKER> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
 
 add_subdirectory(Kernel)
 add_subdirectory(LibC)
+add_subdirectory(Programs)

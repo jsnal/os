@@ -40,7 +40,6 @@ void VFS::init()
         panic("Root filesystem is invalid\n");
     }
 
-    dbgprintf("Kernel", "file contents: %s\n", buffer);
     m_root_inode = move(root_inode);
 
     dbgprintf("VFS", "VFS initialized\n");
