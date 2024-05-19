@@ -14,8 +14,8 @@ TEST_CASE(create)
     CHECK_STR_EQUAL("Test", string1.str());
 
     auto string2 = String(4);
-    CHECK_EQUAL((size_t)4, string1.length());
-    CHECK_STR_EQUAL("", string1.str());
+    CHECK_EQUAL((size_t)4, string2.length());
+    CHECK_STR_EQUAL("", string2.str());
 }
 
 TEST_CASE(copy_and_move)

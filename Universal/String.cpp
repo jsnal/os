@@ -113,7 +113,7 @@ ArrayList<String> String::split(char delimiter) const
         if (m_data[i] == delimiter) {
             size_t split_length = i - previous_split_start;
             if (split_length != 0) {
-                split_array.add_last(substring(previous_split_start, i));
+                split_array.add_last(substring(previous_split_start, i - 1));
             }
 
             previous_split_start = i + 1;

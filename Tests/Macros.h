@@ -84,9 +84,15 @@ static void check_not_equal(const char* name, bool* passed, std::nullptr_t, T ac
 static void check_str_equal(const char* name, bool* passed, const char* expected, const char* actual)
 {
     bool local_passed = true;
-    size_t length = strlen(expected);
+    size_t expected_length = strlen(expected);
+    size_t actual_length = strlen(actual);
 
-    for (size_t i = 0; i < length; i++) {
+    if (expected_length != actual_length) {
+        local_passed = false;
+    }
+
+    size_t lower_length = expected_length < actual_length ? expected_length : actual_length;
+    for (size_t i = 0; i < lower_length; i++) {
         if (expected[i] != actual[i]) {
             local_passed = false;
         }
