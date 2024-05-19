@@ -62,7 +62,7 @@ cleanup() {
     echo "done"
   fi
 }
-trap cleanup EXIT
+#trap cleanup EXIT
 
 echo "creating partition table..."
 parted -s "${LOOPBACK}" mklabel msdos mkpart primary ext2 32k 100% -a minimal set 1 boot on || die "couldn't partition disk"
@@ -79,17 +79,14 @@ echo "done"
 echo "mounting filesystem... "
 mkdir -p mnt
 mount "${LOOPBACK}p1" mnt/ || die "couldn't mount filesystem"
-mkdir -p mnt/boot
-mkdir -p mnt/home
-mkdir -p mnt/home/user
 echo "done"
 
-echo "building filesystem..."
+echo "copying kernel... "
+mkdir -p mnt/boot
 sudo cp -v "$DIR/Kernel/Kernel" mnt/boot/kernel
-sudo echo "File 1 data" > mnt/home/user/file1.txt
-sudo echo "File 2 data" > mnt/home/user/file2.txt
-sudo echo "File 3 data" > mnt/home/user/file3.txt
 echo "done"
+
+$DIR/Meta/build_fs.sh
 
 echo "installing grub..."
 $GRUB_BIN --boot-directory=mnt/boot --target=i386-pc --modules="ext2 part_msdos" "${LOOPBACK}"

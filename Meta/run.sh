@@ -33,6 +33,5 @@ else
         -serial stdio \
         -d cpu_reset,guest_errors \
         -drive file=$DIR/Kernel.img,format=raw,index=0,media=disk \
-        -drive file=$DIR/fs.img,format=raw,index=2,media=disk \
         || die "unable to run qemu"
 fi
