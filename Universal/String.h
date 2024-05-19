@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Universal/ArrayList.h>
 #include <Universal/Types.h>
 
 namespace Universal {
@@ -23,10 +24,11 @@ public:
 
     ~String();
 
+    String& operator=(const String&);
     String& operator=(String&&);
 
-    bool is_null() const { return m_data == nullptr; }
-    bool is_empty() const { return m_length == 0; }
+    bool null() const { return m_data == nullptr; }
+    bool empty() const { return m_length == 0; }
 
     char operator[](size_t index) const { return m_data[index]; }
 
@@ -37,6 +39,8 @@ public:
     bool operator!=(const char* other) const { return !(*this == other); };
 
     String substring(size_t start, size_t end) const;
+
+    ArrayList<String> split(char delimiter = ' ') const;
 
     const char* str() const { return m_data; }
 

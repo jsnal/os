@@ -42,6 +42,19 @@ String::~String()
     delete[] m_data;
 }
 
+String& String::operator=(const String& other)
+{
+    if (this != &other) {
+        m_length = other.m_length;
+        m_data = new char[m_length + 1];
+        for (size_t i = 0; i < m_length + 1; i++) {
+            m_data[i] = other.m_data[i];
+        }
+    }
+
+    return *this;
+}
+
 String& String::operator=(String&& other)
 {
     delete[] m_data;
@@ -86,4 +99,31 @@ String String::substring(size_t start, size_t end) const
     other.m_data[other.m_length] = '\0';
 
     return other;
+}
+
+ArrayList<String> String::split(char delimiter) const
+{
+    if (empty()) {
+        return {};
+    }
+
+    ArrayList<String> split_array;
+    size_t previous_split_start = 0;
+    for (size_t i = 0; i < m_length; i++) {
+        if (m_data[i] == delimiter) {
+            size_t split_length = i - previous_split_start;
+            if (split_length != 0) {
+                split_array.add_last(substring(previous_split_start, i));
+            }
+
+            previous_split_start = i + 1;
+        }
+    }
+
+    size_t leftover_length = m_length - previous_split_start;
+    if (leftover_length != 0) {
+        split_array.add_last(substring(previous_split_start, m_length));
+    }
+
+    return split_array;
 }

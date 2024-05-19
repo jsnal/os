@@ -15,6 +15,10 @@
 #    include <Kernel/kmalloc.h>
 #endif
 
+#ifdef TESTING
+#    include <new>
+#endif
+
 namespace Universal {
 
 template<typename T>

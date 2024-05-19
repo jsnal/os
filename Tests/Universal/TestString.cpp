@@ -31,13 +31,13 @@ TEST_CASE(copy_and_move)
     auto string_move1 = String(std::move(string1));
     CHECK_EQUAL((size_t)4, string_move1.length());
     CHECK_EQUAL((size_t)0, string1.length());
-    CHECK_TRUE(string1.is_null());
+    CHECK_TRUE(string1.null());
     CHECK_STR_EQUAL(string_copy.str(), string_move1.str());
 
     auto string_move2 = std::move(string_move1);
     CHECK_EQUAL((size_t)4, string_move2.length());
     CHECK_EQUAL((size_t)0, string_move1.length());
-    CHECK_TRUE(string_move1.is_null());
+    CHECK_TRUE(string_move1.null());
     CHECK_STR_EQUAL(string_copy.str(), string_move2.str());
 }
 
@@ -73,7 +73,20 @@ TEST_CASE(substring)
     CHECK_EQUAL((size_t)5, substring2.length());
     CHECK_STR_EQUAL("apple", substring2.str());
     CHECK_EQUAL((size_t)0, substring3.length());
-    CHECK_TRUE(substring3.is_null());
+    CHECK_TRUE(substring3.null());
+}
+
+TEST_CASE(split)
+{
+    auto string = String("some/path/to/a/file");
+    auto split_string = string.split('/');
+
+    CHECK_EQUAL((size_t)5, split_string.size());
+    CHECK_STR_EQUAL("some", split_string[0].str());
+    CHECK_STR_EQUAL("path", split_string[1].str());
+    CHECK_STR_EQUAL("to", split_string[2].str());
+    CHECK_STR_EQUAL("a", split_string[3].str());
+    CHECK_STR_EQUAL("file", split_string[4].str());
 }
 
 TEST_MAIN(TestString, [&]() {
@@ -81,4 +94,5 @@ TEST_MAIN(TestString, [&]() {
     ENUMERATE_TEST(copy_and_move);
     ENUMERATE_TEST(equals);
     ENUMERATE_TEST(substring);
+    ENUMERATE_TEST(split);
 })
