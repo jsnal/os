@@ -62,7 +62,7 @@ cleanup() {
     echo "done"
   fi
 }
-#trap cleanup EXIT
+trap cleanup EXIT
 
 echo "creating partition table..."
 parted -s "${LOOPBACK}" mklabel msdos mkpart primary ext2 32k 100% -a minimal set 1 boot on || die "couldn't partition disk"

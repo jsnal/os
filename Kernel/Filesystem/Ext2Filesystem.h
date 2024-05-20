@@ -35,10 +35,10 @@ public:
     Ext2BlockGroupDescriptor& block_group_descriptor(u32);
 
     u32 block_size() const { return m_block_size; }
-
     u32 block_group_count() const { return m_block_group_count; }
-
     u32 block_pointers_per_block() const;
+
+    u32 id() const { return m_filesystem_id; }
 
     InodeId root_inode();
     SharedPtr<Inode> inode(const InodeId&);

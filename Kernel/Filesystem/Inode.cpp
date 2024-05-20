@@ -6,6 +6,7 @@
 
 #include <Kernel/Filesystem/Inode.h>
 #include <Universal/Stdlib.h>
+#include <errno.h>
 
 Inode::Inode(Ext2Filesystem& fs, ino_t id)
     : m_fs(fs)
@@ -45,6 +46,39 @@ u32 Inode::block() const
 u32 Inode::number_of_blocks() const
 {
     return (m_raw_data.size + m_fs.block_size() - 1) / m_fs.block_size();
+}
+
+ResultOr<InodeId> Inode::find(const String& name)
+{
+    dbgprintf("Inode", "Searching for '%s' in %u blocks in inode %u\n", name.str(), number_of_blocks(), m_id);
+
+    if (!is_directory()) {
+        return Result(EISDIR);
+    }
+
+    u8 block_buffer[m_fs.block_size()];
+    char name_buffer[EXT2_NAME_LEN];
+
+    for (u32 i = 0; i < number_of_blocks(); i++) {
+        u32 block = get_block_pointer(i);
+        m_fs.read_blocks(block, 1, block_buffer);
+
+        Ext2Directory* directory = reinterpret_cast<Ext2Directory*>(block_buffer);
+
+        u32 amount_iterated = 0;
+
+        while (directory->inode != 0 && amount_iterated < m_fs.block_size()) {
+            dbgprintf("Inode", "name='%s' id=%u\n", directory->name, directory->inode);
+            if (name == directory->name) {
+                return InodeId(m_fs.id(), directory->inode);
+            }
+
+            amount_iterated += directory->size;
+            directory = reinterpret_cast<Ext2Directory*>((size_t)directory + directory->size);
+        }
+    }
+
+    return Result(ENOENT);
 }
 
 void Inode::read_single_block_pointer(u32 single_block_pointer, u32& block_index)
@@ -101,8 +135,10 @@ void Inode::read_block_pointers()
 
 u32 Inode::get_block_pointer(u32 index) const
 {
-    // if (index > )
-    return 0;
+    if (index > m_block_pointers.size()) {
+        return 0;
+    }
+    return m_block_pointers[index];
 }
 
 Result Inode::read(size_t start, size_t length, u8* buffer)
@@ -121,7 +157,7 @@ Result Inode::read(size_t start, size_t length, u8* buffer)
     size_t block_index = first_block;
 
     while (bytes_left > 0) {
-        auto result = m_fs.read_blocks(m_block_pointers[block_index], 1, buffer);
+        auto result = m_fs.read_blocks(get_block_pointer(block_index), 1, buffer);
 
         if (bytes_left < m_fs.block_size()) {
             memset(buffer + bytes_left, 0, m_fs.block_size() - bytes_left);

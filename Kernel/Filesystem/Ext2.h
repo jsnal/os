@@ -16,6 +16,8 @@
 #define BLOCK_SIZE(s) (1024 << s)
 #define FRAGMENT_SIZE(s) (1024 << s)
 
+#define EXT2_NAME_LEN 255
+
 struct [[gnu::packed]] Ext2Superblock {
     u32 total_inodes;
     u32 total_blocks;
@@ -103,4 +105,5 @@ struct [[gnu::packed]] Ext2Directory {
     u16 size;
     u8 name_length;
     u8 type;
+    char name[EXT2_NAME_LEN];
 };

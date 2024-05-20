@@ -11,6 +11,11 @@
 
 class PartitionDevice : public BlockDevice {
 public:
+    static UniquePtr<PartitionDevice> create(UniquePtr<BlockDevice> parent_device, size_t offset)
+    {
+        return make_unique_ptr<PartitionDevice>(move(parent_device), offset);
+    }
+
     PartitionDevice(UniquePtr<BlockDevice> parent_device, size_t offset);
 
     Result read_blocks(u32 block, u32 count, u8* buffer) override;

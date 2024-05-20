@@ -10,9 +10,11 @@
 #include <Kernel/Filesystem/Ext2Filesystem.h>
 #include <Universal/ArrayList.h>
 #include <Universal/ShareCounted.h>
+#include <Universal/String.h>
 #include <Universal/Types.h>
 
 class Ext2Filesystem;
+class InodeId;
 
 #define MODE_DIRECTORY 0x4000
 
@@ -30,6 +32,8 @@ public:
     u32 number_of_blocks() const;
 
     bool is_directory() const { return (m_raw_data.mode & 0xF000) == MODE_DIRECTORY; };
+
+    ResultOr<InodeId> find(const String&);
 
     void read_block_pointers();
 
