@@ -45,7 +45,7 @@ void VFS::init()
 
     m_root_inode = move(root_inode);
 
-    open("/home/user/file.txt", 0);
+    open("/home/user/../user/file.txt", 0);
 
     dbgprintf("VFS", "VFS initialized\n");
 }
@@ -53,30 +53,51 @@ void VFS::init()
 ResultOr<u32> VFS::open(const String& path, mode_t mode)
 {
     auto path_traversal_result = traverse_path(path, m_root_inode);
-    return 0;
+    if (path_traversal_result.is_error()) {
+        return path_traversal_result.error();
+    }
+
+    auto path_inode = path_traversal_result.value();
+
+    dbgprintf("VFS", "Found inode %u to open for '%s'\n", path_inode->id(), path.str());
+
+    u8 open_buffer[31];
+    path_inode->read(0, 30, open_buffer);
+
+    dbgprintf("VFS", "File Contents:\n%s\n", open_buffer);
+
+    return 10;
 }
 
 ResultOr<SharedPtr<Inode>> VFS::traverse_path(const String& path, SharedPtr<Inode>& base)
 {
     dbgprintf("VFS", "Starting to traverse the path for '%s'\n", path.str());
 
-    auto split_path = path.split('/');
     InodeId current_inode_id;
+    SharedPtr<Inode> current_inode = path[0] == '/' ? m_root_inode : base;
+    SharedPtr<Inode> previous_inode;
+
+    auto split_path = path.split('/');
 
     for (size_t i = 0; i < split_path.size(); i++) {
-        dbgprintf("VFS", "path[%u]='%s'\n", i, split_path[i].str());
+        if (split_path[i] == "..") {
+            if (!previous_inode.is_null()) {
+                current_inode = previous_inode;
+            }
+            continue;
+        } else if (split_path[i] == ".") {
+            continue;
+        }
 
-        dbgprintf("VFS", "base->id=%u\n", base->id());
-        auto find_result = base->find(split_path[i]);
+        auto find_result = current_inode->find(split_path[i]);
         if (find_result.is_error()) {
             return find_result.error();
         }
 
-        dbgprintf("VFS", "Found entry @ inode %u\n", current_inode_id.id());
-
         current_inode_id = find_result.value();
-        base = root_filesystem().inode(current_inode_id);
+        previous_inode = current_inode;
+        current_inode = root_filesystem().inode(current_inode_id);
     }
 
-    return m_root_inode;
+    return current_inode;
 }
