@@ -160,7 +160,7 @@ Result Inode::read(size_t start, size_t length, u8* buffer)
         auto result = m_fs.read_blocks(get_block_pointer(block_index), 1, buffer);
 
         if (bytes_left < m_fs.block_size()) {
-            // memset(buffer + bytes_left, 0, m_fs.block_size() - bytes_left);
+            memset(buffer + bytes_left, 0, m_fs.block_size() - bytes_left);
             bytes_left = 0;
         } else {
             bytes_left -= m_fs.block_size();

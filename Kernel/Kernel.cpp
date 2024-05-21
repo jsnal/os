@@ -48,7 +48,7 @@
 
     Keyboard::the();
 
-    VFS::the().init();
+    // VFS::the().init();
 
     // auto inode1 = ext2_filesystem.inode(20);
     // dbgprintf("Kernel", "type: %x\n", inode1->data().mode);

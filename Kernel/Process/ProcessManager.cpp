@@ -33,7 +33,7 @@ ProcessManager& ProcessManager::the()
 ProcessManager::ProcessManager()
     : m_processes(new LinkedList<Process>)
 {
-    auto idle_process_result = Process::create_standalone_kernel_process(kernel_idle_process, "idle", get_next_pid(), 512);
+    auto idle_process_result = Process::create_standalone_kernel_process(kernel_idle_process, "idle", get_next_pid());
     ASSERT(idle_process_result.is_ok());
     m_kernel_idle_process = idle_process_result.value();
 }

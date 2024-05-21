@@ -61,7 +61,8 @@ ResultOr<u32> VFS::open(const String& path, mode_t mode)
 
     dbgprintf("VFS", "Found inode %u to open for '%s'\n", path_inode->id(), path.str());
 
-    u8 open_buffer[31];
+    u8 open_buffer[4096];
+    dbgprintf("VFS", "BUFFER START 0x%x BUFFER END 0x%x\n", &open_buffer, &open_buffer[4095]);
     path_inode->read(0, 30, open_buffer);
 
     dbgprintf("VFS", "File Contents:\n%s\n", open_buffer);

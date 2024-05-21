@@ -42,7 +42,7 @@ public:
         u32 m_eflags { 0 };
     };
 
-    static ResultOr<Process*> create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t, size_t stack_size = Memory::Types::PageSize);
+    static ResultOr<Process*> create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t);
     static Result create_kernel_process(void (*entry_point)(), String&& name);
     static Result create_user_process(void (*entry_point)(), uid_t, gid_t, String&& name);
 
@@ -66,7 +66,7 @@ private:
     Process(void (*entry_point)(), pid_t pid, String&& name);
     Process(void (*entry_point)(), pid_t, uid_t, gid_t, String&& name);
 
-    Result initialize_stack(size_t);
+    Result initialize_stack();
 
     String m_name;
     pid_t m_pid { 0 };

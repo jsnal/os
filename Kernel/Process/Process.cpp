@@ -6,6 +6,9 @@
 #include <Kernel/Process/ProcessManager.h>
 #include <Universal/Stdlib.h>
 
+#define KERNEL_STACK_SIZE (16 * KB)
+#define USER_STACK_SIZE (16 * KB)
+
 Process::Process(void (*entry_point)(), pid_t pid, String&& name)
     : m_entry_point(entry_point)
     , m_name(move(name))
@@ -33,16 +36,16 @@ Process::Process(void (*entry_point)(), pid_t pid, uid_t uid, gid_t gid, String&
     }
 }
 
-ResultOr<Process*> Process::create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t pid, size_t stack_size)
+ResultOr<Process*> Process::create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t pid)
 {
     auto process = new Process(entry_point, pid, move(name));
 
-    auto result = process->initialize_stack(stack_size);
+    auto result = process->initialize_stack();
     if (result.is_error()) {
         return result;
     }
 
-    dbgprintf("Process", "Kernel Process %u (%s) spawned at 0x%x with %u bytes of stack\n", process->m_pid, process->m_name.str(), entry_point, stack_size);
+    dbgprintf("Process", "Kernel Process %u (%s) spawned at 0x%x\n", process->m_pid, process->m_name.str(), entry_point);
     return process;
 }
 
@@ -50,7 +53,7 @@ Result Process::create_kernel_process(void (*entry_point)(), String&& name)
 {
     auto process = new Process(entry_point, PM.get_next_pid(), move(name));
 
-    auto result = process->initialize_stack(Types::PageSize);
+    auto result = process->initialize_stack();
     if (result.is_error()) {
         return result;
     }
@@ -65,7 +68,7 @@ Result Process::create_user_process(void (*entry_point)(), uid_t uid, gid_t gid,
 {
     auto process = new Process(entry_point, PM.get_next_pid(), uid, gid, move(name));
 
-    auto result = process->initialize_stack(Types::PageSize);
+    auto result = process->initialize_stack();
     if (result.is_error()) {
         return result;
     }
@@ -76,29 +79,28 @@ Result Process::create_user_process(void (*entry_point)(), uid_t uid, gid_t gid,
     return Result::OK;
 }
 
-Result Process::initialize_stack(size_t size)
+Result Process::initialize_stack()
 {
-    u32* stack_allocation = 0;
-    if (size == Types::PageSize) {
-        auto region = MemoryManager::the().allocate_physical_kernel_page();
-        stack_allocation = (u32*)Memory::Types::physical_to_virtual(region);
+    UniquePtr<VirtualRegion> region;
+    if (m_is_kernel) {
+        region = MM.allocate_kernel_region(KERNEL_STACK_SIZE);
     } else {
-        stack_allocation = (u32*)kmalloc(size);
+        region = MM.allocate_kernel_region(USER_STACK_SIZE);
     }
 
-    if (stack_allocation == nullptr) {
+    if (region.ptr() == nullptr) {
         return Result::Failure;
     }
 
-    memset(stack_allocation, 0, Memory::Types::PageSize);
-    stack_allocation = (stack_allocation + Memory::Types::PageSize);
+    dbgprintf("Process", "Stack region 0x%x - 0x%x\n", region->lower(), region->upper());
 
-    m_context = ((Context*)stack_allocation) - 1;
+    u32* stack_top = (u32*)region->upper().get();
+    m_context = ((Context*)stack_top) - 1;
 
     m_context->m_eflags = 0x0202; // Top of the stack-frame
     m_context->m_cs = 0x08;
     m_context->m_eip = (u32)m_entry_point;
-    m_context->m_ebp = (u32)stack_allocation;
+    m_context->m_ebp = (u32)stack_top;
     m_context->m_ebx = 0;
     m_context->m_esi = 0;
     m_context->m_edi = 0; // Bottom of the stack-frame
