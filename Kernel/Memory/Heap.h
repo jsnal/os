@@ -60,6 +60,7 @@ public:
         auto* allocation_header = (AllocationHeader*)((u8*)m_chunks + chunk_start_index * CHUNK_SIZE);
         allocation_header->allocation_size = chunks_needed;
 
+        m_allocated_chunks = m_allocated_chunks + chunks_needed;
         return allocation_header->data;
     }
 
@@ -84,8 +85,10 @@ public:
         for (size_t i = chunk_start_index; i < chunk_end_index; i++) {
             m_bitmap.set(i, false);
         }
+        m_allocated_chunks = m_allocated_chunks - allocation_header->allocation_size;
     }
 
+    constexpr size_t chunk_size() const { return CHUNK_SIZE; }
     size_t total_chunks() const { return m_total_chunks; }
     size_t allocated_chunks() const { return m_allocated_chunks; }
     size_t free_chunks() const { return m_total_chunks - m_allocated_chunks; }

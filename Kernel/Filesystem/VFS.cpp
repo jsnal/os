@@ -1,6 +1,10 @@
+#include <Kernel/API/errno.h>
+#include <Kernel/API/fcntl.h>
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Devices/PartitionDevice.h>
 #include <Kernel/Filesystem/Ext2Filesystem.h>
+#include <Kernel/Filesystem/FileDescriptor.h>
+#include <Kernel/Filesystem/InodeFile.h>
 #include <Kernel/Filesystem/VFS.h>
 #include <Kernel/Logger.h>
 
@@ -45,12 +49,18 @@ void VFS::init()
 
     m_root_inode = move(root_inode);
 
-    open("/home/user/../user/file.txt", 0);
+    kmalloc_dump_statistics();
+    auto fd = open("/home/../home/user/../user/file.txt", 0, 0);
+    kmalloc_dump_statistics();
+
+    u8 buffer[4096];
+    fd.value()->read(buffer, 30);
+    dbgprintf("VFS", "File contents:\n%s\n", buffer);
 
     dbgprintf("VFS", "VFS initialized\n");
 }
 
-ResultOr<u32> VFS::open(const String& path, mode_t mode)
+ResultOr<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mode_t mode)
 {
     auto path_traversal_result = traverse_path(path, m_root_inode);
     if (path_traversal_result.is_error()) {
@@ -61,13 +71,15 @@ ResultOr<u32> VFS::open(const String& path, mode_t mode)
 
     dbgprintf("VFS", "Found inode %u to open for '%s'\n", path_inode->id(), path.str());
 
-    u8 open_buffer[4096];
-    dbgprintf("VFS", "BUFFER START 0x%x BUFFER END 0x%x\n", &open_buffer, &open_buffer[4095]);
-    path_inode->read(0, 30, open_buffer);
+    if ((flags & O_DIRECTORY) && !path_inode->is_directory()) {
+        return Result(ENOTDIR);
+    }
 
-    dbgprintf("VFS", "File Contents:\n%s\n", open_buffer);
+    // TODO: Add many more flags here!
 
-    return 10;
+    auto inode_file = adopt(*new InodeFile(path_inode));
+
+    return inode_file->open(flags);
 }
 
 ResultOr<SharedPtr<Inode>> VFS::traverse_path(const String& path, SharedPtr<Inode>& base)
@@ -81,6 +93,11 @@ ResultOr<SharedPtr<Inode>> VFS::traverse_path(const String& path, SharedPtr<Inod
     auto split_path = path.split('/');
 
     for (size_t i = 0; i < split_path.size(); i++) {
+        if (!current_inode->is_directory()) {
+            return Result(ENOTDIR);
+        }
+
+        // TODO: Add support for consecutive '..'
         if (split_path[i] == "..") {
             if (!previous_inode.is_null()) {
                 current_inode = previous_inode;

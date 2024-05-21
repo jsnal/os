@@ -1,0 +1,30 @@
+/*
+ * Copyright (c) 2024, Jason Long <jasonlongball@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#pragma once
+
+#include <Kernel/Filesystem/File.h>
+#include <Universal/SharedPtr.h>
+
+class Inode;
+
+class InodeFile : public File {
+public:
+    InodeFile(SharedPtr<Inode>);
+
+    virtual ~InodeFile();
+
+    bool is_inode() override { return true; };
+
+    ResultOr<SharedPtr<FileDescriptor>> open(int options) override;
+    void close() override;
+
+    ssize_t read(FileDescriptor&, u8* buffer, ssize_t offset) override;
+    ssize_t write(FileDescriptor&, const u8* buffer, ssize_t offset) override;
+
+private:
+    SharedPtr<Inode> m_inode;
+};

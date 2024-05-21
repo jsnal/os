@@ -13,7 +13,9 @@ SET(KERNEL_SOURCES
     Devices/PATADisk.cpp
     Devices/PIT.cpp
     Filesystem/Ext2Filesystem.cpp
+    Filesystem/FileDescriptor.cpp
     Filesystem/Inode.cpp
+    Filesystem/InodeFile.cpp
     Filesystem/VFS.cpp
     Graphics/EmulatorVGAGraphicsCard.cpp
     Graphics/VGATextModeGraphicsCard.cpp

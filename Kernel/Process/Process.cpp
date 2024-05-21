@@ -92,8 +92,6 @@ Result Process::initialize_stack()
         return Result::Failure;
     }
 
-    dbgprintf("Process", "Stack region 0x%x - 0x%x\n", region->lower(), region->upper());
-
     u32* stack_top = (u32*)region->upper().get();
     m_context = ((Context*)stack_top) - 1;
 

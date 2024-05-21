@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <Kernel/API/errno.h>
 #include <Kernel/Filesystem/Inode.h>
 #include <Universal/Stdlib.h>
-#include <errno.h>
 
 Inode::Inode(Ext2Filesystem& fs, ino_t id)
     : m_fs(fs)
@@ -141,7 +141,7 @@ u32 Inode::get_block_pointer(u32 index) const
     return m_block_pointers[index];
 }
 
-Result Inode::read(size_t start, size_t length, u8* buffer)
+ResultOr<ssize_t> Inode::read(size_t start, size_t length, u8* buffer)
 {
     if (length == 0 || m_raw_data.size == 0 || start > m_raw_data.size) {
         return Result::Failure;
@@ -159,6 +159,10 @@ Result Inode::read(size_t start, size_t length, u8* buffer)
     while (bytes_left > 0) {
         auto result = m_fs.read_blocks(get_block_pointer(block_index), 1, buffer);
 
+        if (result.is_error()) {
+            return result;
+        }
+
         if (bytes_left < m_fs.block_size()) {
             memset(buffer + bytes_left, 0, m_fs.block_size() - bytes_left);
             bytes_left = 0;
@@ -174,5 +178,5 @@ Result Inode::read(size_t start, size_t length, u8* buffer)
     // dbgprintf("Inode", "reading: %d\n", m_block_pointers[0]);
     // m_fs.read_blocks(m_block_pointers[0], 1, buffer);
 
-    return Result::OK;
+    return length;
 }

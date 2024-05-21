@@ -6,7 +6,6 @@
 
 #pragma once
 
-// #include <Kernel/Filesystem/Inode.h>
 #include <Universal/Result.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/String.h>
@@ -14,6 +13,7 @@
 
 class Inode;
 class Ext2Filesystem;
+class FileDescriptor;
 
 class VFS final {
 public:
@@ -23,7 +23,7 @@ public:
 
     void init();
 
-    ResultOr<u32> open(const String& path, mode_t mode);
+    ResultOr<SharedPtr<FileDescriptor>> open(const String& path, int flags, mode_t mode);
 
     u32 get_next_filesystem_id() { return m_current_filesystem_id++; }
 

@@ -39,7 +39,7 @@ public:
 
     u32 get_block_pointer(u32 index) const;
 
-    Result read(size_t start, size_t length, u8* buffer);
+    ResultOr<ssize_t> read(size_t start, size_t length, u8* buffer);
 
 private:
     void read_single_block_pointer(u32 single_block_pointer, u32& block_index);
