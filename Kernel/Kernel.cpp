@@ -24,6 +24,8 @@
 #include <Universal/Bitmap.h>
 #include <Universal/Types.h>
 
+#include <Kernel/Process/ELF.h>
+
 #if !defined(__os__)
 #    error "Compiling with incorrect toolchain."
 #endif
@@ -50,12 +52,16 @@
 
     VFS::the().init();
 
-    // auto inode1 = ext2_filesystem.inode(20);
-    // dbgprintf("Kernel", "type: %x\n", inode1->data().mode);
-    // dbgprintf("Kernel", "size: %d\n", inode1->data().size);
-    // u8* buffer = new u8[4096];
-    // inode1->read(0, 30, buffer);
-    // dbgprintf("Kernel", "file contents: %s\n", buffer);
+    kmalloc_dump_statistics();
+    auto fd = VFS::the().open("/bin/id", 0, 0);
+    kmalloc_dump_statistics();
+
+    ELF elf(fd.value());
+
+    auto elf_header = elf.read_header();
+    auto elf_program_headers = elf.read_program_headers(*elf_header);
+
+    dbgprintf("Kernel", "p_paddr: %x\n", elf_program_headers[0].p_paddr);
 
     dbgprintf("Kernel", "Operating System booted!\n");
 

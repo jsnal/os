@@ -19,6 +19,8 @@ public:
 
     virtual bool is_inode() = 0;
 
+    virtual size_t length() const { return 0; }
+
     virtual ResultOr<SharedPtr<FileDescriptor>> open(int flags) = 0;
     virtual void close() = 0;
 

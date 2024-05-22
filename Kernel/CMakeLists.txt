@@ -26,6 +26,7 @@ SET(KERNEL_SOURCES
     Memory/PhysicalRegion.cpp
     Memory/VMObject.cpp
     Memory/VirtualRegion.cpp
+    Process/ELF.cpp
     Process/Process.cpp
     Process/ProcessManager.cpp
     Process/WaitingStatus.cpp

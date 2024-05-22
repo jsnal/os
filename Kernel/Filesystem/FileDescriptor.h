@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Kernel/API/unistd.h>
 #include <Kernel/Filesystem/File.h>
 #include <Universal/ShareCounted.h>
 
@@ -21,12 +22,14 @@ public:
 
     ssize_t read(u8*, ssize_t count);
 
-    ssize_t offset() const { return m_offset; }
+    int seek(off_t offset, int whence);
+
+    off_t offset() const { return m_offset; }
 
 private:
     SharedPtr<File> m_file;
 
     int m_flags { 0 };
 
-    ssize_t m_offset { 0 };
+    off_t m_offset { 0 };
 };

@@ -49,14 +49,6 @@ void VFS::init()
 
     m_root_inode = move(root_inode);
 
-    kmalloc_dump_statistics();
-    auto fd = open("/home/../home/user/../user/file.txt", 0, 0);
-    kmalloc_dump_statistics();
-
-    u8 buffer[4096];
-    fd.value()->read(buffer, 30);
-    dbgprintf("VFS", "File contents:\n%s\n", buffer);
-
     dbgprintf("VFS", "VFS initialized\n");
 }
 

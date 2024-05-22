@@ -28,6 +28,8 @@ public:
     {
     }
 
+    ~Ext2Filesystem() { dbgprintf("Ext2Filesystem", "Freeing!\n"); }
+
     Result init();
 
     Ext2Superblock& super_block();

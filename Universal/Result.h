@@ -38,12 +38,12 @@ public:
     {
     }
 
-    ResultOr(Result result)
+    ResultOr(const Result& result)
         : m_result(result)
     {
     }
 
-    ResultOr(T value)
+    ResultOr(const T& value)
         : m_value(value)
         , m_result(Result::OK)
     {

@@ -25,6 +25,8 @@ public:
     ssize_t read(FileDescriptor&, u8* buffer, ssize_t offset) override;
     ssize_t write(FileDescriptor&, const u8* buffer, ssize_t offset) override;
 
+    size_t length() const override;
+
 private:
     SharedPtr<Inode> m_inode;
 };

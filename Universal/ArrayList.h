@@ -146,6 +146,8 @@ public:
     const T& operator[](u32 index) const { return m_data[index]; }
     T& operator[](u32 index) { return m_data[index]; }
 
+    T* raw_data() { return m_data; }
+
     T& first() const { return m_data[0]; }
     T& last() const { return m_data[m_size - 1]; }
 
