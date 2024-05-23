@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Universal/Assert.h>
+#include <Universal/Optional.h>
 #include <Universal/Types.h>
 
 namespace Universal {
