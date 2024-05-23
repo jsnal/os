@@ -39,13 +39,13 @@ public:
     {
     }
 
-    ResultReturn(const Result& result)
+    ResultReturn(Result result)
         : m_result(result)
     {
     }
 
-    ResultReturn(const T& value)
-        : m_value(value)
+    ResultReturn(T value)
+        : m_value(move(value))
         , m_result(Result::OK)
     {
     }

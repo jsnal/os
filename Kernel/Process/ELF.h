@@ -12,6 +12,19 @@
 #include <Universal/UniquePtr.h>
 
 #define EI_NIDENT 16
+#define EI_MAGIC 0x464C457F
+
+#define EI_MAG0 0
+#define EI_MAG1 1
+#define EI_MAG2 2
+#define EI_MAG3 3
+
+#define ELFMAG0 0x7f
+#define ELFMAG1 'E'
+#define ELFMAG2 'L'
+#define ELFMAG3 'F'
+
+#define IS_ELF(ehdr) ((ehdr).e_ident[EI_MAG0] == ELFMAG0 && (ehdr).e_ident[EI_MAG1] == ELFMAG1 && (ehdr).e_ident[EI_MAG2] == ELFMAG2 && (ehdr).e_ident[EI_MAG3] == ELFMAG3)
 
 struct [[gnu::packed]] ELFHeader {
     unsigned char e_ident[EI_NIDENT];
@@ -43,15 +56,19 @@ struct [[gnu::packed]] ELFProgramHeader {
 
 class ELF {
 public:
+    static ResultReturn<UniquePtr<ELF>> create(SharedPtr<FileDescriptor>);
+
     ELF(SharedPtr<FileDescriptor> fd)
         : m_fd(fd)
     {
     }
 
-    UniquePtr<ELFHeader> read_header();
+    const ELFHeader& header() const { return m_header; }
 
-    ResultReturn<Array<ELFProgramHeader>> read_program_headers(ELFHeader&);
+    ResultReturn<Array<ELFProgramHeader>> read_program_headers();
 
 private:
     SharedPtr<FileDescriptor> m_fd;
+
+    ELFHeader m_header;
 };
