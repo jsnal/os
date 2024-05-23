@@ -13,6 +13,8 @@ namespace Universal {
 template<typename T>
 class Array {
 public:
+    Array() { }
+
     Array(size_t size)
         : m_size(size)
     {
@@ -26,15 +28,23 @@ public:
         }
     }
 
+    Array(Array&& other)
+        : m_data(other.m_data)
+        , m_size(other.m_size)
+    {
+        other.m_data = nullptr;
+        other.m_size = 0;
+    }
+
     ~Array()
     {
         delete[] m_data;
     }
 
     Array& operator=(const Array&) = delete;
-    Array(Array&&) = delete;
     Array& operator=(Array&&) = delete;
 
+    T* raw_data() { return m_data; }
     T& data() const { return m_data; }
     constexpr size_t size() const { return m_size; }
 

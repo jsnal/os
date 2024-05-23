@@ -8,8 +8,8 @@
 #include <Kernel/Filesystem/Inode.h>
 #include <Kernel/Filesystem/InodeFile.h>
 
-InodeFile::InodeFile(SharedPtr<Inode> inode)
-    : m_inode(inode)
+InodeFile::InodeFile(SharedPtr<Inode>&& inode)
+    : m_inode(move(inode))
 {
 }
 
@@ -26,9 +26,9 @@ void InodeFile::close()
 {
 }
 
-ssize_t InodeFile::read(FileDescriptor& fd, u8* buffer, ssize_t count)
+ssize_t InodeFile::read(FileDescriptor& fd, u8* buffer, off_t offset, ssize_t count)
 {
-    auto result = m_inode->read(fd.offset(), count, buffer);
+    auto result = m_inode->read(offset, count, buffer);
     if (result.is_error()) {
         return -1;
     }

@@ -30,8 +30,19 @@ inline constexpr T ceiling_divide(T a, U b)
     return result;
 }
 
+template<typename T>
+inline constexpr T min(T a, T b)
+{
+    if (a <= b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
 }
 
 using Universal::ceiling_divide;
+using Universal::min;
 using Universal::number_between;
 using Universal::number_between_inclusive;

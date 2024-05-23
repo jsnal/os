@@ -13,7 +13,7 @@ class Inode;
 
 class InodeFile : public File {
 public:
-    InodeFile(SharedPtr<Inode>);
+    InodeFile(SharedPtr<Inode>&&);
 
     virtual ~InodeFile();
 
@@ -22,8 +22,8 @@ public:
     ResultOr<SharedPtr<FileDescriptor>> open(int options) override;
     void close() override;
 
-    ssize_t read(FileDescriptor&, u8* buffer, ssize_t offset) override;
-    ssize_t write(FileDescriptor&, const u8* buffer, ssize_t offset) override;
+    ssize_t read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count) override;
+    ssize_t write(FileDescriptor&, const u8* buffer, ssize_t count) override;
 
     size_t length() const override;
 

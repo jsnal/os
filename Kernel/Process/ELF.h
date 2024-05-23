@@ -7,7 +7,7 @@
 #pragma once
 
 #include <Kernel/Filesystem/FileDescriptor.h>
-#include <Universal/ArrayList.h>
+#include <Universal/Array.h>
 #include <Universal/Types.h>
 #include <Universal/UniquePtr.h>
 
@@ -50,7 +50,7 @@ public:
 
     UniquePtr<ELFHeader> read_header();
 
-    ArrayList<ELFProgramHeader> read_program_headers(ELFHeader&);
+    ResultOr<Array<ELFProgramHeader>> read_program_headers(ELFHeader&);
 
 private:
     SharedPtr<FileDescriptor> m_fd;

@@ -23,19 +23,20 @@ UniquePtr<ELFHeader> ELF::read_header()
     return header;
 }
 
-ArrayList<ELFProgramHeader> ELF::read_program_headers(ELFHeader& header)
+ResultOr<Array<ELFProgramHeader>> ELF::read_program_headers(ELFHeader& header)
 {
     int seek_ret = m_fd->seek(header.e_phoff, SEEK_SET);
-    dbgprintf("ELF", "program header offset: %u seek_ret %d\n", header.e_phoff, seek_ret);
     if (seek_ret < 0) {
-        return {};
+        return Result(seek_ret);
     }
 
     dbgprintf("ELF", "Amount to read: %u\n", header.e_phnum * header.e_phentsize);
-    ArrayList<ELFProgramHeader> program_headers(header.e_phnum);
+
+    dbgprintf("ELF", "e_phnum %u\n", header.e_phnum);
+    Array<ELFProgramHeader> program_headers(header.e_phnum);
     int nread = m_fd->read(reinterpret_cast<u8*>(program_headers.raw_data()), header.e_phnum * header.e_phentsize);
     if (nread < 0) {
-        return {};
+        return Result(nread);
     }
 
     return program_headers;

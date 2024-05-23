@@ -69,7 +69,7 @@ ResultOr<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mod
 
     // TODO: Add many more flags here!
 
-    auto inode_file = adopt(*new InodeFile(path_inode));
+    auto inode_file = adopt(*new InodeFile(move(path_inode)));
 
     return inode_file->open(flags);
 }

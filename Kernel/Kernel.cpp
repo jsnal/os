@@ -59,9 +59,14 @@
     ELF elf(fd.value());
 
     auto elf_header = elf.read_header();
-    auto elf_program_headers = elf.read_program_headers(*elf_header);
+    auto elf_program_headers_result = elf.read_program_headers(*elf_header);
+    auto elf_program_headers = elf_program_headers_result.value();
 
-    dbgprintf("Kernel", "p_paddr: %x\n", elf_program_headers[0].p_paddr);
+    // dbgprintf("Kernel", "elf_program_headers address: %x\n", &elf_program_headers_result.value());
+
+    dbgprintf("Kernel", "p_phoff: %x\n", elf_header->e_phoff);
+    // dbgprintf("Kernel", "p_paddr: %x\n", elf_program_headers[0].p_paddr);
+    // dbgprintf("Kernel", "headers: %u\n", elf_program_headers.size());
 
     dbgprintf("Kernel", "Operating System booted!\n");
 

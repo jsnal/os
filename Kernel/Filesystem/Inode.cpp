@@ -6,6 +6,7 @@
 
 #include <Kernel/API/errno.h>
 #include <Kernel/Filesystem/Inode.h>
+#include <Universal/Number.h>
 #include <Universal/Stdlib.h>
 
 Inode::Inode(Ext2Filesystem& fs, ino_t id)
@@ -152,29 +153,37 @@ ResultOr<ssize_t> Inode::read(size_t start, size_t length, u8* buffer)
     }
 
     size_t first_block = start / m_fs.block_size();
-    size_t bytes_left = length;
+    size_t first_block_start = start % m_fs.block_size();
+    size_t bytes_left = min(length, (size_t)m_raw_data.size - start);
     size_t block_index = first_block;
 
     u8 read_buffer[m_fs.block_size()];
     while (bytes_left > 0) {
         auto result = m_fs.read_blocks(get_block_pointer(block_index), 1, read_buffer);
-
         if (result.is_error()) {
             return result;
         }
 
-        u32 read_length = bytes_left >= m_fs.block_size() ? m_fs.block_size() : bytes_left;
-
-        if (bytes_left < m_fs.block_size()) {
-            memcpy(buffer, read_buffer, read_length);
-            memset(buffer + bytes_left, 0, m_fs.block_size() - bytes_left);
-            bytes_left = 0;
+        if (block_index == first_block) {
+            if (bytes_left < m_fs.block_size() - first_block_start) {
+                memcpy(buffer, read_buffer + start, bytes_left);
+                bytes_left = 0;
+            } else {
+                memcpy(buffer, read_buffer + start, m_fs.block_size() - first_block_start);
+                bytes_left -= m_fs.block_size() - first_block_start;
+                buffer += m_fs.block_size() - first_block_start;
+            }
         } else {
-            memcpy(buffer, read_buffer, read_length);
-            bytes_left -= m_fs.block_size();
+            if (bytes_left < m_fs.block_size()) {
+                memcpy(buffer, read_buffer, bytes_left);
+                bytes_left = 0;
+            } else {
+                memcpy(buffer, read_buffer, m_fs.block_size());
+                bytes_left -= m_fs.block_size();
+                buffer += m_fs.block_size();
+            }
         }
 
-        buffer += 4096; // m_fs.block_size();
         block_index++;
     }
 

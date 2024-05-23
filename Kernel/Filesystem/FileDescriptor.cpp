@@ -22,7 +22,7 @@ void FileDescriptor::close()
 
 ssize_t FileDescriptor::read(u8* buffer, ssize_t count)
 {
-    return m_file->read(*this, buffer, count);
+    return m_file->read(*this, buffer, m_offset, count);
 }
 
 int FileDescriptor::seek(off_t offset, int whence)
@@ -46,7 +46,6 @@ int FileDescriptor::seek(off_t offset, int whence)
             return -EINVAL;
     }
 
-    dbgprintf("FileDescriptor", "length: %u\n", m_file->length());
     if (new_offset < 0 || (m_file->is_inode() && new_offset > m_file->length())) {
         return -EINVAL;
     }
