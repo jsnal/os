@@ -49,7 +49,7 @@ u32 Inode::number_of_blocks() const
     return (m_raw_data.size + m_fs.block_size() - 1) / m_fs.block_size();
 }
 
-ResultOr<InodeId> Inode::find(const String& name)
+ResultReturn<InodeId> Inode::find(const String& name)
 {
     dbgprintf("Inode", "Searching for '%s' in %u blocks in inode %u\n", name.str(), number_of_blocks(), m_id);
 
@@ -142,7 +142,7 @@ u32 Inode::get_block_pointer(u32 index) const
     return m_block_pointers[index];
 }
 
-ResultOr<ssize_t> Inode::read(size_t start, size_t length, u8* buffer)
+ResultReturn<ssize_t> Inode::read(size_t start, size_t length, u8* buffer)
 {
     if (length == 0 || m_raw_data.size == 0 || start > m_raw_data.size) {
         return Result::Failure;

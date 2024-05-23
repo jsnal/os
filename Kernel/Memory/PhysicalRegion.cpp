@@ -42,7 +42,7 @@ u32 PhysicalRegion::commit()
     return m_total_pages;
 }
 
-ResultOr<PhysicalAddress> PhysicalRegion::allocate_page()
+ResultReturn<PhysicalAddress> PhysicalRegion::allocate_page()
 {
     PhysicalAddress address;
 

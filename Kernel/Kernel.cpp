@@ -59,8 +59,8 @@
     ELF elf(fd.value());
 
     auto elf_header = elf.read_header();
-    auto elf_program_headers_result = elf.read_program_headers(*elf_header);
-    auto elf_program_headers = elf_program_headers_result.value();
+    // auto elf_program_headers_result = elf.read_program_headers(*elf_header);
+    // auto elf_program_headers = elf_program_headers_result.value();
 
     // dbgprintf("Kernel", "elf_program_headers address: %x\n", &elf_program_headers_result.value());
 

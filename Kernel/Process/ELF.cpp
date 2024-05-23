@@ -23,7 +23,7 @@ UniquePtr<ELFHeader> ELF::read_header()
     return header;
 }
 
-ResultOr<Array<ELFProgramHeader>> ELF::read_program_headers(ELFHeader& header)
+ResultReturn<Array<ELFProgramHeader>> ELF::read_program_headers(ELFHeader& header)
 {
     int seek_ret = m_fd->seek(header.e_phoff, SEEK_SET);
     if (seek_ret < 0) {

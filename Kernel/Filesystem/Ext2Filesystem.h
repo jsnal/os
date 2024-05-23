@@ -48,7 +48,7 @@ public:
 private:
     Result inode_block_and_offset(const Inode& inode, u32& block_index, u32& offset);
 
-    ResultOr<u8*> read_blocks(u32 index, u32 count);
+    ResultReturn<u8*> read_blocks(u32 index, u32 count);
 
     Result read_blocks(u32 index, u32 count, u8* buffer);
 

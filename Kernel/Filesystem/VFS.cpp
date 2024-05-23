@@ -52,7 +52,7 @@ void VFS::init()
     dbgprintf("VFS", "VFS initialized\n");
 }
 
-ResultOr<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mode_t mode)
+ResultReturn<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mode_t mode)
 {
     auto path_traversal_result = traverse_path(path, m_root_inode);
     if (path_traversal_result.is_error()) {
@@ -74,7 +74,7 @@ ResultOr<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mod
     return inode_file->open(flags);
 }
 
-ResultOr<SharedPtr<Inode>> VFS::traverse_path(const String& path, SharedPtr<Inode>& base)
+ResultReturn<SharedPtr<Inode>> VFS::traverse_path(const String& path, SharedPtr<Inode>& base)
 {
     dbgprintf("VFS", "Starting to traverse the path for '%s'\n", path.str());
 

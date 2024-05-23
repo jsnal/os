@@ -29,7 +29,7 @@ public:
 
     pid_t get_next_pid() { return m_current_pid++; }
 
-    ResultOr<Process*> find_by_pid(pid_t) const;
+    ResultReturn<Process*> find_by_pid(pid_t) const;
 
     void schedule();
 

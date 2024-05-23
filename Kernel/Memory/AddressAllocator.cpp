@@ -11,7 +11,7 @@ AddressAllocator::AddressAllocator(VirtualAddress base, size_t length)
     m_ranges.add_last(AddressRange(base, length));
 }
 
-ResultOr<AddressRange> AddressAllocator::allocate(size_t length)
+ResultReturn<AddressRange> AddressAllocator::allocate(size_t length)
 {
     if (length == 0) {
         return Result(Result::Failure);
@@ -43,7 +43,7 @@ ResultOr<AddressRange> AddressAllocator::allocate(size_t length)
     return AddressRange(address_range_found.lower(), length);
 }
 
-ResultOr<AddressRange> AddressAllocator::allocate_at(VirtualAddress address, size_t length)
+ResultReturn<AddressRange> AddressAllocator::allocate_at(VirtualAddress address, size_t length)
 {
     if (length == 0) {
         return Result(Result::Failure);

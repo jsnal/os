@@ -51,7 +51,7 @@ void ProcessManager::add_process(Process& process)
     m_processes->add_first(&process);
 }
 
-ResultOr<Process*> ProcessManager::find_by_pid(pid_t pid) const
+ResultReturn<Process*> ProcessManager::find_by_pid(pid_t pid) const
 {
     for (Process* p = m_processes->head(); p != nullptr; p = p->next()) {
         if (p->pid() == pid) {

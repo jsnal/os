@@ -24,7 +24,7 @@ public:
 
     u32 commit();
 
-    ResultOr<PhysicalAddress> allocate_page();
+    ResultReturn<PhysicalAddress> allocate_page();
 
     Result free_page(PhysicalAddress);
 

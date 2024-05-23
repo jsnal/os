@@ -33,13 +33,13 @@ public:
 
     bool is_directory() const { return (m_raw_data.mode & 0xF000) == MODE_DIRECTORY; };
 
-    ResultOr<InodeId> find(const String&);
+    ResultReturn<InodeId> find(const String&);
 
     void read_block_pointers();
 
     u32 get_block_pointer(u32 index) const;
 
-    ResultOr<ssize_t> read(size_t start, size_t length, u8* buffer);
+    ResultReturn<ssize_t> read(size_t start, size_t length, u8* buffer);
 
 private:
     void read_single_block_pointer(u32 single_block_pointer, u32& block_index);

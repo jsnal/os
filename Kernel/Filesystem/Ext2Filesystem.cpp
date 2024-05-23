@@ -73,7 +73,7 @@ SharedPtr<Inode> Ext2Filesystem::inode(const InodeId& inode)
     return adopt(*new Inode(*this, inode.id()));
 }
 
-ResultOr<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)
+ResultReturn<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)
 {
     if (count == 0) {
         return Result(Result::Failure);

@@ -50,7 +50,7 @@ public:
 
     UniquePtr<ELFHeader> read_header();
 
-    ResultOr<Array<ELFProgramHeader>> read_program_headers(ELFHeader&);
+    ResultReturn<Array<ELFProgramHeader>> read_program_headers(ELFHeader&);
 
 private:
     SharedPtr<FileDescriptor> m_fd;

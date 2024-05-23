@@ -32,19 +32,19 @@ private:
 };
 
 template<typename T>
-class ResultOr {
+class ResultReturn {
 public:
-    ResultOr()
+    ResultReturn()
         : m_result(1)
     {
     }
 
-    ResultOr(const Result& result)
+    ResultReturn(const Result& result)
         : m_result(result)
     {
     }
 
-    ResultOr(const T& value)
+    ResultReturn(const T& value)
         : m_value(value)
         , m_result(Result::OK)
     {
@@ -58,20 +58,20 @@ public:
     T& value()
     {
         ASSERT(!is_error());
-        return m_value;
+        return m_value.value();
     }
 
     const T& value() const
     {
         ASSERT(!is_error());
-        return m_value;
+        return m_value.value();
     }
 
 private:
-    T m_value;
+    Optional<T> m_value;
     Result m_result;
 };
 }
 
 using Universal::Result;
-using Universal::ResultOr;
+using Universal::ResultReturn;

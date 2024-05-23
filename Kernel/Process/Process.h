@@ -42,7 +42,7 @@ public:
         u32 m_eflags { 0 };
     };
 
-    static ResultOr<Process*> create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t);
+    static ResultReturn<Process*> create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t);
     static Result create_kernel_process(void (*entry_point)(), String&& name);
     static Result create_user_process(void (*entry_point)(), uid_t, gid_t, String&& name);
 

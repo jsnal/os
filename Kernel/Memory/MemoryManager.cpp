@@ -153,7 +153,7 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
 
 PhysicalAddress MemoryManager::allocate_physical_kernel_page()
 {
-    ResultOr<PhysicalAddress> page_result;
+    ResultReturn<PhysicalAddress> page_result;
     for (int i = 0; i < m_kernel_physical_regions.size(); i++) {
         page_result = m_kernel_physical_regions[i]->allocate_page();
         if (page_result.is_ok()) {

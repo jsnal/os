@@ -36,7 +36,7 @@ Process::Process(void (*entry_point)(), pid_t pid, uid_t uid, gid_t gid, String&
     }
 }
 
-ResultOr<Process*> Process::create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t pid)
+ResultReturn<Process*> Process::create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t pid)
 {
     auto process = new Process(entry_point, pid, move(name));
 
