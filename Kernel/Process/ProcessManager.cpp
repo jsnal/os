@@ -33,7 +33,7 @@ ProcessManager& ProcessManager::the()
 ProcessManager::ProcessManager()
     : m_processes(new LinkedList<Process>)
 {
-    auto idle_process_result = Process::create_standalone_kernel_process(kernel_idle_process, "idle", get_next_pid());
+    auto idle_process_result = Process::create_kernel_process("idle", kernel_idle_process, false);
     ASSERT(idle_process_result.is_ok());
     m_kernel_idle_process = idle_process_result.value();
 }
@@ -86,11 +86,7 @@ void ProcessManager::schedule()
     }
 
     if (next_process == nullptr) {
-        if (m_processes->size() == 1) {
-            next_process = m_current_process;
-        } else {
-            next_process = m_kernel_idle_process;
-        }
+        next_process = m_kernel_idle_process;
     }
 
     dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Picked Process '%s'\n", next_process->name().str());

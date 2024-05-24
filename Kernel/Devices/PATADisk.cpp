@@ -112,6 +112,7 @@ PATADisk::PATADisk(Bus::PCI::Address address, Channel channel, Type type)
 Result PATADisk::read_blocks(u32 block, u32 count, u8* buffer)
 {
     dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Reading %u sectors into 0x%x @ block %u\n", count, buffer, block);
+    // dbgprintf("PATADisk", "Reading %u sectors into 0x%x @ block %u\n", count, buffer, block);
 
     ScopedSpinlock scoped_lock(s_lock);
 
@@ -197,6 +198,7 @@ void PATADisk::initiate_command(u8 command, u32 lba, u8 sectors)
     IO::outb(m_io_base + ATA_REG_COMMAND, command);
 
     dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Done initiating command\n");
+    // dbgprintf("PATADisk", "Done initiating command\n");
 }
 
 void PATADisk::wait_until_ready() const

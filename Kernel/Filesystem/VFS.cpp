@@ -42,6 +42,7 @@ void VFS::init()
 
     auto root_inode_id = root_filesystem().root_inode();
     auto root_inode = root_filesystem().inode(root_inode_id);
+    dbgprintf("VFS", "root_inode.size %u\n", root_inode->data().size);
 
     if (!root_inode->is_directory()) {
         panic("Root filesystem is invalid\n");

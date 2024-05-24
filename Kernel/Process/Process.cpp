@@ -1,4 +1,3 @@
-#include "Kernel/Memory/Types.h"
 #include <Kernel/Assert.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
@@ -9,49 +8,49 @@
 #define KERNEL_STACK_SIZE (16 * KB)
 #define USER_STACK_SIZE (16 * KB)
 
-Process::Process(void (*entry_point)(), pid_t pid, String&& name)
-    : m_entry_point(entry_point)
-    , m_name(move(name))
-    , m_pid(pid)
-    , m_is_kernel(true)
-    , m_state(State::Created)
-{
-    m_page_directory = MM.kernel_page_directory();
-}
-
-Process::Process(void (*entry_point)(), pid_t pid, uid_t uid, gid_t gid, String&& name)
-    : m_entry_point(entry_point)
-    , m_name(move(name))
+Process::Process(const String& name, pid_t pid, uid_t uid, gid_t gid, bool is_kernel)
+    : m_name(move(name))
     , m_pid(pid)
     , m_uid(uid)
     , m_gid(gid)
-    , m_is_kernel(false)
+    , m_is_kernel(is_kernel)
     , m_state(State::Created)
 {
-    m_page_directory = PageDirectory::create_user_page_directory(*this);
-    m_page_directory->set_base(MM.allocate_physical_kernel_page());
-    m_page_directory->entries()[0].copy(MM.kernel_page_directory().entries()[0]);
-    for (u32 page = 768; page < 1024; page++) {
-        m_page_directory->entries()[page].copy(MM.kernel_page_directory().entries()[page]);
+    if (is_kernel) {
+        m_page_directory = MM.kernel_page_directory();
+    } else {
+        m_page_directory = PageDirectory::create_user_page_directory(*this);
+        m_page_directory->set_base(MM.allocate_physical_kernel_page());
+        m_page_directory->entries()[0].copy(MM.kernel_page_directory().entries()[0]);
+        for (u32 page = 768; page < 1024; page++) {
+            m_page_directory->entries()[page].copy(MM.kernel_page_directory().entries()[page]);
+        }
     }
 }
 
-ResultReturn<Process*> Process::create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t pid)
+ResultReturn<Process*> Process::create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list)
 {
-    auto process = new Process(entry_point, pid, move(name));
+    pid_t pid = add_to_process_list ? PM.get_next_pid() : 0;
+    auto process = new Process(move(name), pid, 0, 0, true);
 
     auto result = process->initialize_stack();
     if (result.is_error()) {
         return result;
     }
 
-    dbgprintf("Process", "Kernel Process %u (%s) spawned at 0x%x\n", process->m_pid, process->m_name.str(), entry_point);
+    process->m_context->m_eip = (u32)entry_point;
+
+    if (add_to_process_list) {
+        PM.add_process(*process);
+    }
+
+    dbgprintf("Process", "Kernel Process '%s' (%u) spawned at 0x%x\n", process->m_name.str(), process->m_pid, entry_point);
     return process;
 }
 
-Result Process::create_kernel_process(void (*entry_point)(), String&& name)
+Result Process::create_user_process(const String& path, uid_t uid, gid_t gid)
 {
-    auto process = new Process(entry_point, PM.get_next_pid(), move(name));
+    auto process = new Process(path, PM.get_next_pid(), uid, gid, false);
 
     auto result = process->initialize_stack();
     if (result.is_error()) {
@@ -60,22 +59,7 @@ Result Process::create_kernel_process(void (*entry_point)(), String&& name)
 
     PM.add_process(*process);
 
-    dbgprintf("Process", "Kernel Process %u (%s) spawned at 0x%x\n", process->m_pid, process->m_name.str(), entry_point);
-    return Result::OK;
-}
-
-Result Process::create_user_process(void (*entry_point)(), uid_t uid, gid_t gid, String&& name)
-{
-    auto process = new Process(entry_point, PM.get_next_pid(), uid, gid, move(name));
-
-    auto result = process->initialize_stack();
-    if (result.is_error()) {
-        return result;
-    }
-
-    PM.add_process(*process);
-
-    dbgprintf("Process", "User Process %u (%s) spawned at 0x%x\n", process->m_pid, process->m_name.str(), entry_point);
+    dbgprintf("Process", "User Process '%s' (%u) spawned\n", process->m_name.str(), process->m_pid);
     return Result::OK;
 }
 
@@ -97,7 +81,7 @@ Result Process::initialize_stack()
 
     m_context->m_eflags = 0x0202; // Top of the stack-frame
     m_context->m_cs = 0x08;
-    m_context->m_eip = (u32)m_entry_point;
+    m_context->m_eip = 0;
     m_context->m_ebp = (u32)stack_top;
     m_context->m_ebx = 0;
     m_context->m_esi = 0;

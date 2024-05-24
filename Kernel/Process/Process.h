@@ -42,9 +42,8 @@ public:
         u32 m_eflags { 0 };
     };
 
-    static ResultReturn<Process*> create_standalone_kernel_process(void (*entry_point)(), String&& name, pid_t);
-    static Result create_kernel_process(void (*entry_point)(), String&& name);
-    static Result create_user_process(void (*entry_point)(), uid_t, gid_t, String&& name);
+    static ResultReturn<Process*> create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list = true);
+    static Result create_user_process(const String& path, uid_t, gid_t);
 
     void dump_stack() const;
 
@@ -63,8 +62,7 @@ public:
     void set_waiting(WaitingStatus&);
 
 private:
-    Process(void (*entry_point)(), pid_t pid, String&& name);
-    Process(void (*entry_point)(), pid_t, uid_t, gid_t, String&& name);
+    Process(const String& name, pid_t, uid_t, gid_t, bool is_kernel);
 
     Result initialize_stack();
 
@@ -72,8 +70,6 @@ private:
     pid_t m_pid { 0 };
     uid_t m_uid { 0 };
     gid_t m_gid { 0 };
-
-    void (*m_entry_point)();
 
     bool m_is_kernel { false };
 

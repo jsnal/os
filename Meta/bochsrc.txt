@@ -15,6 +15,7 @@ info: action=report
 error: action=report
 panic: action=ask
 mouse: enabled=0
-clock: sync=realtime
-cpu: ips=5000000, reset_on_triple_fault=1
+#clock: sync=realtime
+clock: sync=none, time0=local, rtc_sync=1
+cpu: count=1 ips=200000000, reset_on_triple_fault=1
 magic_break: enabled=1
