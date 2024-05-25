@@ -20,8 +20,10 @@
 class WaitingStatus;
 class PageDirectory;
 
-extern "C" void start_kernel_process(u32* old_stack_pointer);
-extern "C" void start_user_process(u32* old_stack_pointer);
+extern "C" {
+void start_kernel_process(u32* old_stack_pointer, u32 cr3);
+void start_user_process(u32* old_stack_pointer);
+}
 
 class Process : public LinkedListNode<Process> {
     friend class LinkedListNode<Process>;
@@ -50,6 +52,8 @@ public:
     static ResultReturn<Process*> create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list = true);
     static Result create_user_process(const String& path, void (*entry_point)(), uid_t, gid_t);
 
+    VirtualRegion* allocate_region(VirtualAddress, size_t size, u8 access);
+
     void dump_stack(bool kernel) const;
 
     const String& name() const { return m_name; }
@@ -58,6 +62,7 @@ public:
     bool is_kernel() const { return m_is_kernel; }
 
     const PageDirectory& page_directory() const { return *m_page_directory; }
+    PageDirectory& page_directory() { return *m_page_directory; }
 
     u32* previous_stack_pointer() const { return m_previous_stack_pointer; }
 
@@ -88,6 +93,9 @@ private:
     bool m_is_kernel { false };
 
     SharedPtr<PageDirectory> m_page_directory;
+
+    // TODO: Make sure this memory is being freed!
+    ArrayList<VirtualRegion*> m_regions;
 
     UniquePtr<VirtualRegion> m_kernel_stack { nullptr };
     UniquePtr<VirtualRegion> m_user_stack { nullptr };

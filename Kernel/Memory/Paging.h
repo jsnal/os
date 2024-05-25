@@ -45,8 +45,8 @@ public:
     bool is_read_write() const { return m_address & ReadWrite; }
     void set_read_write(bool set) { set_bit(ReadWrite, set); }
 
-    bool is_user_supervisor() const { return m_address & UserSupervisor; }
-    void set_user_supervisor(bool set) { set_bit(UserSupervisor, set); }
+    bool is_user() const { return m_address & UserSupervisor; }
+    void set_user(bool set) { set_bit(UserSupervisor, set); }
 
 private:
     void set_bit(u32 bit, bool value)
@@ -94,8 +94,8 @@ public:
     bool is_read_write() const { return m_address & ReadWrite; }
     void set_read_write(bool set) { set_bit(ReadWrite, set); }
 
-    bool is_user_supervisor() const { return m_address & UserSupervisor; }
-    void set_user_supervisor(bool set) { set_bit(UserSupervisor, set); }
+    bool is_user() const { return m_address & UserSupervisor; }
+    void set_user(bool set) { set_bit(UserSupervisor, set); }
 
 private:
     void set_bit(u32 bit, bool value)

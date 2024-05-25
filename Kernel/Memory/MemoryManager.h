@@ -30,6 +30,7 @@ public:
     const PageDirectory& kernel_page_directory() const { return *m_kernel_page_directory; }
 
     PhysicalAddress allocate_physical_kernel_page();
+    PhysicalAddress allocate_physical_user_page();
 
     UniquePtr<VirtualRegion> allocate_kernel_region(size_t size);
     UniquePtr<VirtualRegion> allocate_kernel_region_at(PhysicalAddress physical_address, size_t size);

@@ -58,10 +58,10 @@ void ProcessManager::start()
 
     // m_current_process = m_kernel_idle_process;
     // start_kernel_process(m_kernel_idle_process->previous_stack_pointer());
-    dbgprintf("ProcessManager", "name %s\n", m_processes->head()->name().str());
 
     m_current_process = m_processes->head();
-    start_kernel_process(m_current_process->previous_stack_pointer());
+    dbgprintf("ProcessManager", "cr3 %x\n", m_current_process->page_directory().base());
+    start_kernel_process(m_current_process->previous_stack_pointer(), m_current_process->page_directory().base());
     // context_run(m_kernel_idle_process->m_context);
 }
 

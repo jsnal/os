@@ -22,10 +22,11 @@ Process::Process(const String& name, pid_t pid, uid_t uid, gid_t gid, bool is_ke
     } else {
         m_page_directory = PageDirectory::create_user_page_directory(*this);
         m_page_directory->set_base(MM.allocate_physical_kernel_page());
+
+        // Copy Kernel identity map and higher-half
         m_page_directory->entries()[0].copy(MM.kernel_page_directory().entries()[0]);
         for (u32 page = 768; page < 1024; page++) {
             m_page_directory->entries()[page].copy(MM.kernel_page_directory().entries()[page]);
-            m_page_directory->entries()[page].set_user_supervisor(false);
         }
     }
 }
@@ -79,6 +80,21 @@ Result Process::create_user_process(const String& path, void (*entry_point)(), u
     return Result::OK;
 }
 
+VirtualRegion* Process::allocate_region(VirtualAddress virtual_address, size_t size, u8 access)
+{
+    auto range = page_directory().address_allocator().allocate(size);
+    if (range.is_error()) {
+        return nullptr;
+    }
+
+    m_regions.add_last(VirtualRegion::create_user_region(range.value(), access).leak_ptr());
+    m_regions.last()->map(page_directory());
+
+    dbgprintf_if(DEBUG_PROCESS, "Process", "Allocated virtual region 0x%x - 0x%x for Process '%s'\n", m_regions.last()->lower(), m_regions.last()->upper(), name().str());
+
+    return m_regions.last();
+}
+
 Result Process::initialize_kernel_stack()
 {
     m_kernel_stack = MM.allocate_kernel_region(KERNEL_STACK_SIZE);
@@ -110,24 +126,16 @@ Result Process::initialize_kernel_stack()
 
     m_previous_stack_pointer = stack + (capacity - 15);
 
-    dump_stack(true);
-
     return Result::OK;
 }
 
 Result Process::initialize_user_stack()
 {
-    m_user_stack = MM.allocate_kernel_region(USER_STACK_SIZE);
-    const u32 capacity = KERNEL_STACK_SIZE / sizeof(u32);
+    m_user_stack = allocate_region(VirtualAddress(), USER_STACK_SIZE, VirtualRegion::Read | VirtualRegion::Write);
 
     if (m_kernel_stack.ptr() == nullptr) {
         return Result::Failure;
     }
-
-    u32* stack = reinterpret_cast<u32*>(m_user_stack->lower().get());
-
-    stack[capacity - 1] = 0xDEAD0000; // Fallback return address
-    stack[capacity - 4] = (u32)m_entry_point;
 
     return Result::OK;
 }
@@ -146,16 +154,36 @@ void Process::new_process_runnable()
 
 void Process::switch_to_user_mode()
 {
-    const u32 capacity = KERNEL_STACK_SIZE / sizeof(u32);
+    const u32 kernel_stack_capacity = KERNEL_STACK_SIZE / sizeof(u32);
+    const u32 user_stack_capacity = USER_STACK_SIZE / sizeof(u32);
+
+    u32* user_stack = reinterpret_cast<u32*>(m_user_stack->lower().get());
     u32* stack = reinterpret_cast<u32*>(m_kernel_stack->lower().get());
 
-    stack[capacity - 2] = CPU::SegmentSelector(CPU::Ring3, 4);    // SS for user mode
-    stack[capacity - 3] = m_user_stack->lower() + (capacity - 4); // ESP
-    stack[capacity - 4] = 0x0202;                                 // EFLAGS
-    stack[capacity - 5] = CPU::SegmentSelector(CPU::Ring3, 3);    // CS for user mode
-    stack[capacity - 6] = (u32)m_entry_point;                     // EIP
+    auto program_region = allocate_region(VirtualAddress(), Types::PageSize, VirtualRegion::Read | VirtualRegion::Write);
+    program_region->map(page_directory());
+    program_region->lower().ptr()[0] = 0xb8;
+    program_region->lower().ptr()[1] = 0x02;
+    program_region->lower().ptr()[2] = 0x00;
+    program_region->lower().ptr()[3] = 0x00;
+    program_region->lower().ptr()[4] = 0x00;
+    program_region->lower().ptr()[5] = 0xf4;
 
-    m_previous_stack_pointer = stack + (capacity - 6);
+    stack[kernel_stack_capacity - 1] = 0x00DEAD00;                                      // Fallback return address
+    stack[kernel_stack_capacity - 2] = CPU::SegmentSelector(CPU::Ring3, 4);             // SS for user mode
+    stack[kernel_stack_capacity - 3] = (u32)(user_stack + (kernel_stack_capacity - 4)); // ESP
+    stack[kernel_stack_capacity - 4] = 0x0202;                                          // EFLAGS
+    stack[kernel_stack_capacity - 5] = CPU::SegmentSelector(CPU::Ring3, 3);             // CS for user mode
+    stack[kernel_stack_capacity - 6] = (u32)program_region->lower();                    // EIP
+
+    m_previous_stack_pointer = stack + (kernel_stack_capacity - 6);
+
+    dbgprintf("Process", "Look here! %x\n", user_stack + user_stack_capacity - 1);
+
+    user_stack[user_stack_capacity - 1] = 0xDEAD0000; // Fallback return address
+    user_stack[user_stack_capacity - 2] = 0;
+    user_stack[user_stack_capacity - 3] = 0;
+    user_stack[user_stack_capacity - 4] = 0;
 
     cli();
 

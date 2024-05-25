@@ -166,6 +166,21 @@ PhysicalAddress MemoryManager::allocate_physical_kernel_page()
     return page_result.value();
 }
 
+PhysicalAddress MemoryManager::allocate_physical_user_page()
+{
+    ResultReturn<PhysicalAddress> page_result;
+    for (int i = 0; i < m_kernel_physical_regions.size(); i++) {
+        page_result = m_user_physical_regions[i]->allocate_page();
+        if (page_result.is_ok()) {
+            break;
+        }
+    }
+
+    ASSERT(page_result.is_ok());
+    // memset(page_result.value().ptr(), 0, Types::PageSize);
+    return page_result.value();
+}
+
 UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_region(size_t size)
 {
     auto address_range = m_kernel_page_directory->address_allocator().allocate(size);
@@ -201,7 +216,7 @@ void MemoryManager::protected_map(PageDirectory& page_directory, VirtualAddress 
         auto page_table_entry_address = virtual_address.offset(i);
         auto& page_table_entry = get_page_table_entry(*m_kernel_page_directory, page_table_entry_address, true);
         page_table_entry.set_physical_page_base(page_table_entry_address.get());
-        page_table_entry.set_user_supervisor(false);
+        page_table_entry.set_user(false);
         page_table_entry.set_present(false);
         page_table_entry.set_read_write(false);
     }
@@ -216,7 +231,7 @@ void MemoryManager::identity_map(PageDirectory& page_directory, VirtualAddress v
         auto page_table_entry_address = virtual_address.offset(i);
         auto& page_table_entry = get_page_table_entry(page_directory, page_table_entry_address, true);
         page_table_entry.set_physical_page_base(page_table_entry_address.get());
-        page_table_entry.set_user_supervisor(false);
+        page_table_entry.set_user(false);
         page_table_entry.set_present(true);
         page_table_entry.set_read_write(true);
     }
@@ -228,7 +243,7 @@ void MemoryManager::copy_kernel_page_directory(PageDirectory& page_directory)
     // page_directory.
 }
 
-PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_directory, VirtualAddress virtual_address, bool is_kernel)
+PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_directory, VirtualAddress virtual_address, bool is_user)
 {
     u16 page_directory_index = PAGE_DIRECTORY_INDEX(virtual_address);
     u16 page_table_index = PAGE_TABLE_INDEX(virtual_address);
@@ -241,7 +256,7 @@ PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_director
         dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Allocated page table @ 0x%x\n", page_table);
 
         page_directory_entry.set_page_table_base(page_table.get());
-        page_directory_entry.set_user_supervisor(is_kernel);
+        page_directory_entry.set_user(is_user);
         page_directory_entry.set_present(true);
         page_directory_entry.set_read_write(true);
     }

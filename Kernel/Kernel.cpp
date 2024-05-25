@@ -33,7 +33,7 @@
 [[noreturn]] void simple_process_runnable1()
 {
     // dbgprintf("Kernel", "Running a simple process 1!\n");
-    asm volatile("mov eax, 0x1337");
+    asm volatile("jmp $");
     while (true) {
     }
 }

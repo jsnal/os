@@ -4,7 +4,11 @@
 
 .global start_kernel_process
 start_kernel_process:
-    mov esp, [esp + 4]
+    mov eax, [esp + 4]
+    mov ebx, [esp + 8]
+
+    mov cr3, ebx
+    mov esp, eax
 
     pop ds
     pop es
