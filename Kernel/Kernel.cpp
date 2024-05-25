@@ -32,7 +32,8 @@
 
 [[noreturn]] void simple_process_runnable1()
 {
-    dbgprintf("Kernel", "Running a simple process 1!\n");
+    // dbgprintf("Kernel", "Running a simple process 1!\n");
+    asm volatile("mov eax, 0x1337");
     while (true) {
     }
 }
@@ -106,7 +107,8 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
     Process::create_kernel_process("kernel_main", kernel_main);
     // Process::create_kernel_process("simple1", simple_process_runnable1);
 
-    // Process::create_user_process(simple_process_runnable2, 0, 0, "user_process_1");
+    Process::create_user_process("simple1", simple_process_runnable1, 0, 0);
+    // Process::create_user_process("/bin/id", 0, 0);
 
     PM.start();
 

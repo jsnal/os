@@ -38,11 +38,15 @@ public:
     void enter_critical();
     void exit_critical();
 
+    TSS* tss() { return &m_tss; }
+
 private:
     pid_t m_current_pid { 0 };
     Process* m_current_process { nullptr };
     Process* m_kernel_idle_process { nullptr };
     LinkedList<Process>* m_processes { nullptr };
+
+    TSS m_tss;
 
     u8 m_critical_count { 0 };
 };

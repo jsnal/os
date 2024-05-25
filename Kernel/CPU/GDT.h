@@ -23,7 +23,7 @@ extern "C" void gdt_load(u32 base);
 
 namespace GDT {
 
-void write_tss(TSS* tss, u16 ss0, u32 esp0);
+void write_tss(TSS* tss);
 
 void init();
 

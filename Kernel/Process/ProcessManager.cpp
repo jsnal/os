@@ -1,3 +1,5 @@
+#include <Kernel/CPU/CPU.h>
+#include <Kernel/CPU/GDT.h>
 #include <Kernel/CPU/IDT.h>
 #include <Kernel/CPU/PIC.h>
 #include <Kernel/Devices/PIT.h>
@@ -33,6 +35,18 @@ ProcessManager& ProcessManager::the()
 ProcessManager::ProcessManager()
     : m_processes(new LinkedList<Process>)
 {
+    memset(&m_tss, 0, sizeof(TSS));
+    m_tss.ss0 = CPU::SegmentSelector(CPU::Ring0, 2);
+    m_tss.esp0 = 0x1337;
+    m_tss.cs = CPU::SegmentSelector(CPU::Ring3, 1);
+    m_tss.ss = CPU::SegmentSelector(CPU::Ring3, 2);
+    m_tss.ds = CPU::SegmentSelector(CPU::Ring3, 2);
+    m_tss.es = CPU::SegmentSelector(CPU::Ring3, 2);
+    m_tss.fs = CPU::SegmentSelector(CPU::Ring3, 2);
+    m_tss.gs = CPU::SegmentSelector(CPU::Ring3, 2);
+
+    GDT::write_tss(&m_tss);
+
     auto idle_process_result = Process::create_kernel_process("idle", kernel_idle_process, false);
     ASSERT(idle_process_result.is_ok());
     m_kernel_idle_process = idle_process_result.value();
@@ -40,10 +54,15 @@ ProcessManager::ProcessManager()
 
 void ProcessManager::start()
 {
-    PIT::the().register_pit_wakeup(QUANTUM_IN_MILLISECONDS, pit_schedule_wakeup);
+    // PIT::the().register_pit_wakeup(QUANTUM_IN_MILLISECONDS, pit_schedule_wakeup);
 
-    m_current_process = m_kernel_idle_process;
-    context_run(m_kernel_idle_process->m_context);
+    // m_current_process = m_kernel_idle_process;
+    // start_kernel_process(m_kernel_idle_process->previous_stack_pointer());
+    dbgprintf("ProcessManager", "name %s\n", m_processes->head()->name().str());
+
+    m_current_process = m_processes->head();
+    start_kernel_process(m_current_process->previous_stack_pointer());
+    // context_run(m_kernel_idle_process->m_context);
 }
 
 void ProcessManager::add_process(Process& process)

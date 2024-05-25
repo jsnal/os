@@ -8,10 +8,11 @@
 
 #include <Kernel/Memory/Address.h>
 #include <Kernel/Memory/AddressAllocator.h>
-#include <Kernel/Process/Process.h>
 #include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/Types.h>
+
+class Process;
 
 class PageTableEntry {
 public:
