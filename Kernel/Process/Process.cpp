@@ -95,6 +95,12 @@ VirtualRegion* Process::allocate_region(VirtualAddress virtual_address, size_t s
     return m_regions.last();
 }
 
+void Process::context_switch(Process* next_process)
+{
+    PM.tss()->esp0 = next_process->m_kernel_stack->upper();
+    do_context_switch(&m_previous_stack_pointer, next_process->m_previous_stack_pointer, next_process->cr3());
+}
+
 Result Process::initialize_kernel_stack()
 {
     m_kernel_stack = MM.allocate_kernel_region(KERNEL_STACK_SIZE);
@@ -162,12 +168,8 @@ void Process::switch_to_user_mode()
 
     auto program_region = allocate_region(VirtualAddress(), Types::PageSize, VirtualRegion::Read | VirtualRegion::Write);
     program_region->map(page_directory());
-    program_region->lower().ptr()[0] = 0xb8;
-    program_region->lower().ptr()[1] = 0x02;
-    program_region->lower().ptr()[2] = 0x00;
-    program_region->lower().ptr()[3] = 0x00;
-    program_region->lower().ptr()[4] = 0x00;
-    program_region->lower().ptr()[5] = 0xf4;
+    program_region->lower().ptr()[0] = 0xeb;
+    program_region->lower().ptr()[1] = 0xfe;
 
     stack[kernel_stack_capacity - 1] = 0x00DEAD00;                                      // Fallback return address
     stack[kernel_stack_capacity - 2] = CPU::SegmentSelector(CPU::Ring3, 4);             // SS for user mode
@@ -222,8 +224,7 @@ void Process::dump_stack(bool kernel) const
 {
     dbgprintf("Process", "%s Stack\n", kernel ? "Kernel" : "User");
     u32 stack = kernel ? (u32)m_kernel_stack->upper() : (u32)m_user_stack->upper();
-    // for (int i = 0; i < 10 * sizeof(u32); i += sizeof(u32)) {
-    for (int i = 11 * sizeof(u32); i >= 0; i -= sizeof(u32)) {
+    for (int i = 15 * sizeof(u32); i >= 0; i -= sizeof(u32)) {
         dbgprintf("Process", "%x:%x\n", (stack - i), *(u32*)(stack - i));
     }
 }

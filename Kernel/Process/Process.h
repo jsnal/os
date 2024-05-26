@@ -23,6 +23,7 @@ class PageDirectory;
 extern "C" {
 void start_kernel_process(u32* old_stack_pointer, u32 cr3);
 void start_user_process(u32* old_stack_pointer);
+void do_context_switch(u32** old_stack_pointer, u32* new_stack_pointer, u32 cr3);
 }
 
 class Process : public LinkedListNode<Process> {
@@ -54,6 +55,8 @@ public:
 
     VirtualRegion* allocate_region(VirtualAddress, size_t size, u8 access);
 
+    void context_switch(Process*);
+
     void dump_stack(bool kernel) const;
 
     const String& name() const { return m_name; }
@@ -63,6 +66,7 @@ public:
 
     const PageDirectory& page_directory() const { return *m_page_directory; }
     PageDirectory& page_directory() { return *m_page_directory; }
+    u32 cr3() const { return m_page_directory->base(); }
 
     u32* previous_stack_pointer() const { return m_previous_stack_pointer; }
 

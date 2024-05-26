@@ -23,7 +23,6 @@ start_kernel_process:
 .global start_user_process
 start_user_process:
     mov esp, [esp + 4]
-    xchg bx, bx
     iret
 
 .global context_run
@@ -36,25 +35,34 @@ context_run:
     pop ebp
     ret
 
-.global context_switch
-context_switch:
-    push ebp
-    push ebx
-    push esi
-    push edi
+.global do_context_switch
+do_context_switch:
+    pushad
+    pushfd
+    push gs
+    push fs
+    push es
+    push ds
 
-    mov eax, [esp + 20]
-    mov ecx, [esp + 24]
-    mov edx, [esp + 28]
+    xchg bx, bx
 
+    // Save the old stack pointer
+    mov eax, [esp + 56]
     mov [eax], esp
-    mov cr3, edx
-    mov esp, [ecx]
 
-    pop edi
-    pop esi
-    pop ebx
-    pop ebp
+    // Set the new CR3 register
+    mov eax, [esp + 64]
+    mov cr3, eax
+
+    // Set the ESP for the new proccess
+    mov esp, [esp + 60]
+
+    pop ds
+    pop es
+    pop fs
+    pop gs
+    popfd
+    popad
 
     ret
 

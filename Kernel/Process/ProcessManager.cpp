@@ -11,7 +11,7 @@
 #define QUANTUM_IN_MILLISECONDS 50
 
 extern "C" void context_run(Process::Context* context);
-extern "C" void context_switch(Process::Context** old_context, Process::Context** new_context, u32 cr3);
+// extern "C" void context_switch(Process::Context** old_context, Process::Context** new_context, u32 cr3);
 extern "C" void context_switch_to_created(Process::Context** old_context, Process::Context** new_context, u32 cr3);
 
 static void pit_schedule_wakeup()
@@ -37,7 +37,7 @@ ProcessManager::ProcessManager()
 {
     memset(&m_tss, 0, sizeof(TSS));
     m_tss.ss0 = CPU::SegmentSelector(CPU::Ring0, 2);
-    m_tss.esp0 = 0x1337;
+    m_tss.esp0 = 0x1437;
     m_tss.cs = CPU::SegmentSelector(CPU::Ring3, 1);
     m_tss.ss = CPU::SegmentSelector(CPU::Ring3, 2);
     m_tss.ds = CPU::SegmentSelector(CPU::Ring3, 2);
@@ -54,14 +54,13 @@ ProcessManager::ProcessManager()
 
 void ProcessManager::start()
 {
-    // PIT::the().register_pit_wakeup(QUANTUM_IN_MILLISECONDS, pit_schedule_wakeup);
+    PIT::the().register_pit_wakeup(QUANTUM_IN_MILLISECONDS, pit_schedule_wakeup);
 
-    // m_current_process = m_kernel_idle_process;
-    // start_kernel_process(m_kernel_idle_process->previous_stack_pointer());
+    m_current_process = m_kernel_idle_process;
+    start_kernel_process(m_kernel_idle_process->previous_stack_pointer(), m_current_process->cr3());
 
-    m_current_process = m_processes->head();
-    dbgprintf("ProcessManager", "cr3 %x\n", m_current_process->page_directory().base());
-    start_kernel_process(m_current_process->previous_stack_pointer(), m_current_process->page_directory().base());
+    // m_current_process = m_processes->head();
+    // start_kernel_process(m_current_process->previous_stack_pointer(), m_current_process->page_directory().base());
     // context_run(m_kernel_idle_process->m_context);
 }
 
@@ -115,10 +114,12 @@ void ProcessManager::schedule()
 
     if (next_process->state() == Process::Created) {
         next_process->set_state(Process::Running);
-        context_switch_to_created(previous_process->context_ptr(), next_process->context_ptr(), next_process->page_directory().base());
+        // context_switch_to_created(previous_process->context_ptr(), next_process->context_ptr(), next_process->page_directory().base());
+        previous_process->context_switch(next_process);
     } else {
         next_process->set_state(Process::Running);
-        context_switch(previous_process->context_ptr(), next_process->context_ptr(), next_process->page_directory().base());
+        previous_process->context_switch(next_process);
+        // context_switch(previous_process->context_ptr(), next_process->context_ptr(), next_process->page_directory().base());
     }
 }
 
