@@ -127,3 +127,25 @@ ArrayList<String> String::split(char delimiter) const
 
     return split_array;
 }
+
+ResultReturn<size_t> String::index_of(char ch) const
+{
+    for (size_t i = 0; i < m_length; i++) {
+        if (m_data[i] == ch) {
+            return i;
+        }
+    }
+
+    return Result::Failure;
+}
+
+ResultReturn<size_t> String::last_index_of(char ch) const
+{
+    for (size_t i = m_length - 1; i <= 0; i--) {
+        if (m_data[i] == ch) {
+            return i;
+        }
+    }
+
+    return Result::Failure;
+}

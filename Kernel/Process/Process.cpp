@@ -1,7 +1,9 @@
 #include <Kernel/Assert.h>
 #include <Kernel/CPU/CPU.h>
+#include <Kernel/Filesystem/VFS.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
+#include <Kernel/Process/ELF.h>
 #include <Kernel/Process/Process.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Universal/Stdlib.h>
@@ -37,12 +39,9 @@ ResultReturn<Process*> Process::create_kernel_process(const String& name, void (
     auto process = new Process(move(name), pid, 0, 0, true);
 
     auto result = process->initialize_kernel_stack();
-    if (result.is_error()) {
-        return result;
-    }
+    ENSURE(result);
 
     process->m_entry_point = entry_point;
-    // process->m_context->m_eip = (u32)entry_point;
 
     if (add_to_process_list) {
         PM.add_process(*process);
@@ -52,27 +51,15 @@ ResultReturn<Process*> Process::create_kernel_process(const String& name, void (
     return process;
 }
 
-static void test_process()
+Result Process::create_user_process(const String& path, uid_t uid, gid_t gid)
 {
-    while (true)
-        ;
-}
+    auto process = new Process(move(path), PM.get_next_pid(), uid, gid, false);
 
-Result Process::create_user_process(const String& path, void (*entry_point)(), uid_t uid, gid_t gid)
-{
-    auto process = new Process(path, PM.get_next_pid(), uid, gid, false);
+    auto stack_result = process->initialize_kernel_stack();
+    ENSURE(stack_result);
 
-    auto result = process->initialize_kernel_stack();
-    if (result.is_error()) {
-        return result;
-    }
-
-    result = process->initialize_user_stack();
-    if (result.is_error()) {
-        return result;
-    }
-
-    process->m_entry_point = entry_point;
+    stack_result = process->initialize_user_stack();
+    ENSURE(stack_result);
 
     PM.add_process(*process);
 
@@ -80,17 +67,26 @@ Result Process::create_user_process(const String& path, void (*entry_point)(), u
     return Result::OK;
 }
 
-VirtualRegion* Process::allocate_region(VirtualAddress virtual_address, size_t size, u8 access)
+ResultReturn<VirtualRegion*> Process::allocate_region(size_t size, u8 access)
 {
-    auto range = page_directory().address_allocator().allocate(size);
-    if (range.is_error()) {
-        return nullptr;
-    }
+    return allocate_region_at(VirtualAddress(), size, access);
+}
 
-    m_regions.add_last(VirtualRegion::create_user_region(range.value(), access).leak_ptr());
+ResultReturn<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_address, size_t size, u8 access)
+{
+    ResultReturn<AddressRange> range_result;
+    if (virtual_address.is_null()) {
+        range_result = page_directory().address_allocator().allocate(size);
+    } else {
+        range_result = page_directory().address_allocator().allocate_at(virtual_address, size);
+    }
+    ENSURE(range_result);
+
+    m_regions.add_last(VirtualRegion::create_user_region(range_result.value(), access).leak_ptr());
     m_regions.last()->map(page_directory());
 
     dbgprintf_if(DEBUG_PROCESS, "Process", "Allocated virtual region 0x%x - 0x%x for Process '%s'\n", m_regions.last()->lower(), m_regions.last()->upper(), name().str());
+    dbgprintf("Process", "Allocated virtual region 0x%x - 0x%x for Process '%s'\n", m_regions.last()->lower(), m_regions.last()->upper(), name().str());
 
     return m_regions.last();
 }
@@ -137,11 +133,10 @@ Result Process::initialize_kernel_stack()
 
 Result Process::initialize_user_stack()
 {
-    m_user_stack = allocate_region(VirtualAddress(), USER_STACK_SIZE, VirtualRegion::Read | VirtualRegion::Write);
+    auto user_stack_result = allocate_region(USER_STACK_SIZE, VirtualRegion::Read | VirtualRegion::Write);
+    ENSURE(user_stack_result);
 
-    if (m_kernel_stack.ptr() == nullptr) {
-        return Result::Failure;
-    }
+    m_user_stack = user_stack_result.value();
 
     return Result::OK;
 }
@@ -154,11 +149,11 @@ void Process::new_process_runnable()
         process->m_entry_point();
         panic("Kernel process exited, this should not happen!\n");
     } else {
-        process->switch_to_user_mode();
+        ASSERT(process->switch_to_user_mode().is_ok());
     }
 }
 
-void Process::switch_to_user_mode()
+Result Process::switch_to_user_mode()
 {
     const u32 kernel_stack_capacity = KERNEL_STACK_SIZE / sizeof(u32);
     const u32 user_stack_capacity = USER_STACK_SIZE / sizeof(u32);
@@ -166,21 +161,23 @@ void Process::switch_to_user_mode()
     u32* user_stack = reinterpret_cast<u32*>(m_user_stack->lower().get());
     u32* stack = reinterpret_cast<u32*>(m_kernel_stack->lower().get());
 
-    auto program_region = allocate_region(VirtualAddress(), Types::PageSize, VirtualRegion::Read | VirtualRegion::Write);
-    program_region->map(page_directory());
-    program_region->lower().ptr()[0] = 0xeb;
-    program_region->lower().ptr()[1] = 0xfe;
+    auto program_region_result = allocate_region(Types::PageSize, VirtualRegion::Read | VirtualRegion::Write);
+    ENSURE(program_region_result);
+
+    load_elf();
+
+    // auto program_region = program_region_result.value();
+    // program_region->lower().ptr()[0] = 0xeb;
+    // program_region->lower().ptr()[1] = 0xfe;
 
     stack[kernel_stack_capacity - 1] = 0x00DEAD00;                                      // Fallback return address
     stack[kernel_stack_capacity - 2] = CPU::SegmentSelector(CPU::Ring3, 4);             // SS for user mode
     stack[kernel_stack_capacity - 3] = (u32)(user_stack + (kernel_stack_capacity - 4)); // ESP
     stack[kernel_stack_capacity - 4] = 0x0202;                                          // EFLAGS
     stack[kernel_stack_capacity - 5] = CPU::SegmentSelector(CPU::Ring3, 3);             // CS for user mode
-    stack[kernel_stack_capacity - 6] = (u32)program_region->lower();                    // EIP
+    stack[kernel_stack_capacity - 6] = (u32)m_entry_point;                              // EIP
 
     m_previous_stack_pointer = stack + (kernel_stack_capacity - 6);
-
-    dbgprintf("Process", "Look here! %x\n", user_stack + user_stack_capacity - 1);
 
     user_stack[user_stack_capacity - 1] = 0xDEAD0000; // Fallback return address
     user_stack[user_stack_capacity - 2] = 0;
@@ -197,6 +194,40 @@ void Process::switch_to_user_mode()
     CPU::set_gs_register(CPU::SegmentSelector(CPU::Ring3, 4));
 
     start_user_process(m_previous_stack_pointer);
+
+    return Result::OK;
+}
+
+Result Process::load_elf()
+{
+    auto fd_result = VFS::the().open(m_name, 0, 0);
+    ENSURE(fd_result);
+
+    auto elf_result = ELF::create(fd_result.value());
+    ENSURE(elf_result);
+    auto elf_program_headers_result = elf_result.value()->read_program_headers();
+    ENSURE(elf_program_headers_result);
+
+    auto& elf_program_headers = elf_program_headers_result.value();
+    for (size_t i = 0; i < elf_program_headers.size(); i++) {
+        auto program_header = elf_program_headers[i];
+        if (program_header.p_type == PT_LOAD) {
+            size_t load_location = Types::page_round_down(program_header.p_vaddr);
+            size_t load_memory_size = Types::page_round_up(program_header.p_memsz);
+
+            auto region_result = allocate_region_at(load_location, load_memory_size, VirtualRegion::Read | VirtualRegion::Execute);
+            ENSURE(region_result);
+
+            dbgprintf("Process", "entry=%x offset=%u filesz=%u\n", elf_result.value()->header().e_entry, program_header.p_offset, program_header.p_filesz);
+
+            fd_result.value()->seek(program_header.p_offset, SEEK_SET);
+            fd_result.value()->read(region_result.value()->lower().ptr(), program_header.p_filesz);
+        }
+    }
+
+    m_entry_point = (void (*)())elf_result.value()->header().e_entry;
+
+    return Result::OK;
 }
 
 void Process::set_ready()

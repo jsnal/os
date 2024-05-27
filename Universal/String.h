@@ -42,6 +42,9 @@ public:
 
     ArrayList<String> split(char delimiter = ' ') const;
 
+    ResultReturn<size_t> index_of(char ch) const;
+    ResultReturn<size_t> last_index_of(char ch) const;
+
     const char* str() const { return m_data; }
 
     size_t length() const { return m_length; }

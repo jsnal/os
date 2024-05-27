@@ -89,6 +89,15 @@ TEST_CASE(split)
     CHECK_STR_EQUAL("file", split_string[4].str());
 }
 
+TEST_CASE(index_of)
+{
+    auto string1 = String("some/path/to/a/file");
+
+    CHECK_EQUAL((size_t)4, string1.index_of('/').value());
+    CHECK_EQUAL((size_t)14, string1.last_index_of('/').value());
+    CHECK_TRUE(string1.last_index_of('-').is_error());
+}
+
 TEST_MAIN(TestString, [&]() {
     ENUMERATE_TEST(create);
     ENUMERATE_TEST(copy_and_move);

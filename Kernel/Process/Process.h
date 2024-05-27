@@ -21,7 +21,7 @@ class WaitingStatus;
 class PageDirectory;
 
 extern "C" {
-void start_kernel_process(u32* old_stack_pointer, u32 cr3);
+void start_kernel_process(u32* old_stack_pointer);
 void start_user_process(u32* old_stack_pointer);
 void do_context_switch(u32** old_stack_pointer, u32* new_stack_pointer, u32 cr3);
 }
@@ -39,21 +39,11 @@ public:
         Terminated
     };
 
-    struct [[gnu::packed]] Context {
-        //        u32 m_ss { 0 };
-        u32 m_edi { 0 };
-        u32 m_esi { 0 };
-        u32 m_ebx { 0 };
-        u32 m_ebp { 0 };
-        u32 m_eip { 0 };
-        u32 m_cs { 0 };
-        u32 m_eflags { 0 };
-    };
-
     static ResultReturn<Process*> create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list = true);
-    static Result create_user_process(const String& path, void (*entry_point)(), uid_t, gid_t);
+    static Result create_user_process(const String& path, uid_t, gid_t);
 
-    VirtualRegion* allocate_region(VirtualAddress, size_t size, u8 access);
+    ResultReturn<VirtualRegion*> allocate_region(size_t size, u8 access);
+    ResultReturn<VirtualRegion*> allocate_region_at(VirtualAddress, size_t size, u8 access);
 
     void context_switch(Process*);
 
@@ -70,9 +60,6 @@ public:
 
     u32* previous_stack_pointer() const { return m_previous_stack_pointer; }
 
-    Context* context() { return m_context; }
-    Context** context_ptr() { return &m_context; }
-
     void set_state(State state) { m_state = state; }
     State state() const { return m_state; }
 
@@ -84,7 +71,8 @@ private:
 
     static void new_process_runnable();
 
-    void switch_to_user_mode();
+    Result switch_to_user_mode();
+    Result load_elf();
 
     Result initialize_kernel_stack();
     Result initialize_user_stack();
@@ -107,7 +95,6 @@ private:
 
     void (*m_entry_point)() { nullptr };
 
-    Context* m_context;
     State m_state;
 
     Process* m_next { nullptr };

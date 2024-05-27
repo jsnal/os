@@ -27,6 +27,11 @@ constexpr inline static u32 page_round_up(u32 address)
     return ((address + PageSize - 1) & (~(PageSize - 1)));
 }
 
+constexpr inline static u32 page_round_down(u32 address)
+{
+    return (address / PageSize) * PageSize;
+}
+
 constexpr static inline u32 physical_to_virtual(u32 physical_address)
 {
     return physical_address + KERNEL_VIRTUAL_BASE;

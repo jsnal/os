@@ -276,7 +276,7 @@ void MemoryManager::remove_vm_object(VMObject& vm_object)
 
 void MemoryManager::add_virtual_region(VirtualRegion& virtual_region)
 {
-    if (virtual_region.upper() >= KERNEL_VIRTUAL_BASE) {
+    if (virtual_region.upper().get() >= KERNEL_VIRTUAL_BASE) {
         m_kernel_virtual_regions.add_last(&virtual_region);
     } else {
         m_user_virtual_regions.add_last(&virtual_region);
@@ -285,7 +285,7 @@ void MemoryManager::add_virtual_region(VirtualRegion& virtual_region)
 
 void MemoryManager::remove_virtual_region(VirtualRegion& virtual_region)
 {
-    if (virtual_region.upper() >= KERNEL_VIRTUAL_BASE) {
+    if (virtual_region.upper().get() >= KERNEL_VIRTUAL_BASE) {
         m_kernel_virtual_regions.remove(&virtual_region);
     } else {
         m_user_virtual_regions.remove(&virtual_region);

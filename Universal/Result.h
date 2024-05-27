@@ -12,6 +12,11 @@
 
 namespace Universal {
 
+#define ENSURE(result)         \
+    if (result.is_error()) {   \
+        return result.error(); \
+    }
+
 class Result {
 public:
     constexpr static int OK = 0;
@@ -26,6 +31,8 @@ public:
 
     bool is_ok() const { return m_error_value == 0; }
     bool is_error() const { return m_error_value != 0; }
+
+    Result error() const { return *this; }
 
 private:
     int m_error_value { 0 };

@@ -26,6 +26,8 @@
 
 #define IS_ELF(ehdr) ((ehdr).e_ident[EI_MAG0] == ELFMAG0 && (ehdr).e_ident[EI_MAG1] == ELFMAG1 && (ehdr).e_ident[EI_MAG2] == ELFMAG2 && (ehdr).e_ident[EI_MAG3] == ELFMAG3)
 
+#define PT_LOAD 1
+
 struct [[gnu::packed]] ELFHeader {
     unsigned char e_ident[EI_NIDENT];
     u16 e_type;

@@ -30,10 +30,17 @@ public:
     void set(u32 address) { m_address = address; }
     VirtualAddress offset(u32 offset) const { return VirtualAddress(m_address + offset); }
 
+    bool is_null() const { return m_address == 0; }
+
     u8* ptr() { return reinterpret_cast<u8*>(m_address); }
     const u8* ptr() const { return reinterpret_cast<const u8*>(m_address); }
 
     u32 page_base() const { return m_address & 0xfffff000; }
+
+    bool operator>(const VirtualAddress& o) const { return m_address > o.get(); }
+    bool operator<(const VirtualAddress& o) const { return m_address < o.get(); }
+    bool operator>=(const VirtualAddress& o) const { return m_address >= o.get(); }
+    bool operator<=(const VirtualAddress& o) const { return m_address <= o.get(); }
 
 private:
     u32 m_address { 0 };

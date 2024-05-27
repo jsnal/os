@@ -48,7 +48,6 @@ Ext2Superblock& Ext2Filesystem::super_block()
 
 Ext2BlockGroupDescriptor& Ext2Filesystem::block_group_descriptor(u32 group_index)
 {
-    dbgprintf("Ext2Filesystem", "block_group_descriptor called!\n");
     if (m_block_group_descriptor_table == nullptr) {
         u32 blocks_to_read = ceiling_divide(m_block_group_count * (u32)sizeof(Ext2BlockGroupDescriptor), m_block_size);
         u8 first_block = m_block_size == 1024 ? 2 : 1;

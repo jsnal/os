@@ -36,7 +36,6 @@ ResultReturn<Array<ELFProgramHeader>> ELF::read_program_headers()
 
     dbgprintf("ELF", "Amount to read: %u\n", m_header.e_phnum * m_header.e_phentsize);
 
-    dbgprintf("ELF", "e_phnum %u\n", m_header.e_phnum);
     Array<ELFProgramHeader> program_headers(m_header.e_phnum);
     int nread = m_fd->read(reinterpret_cast<u8*>(program_headers.raw_data()), m_header.e_phnum * m_header.e_phentsize);
     if (nread < 0) {

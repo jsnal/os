@@ -45,23 +45,6 @@
     }
 }
 
-static void parse_elf()
-{
-    kmalloc_dump_statistics();
-    auto fd = VFS::the().open("/bin/id", 0, 0);
-    kmalloc_dump_statistics();
-
-    auto elf_result = ELF::create(fd.value());
-    auto elf_program_headers_result = elf_result.value()->read_program_headers();
-    //  auto elf_program_headers = elf_program_headers_result.value();
-
-    // dbgprintf("Kernel", "elf_program_headers address: %x\n", &elf_program_headers_result.value());
-
-    dbgprintf("Kernel", "p_phoff: %x\n", elf_result.value()->header().e_phoff);
-    dbgprintf("Kernel", "p_paddr: %x\n", elf_program_headers_result.value()[0].p_paddr);
-    dbgprintf("Kernel", "headers: %u\n", elf_program_headers_result.value().size());
-}
-
 [[noreturn]] static void kernel_main()
 {
     GraphicsManager::the().init();
@@ -70,7 +53,7 @@ static void parse_elf()
 
     VFS::the().init();
 
-    parse_elf();
+    Process::create_user_process("/bin/id", 0, 0);
 
     dbgprintf("Kernel", "Operating System booted!\n");
 
@@ -106,9 +89,6 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     Process::create_kernel_process("kernel_main", kernel_main);
     // Process::create_kernel_process("simple1", simple_process_runnable1);
-
-    Process::create_user_process("simple1", simple_process_runnable1, 0, 0);
-    // Process::create_user_process("/bin/id", 0, 0);
 
     PM.start();
 
