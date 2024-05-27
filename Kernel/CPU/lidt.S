@@ -2,9 +2,6 @@
 
 .section .text
 
-.global idt_load
-.global isr_common
-
 .macro ISR num
 .global isr_\num
 
@@ -27,35 +24,62 @@ isr_\num:
     jmp isr_common
 .endm
 
+.global idt_load
 idt_load:
     lidt [eax]
     ret
 
+.global isr_common
 isr_common:
-    pusha // Save edi, esi, ebp, esp, edx, ecx, eax to the stack
+    pusha
+    push ds
 
-    push ds // Save the data segment
-
-    mov ax, 0x10 // Load the kernel's data segment
+    // Load the kernel's data segment
+    mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
 
-    push esp // ?
-
+    push esp
     call isr_handler
+    add esp, 0x4
 
-    add esp, 0x4 // ?
-
-    pop eax // Load the original data segment
+    // Load the original data segment
+    pop eax
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
 
-    popa // Restore edi, esi, ebp, esp, edx, ecx, eax
-    add esp, 0x8 // Move past the error code and isr number
+    popa
+    add esp, 0x8
+    iret
+
+.global isr_syscall
+isr_syscall:
+    pusha
+    push ds
+
+    // Load the kernel's data segment
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    push esp
+    call syscall_handler
+    add esp, 0x4
+
+    // Load the original data segment
+    pop eax
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    popa
     iret
 
 ISR 0

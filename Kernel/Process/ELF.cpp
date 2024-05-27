@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <Kernel/Memory/VirtualRegion.h>
 #include <Kernel/Process/ELF.h>
 
 ResultReturn<UniquePtr<ELF>> ELF::create(SharedPtr<FileDescriptor> fd)
@@ -34,8 +35,6 @@ ResultReturn<Array<ELFProgramHeader>> ELF::read_program_headers()
         return Result(seek_ret);
     }
 
-    dbgprintf("ELF", "Amount to read: %u\n", m_header.e_phnum * m_header.e_phentsize);
-
     Array<ELFProgramHeader> program_headers(m_header.e_phnum);
     int nread = m_fd->read(reinterpret_cast<u8*>(program_headers.raw_data()), m_header.e_phnum * m_header.e_phentsize);
     if (nread < 0) {
@@ -43,4 +42,19 @@ ResultReturn<Array<ELFProgramHeader>> ELF::read_program_headers()
     }
 
     return program_headers;
+}
+
+u8 ELF::program_flags_to_access(u32 flags)
+{
+    u8 access = 0;
+    if (flags & PF_R) {
+        access |= VirtualRegion::Read;
+    }
+    if (flags & PF_W) {
+        access |= VirtualRegion::Write;
+    }
+    if (flags & PF_X) {
+        access |= VirtualRegion::Execute;
+    }
+    return access;
 }

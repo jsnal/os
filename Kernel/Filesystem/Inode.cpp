@@ -51,7 +51,7 @@ u32 Inode::number_of_blocks() const
 
 ResultReturn<InodeId> Inode::find(const String& name)
 {
-    dbgprintf("Inode", "Searching for '%s' in %u blocks in inode %u\n", name.str(), number_of_blocks(), m_id);
+    dbgprintf_if(DEBUG_INODE, "Inode", "Searching for '%s' in %u blocks in inode %u\n", name.str(), number_of_blocks(), m_id);
 
     if (!is_directory()) {
         return Result(EISDIR);
@@ -69,7 +69,7 @@ ResultReturn<InodeId> Inode::find(const String& name)
         u32 amount_iterated = 0;
 
         while (directory->inode != 0 && amount_iterated < m_fs.block_size()) {
-            dbgprintf("Inode", "name='%s' id=%u\n", directory->name, directory->inode);
+            dbgprintf_if(DEBUG_INODE, "Inode", "name='%s' id=%u\n", directory->name, directory->inode);
             if (name == directory->name) {
                 return InodeId(m_fs.id(), directory->inode);
             }

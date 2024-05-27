@@ -114,4 +114,6 @@ void isr_44();
 void isr_45();
 void isr_46();
 void isr_47();
+
+void isr_syscall();
 }

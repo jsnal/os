@@ -1,8 +1,10 @@
 SET(LIBC_SOURCES
-    src/crt0.cpp
-    src/stdio.cpp
-    src/stdlib.cpp
-    src/string.cpp
+    crt0.cpp
+    stdio.cpp
+    stdlib.cpp
+    string.cpp
+    sys/syscall.cpp
+    unistd.cpp
 )
 
 set(SOURCES

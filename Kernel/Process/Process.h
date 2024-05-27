@@ -66,6 +66,8 @@ public:
     void set_ready();
     void set_waiting(WaitingStatus&);
 
+    int sys_getuid();
+
 private:
     Process(const String& name, pid_t, uid_t, gid_t, bool is_kernel);
 

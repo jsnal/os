@@ -23,7 +23,9 @@ public:
 
     void start();
 
-    Process* current_process() { return m_current_process; }
+    Process* current_process_ptr() { return m_current_process; }
+    Process& current_process() { return *m_current_process; }
+    const Process& current_process() const { return *m_current_process; }
 
     void add_process(Process&);
 

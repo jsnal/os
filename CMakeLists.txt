@@ -3,7 +3,7 @@ project (os C CXX ASM)
 
 include_directories(.)
 add_subdirectory(Tests EXCLUDE_FROM_ALL)
-include_directories(LibC/include)
+include_directories(LibC)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

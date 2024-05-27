@@ -28,6 +28,10 @@
 
 #define PT_LOAD 1
 
+#define PF_X 1
+#define PF_W 2
+#define PF_R 4
+
 struct [[gnu::packed]] ELFHeader {
     unsigned char e_ident[EI_NIDENT];
     u16 e_type;
@@ -68,6 +72,8 @@ public:
     const ELFHeader& header() const { return m_header; }
 
     ResultReturn<Array<ELFProgramHeader>> read_program_headers();
+
+    static u8 program_flags_to_access(u32 flags);
 
 private:
     SharedPtr<FileDescriptor> m_fd;

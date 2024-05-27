@@ -7,19 +7,19 @@ SET(KERNEL_SOURCES
     CPU/PIC.cpp
     CPU/lgdt.S
     CPU/lidt.S
-    Devices/PartitionDevice.cpp
     Devices/Console.cpp
     Devices/Keyboard.cpp
     Devices/PATADisk.cpp
     Devices/PIT.cpp
+    Devices/PartitionDevice.cpp
     Filesystem/Ext2Filesystem.cpp
     Filesystem/FileDescriptor.cpp
     Filesystem/Inode.cpp
     Filesystem/InodeFile.cpp
     Filesystem/VFS.cpp
     Graphics/EmulatorVGAGraphicsCard.cpp
-    Graphics/VGATextModeGraphicsCard.cpp
     Graphics/GraphicsManager.cpp
+    Graphics/VGATextModeGraphicsCard.cpp
     Kernel.cpp
     Memory/AddressAllocator.cpp
     Memory/MemoryManager.cpp
@@ -29,6 +29,7 @@ SET(KERNEL_SOURCES
     Process/ELF.cpp
     Process/Process.cpp
     Process/ProcessManager.cpp
+    Process/Syscall.cpp
     Process/WaitingStatus.cpp
     Process/context.S
     Runtime.cpp

@@ -130,6 +130,8 @@ void init()
     idt_set_entry(46, (uintptr_t)isr_46, 0x08, 0x8E);
     idt_set_entry(47, (uintptr_t)isr_47, 0x08, 0x8E);
 
+    idt_set_entry(128, (uintptr_t)isr_syscall, 0x08, 0xEF);
+
     idt_load((uintptr_t)&s_idt_pointer);
 
     dbgprintf("IDT", "Initialized IDT: 0x%x\n", &s_idt_pointer);

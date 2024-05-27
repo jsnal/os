@@ -14,6 +14,7 @@
 #define DEBUG_ADDRESS_ALLOCATOR 0
 #define DEBUG_KMALLOC 0
 #define DEBUG_EXT2_FILESYSTEM 0
+#define DEBUG_INODE 0
 
 #define dbgprintf(tag, format, ...)                                                                                                      \
     do {                                                                                                                                 \

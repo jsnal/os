@@ -1,3 +1,4 @@
+#include <Kernel/API/syscalls.h>
 #include <Kernel/Assert.h>
 #include <Kernel/CPU/CPU.h>
 #include <Kernel/Filesystem/VFS.h>
@@ -133,13 +134,13 @@ Result Process::initialize_user_stack()
 
 void Process::new_process_runnable()
 {
-    auto process = PM.current_process();
+    auto& process = PM.current_process();
 
-    if (process->is_kernel()) {
-        process->m_entry_point();
+    if (process.is_kernel()) {
+        process.m_entry_point();
         panic("Kernel process exited, this should not happen!\n");
     } else {
-        ASSERT(process->switch_to_user_mode().is_ok());
+        ASSERT(process.switch_to_user_mode().is_ok());
     }
 }
 
@@ -191,7 +192,7 @@ Result Process::load_elf()
             size_t load_location = Types::page_round_down(program_header.p_vaddr);
             size_t load_memory_size = Types::page_round_up(program_header.p_memsz);
 
-            auto region = ENSURE_TAKE(allocate_region_at(load_location, load_memory_size, VirtualRegion::Read | VirtualRegion::Execute));
+            auto region = ENSURE_TAKE(allocate_region_at(load_location, load_memory_size, ELF::program_flags_to_access(program_header.p_flags)));
             fd->seek(program_header.p_offset, SEEK_SET);
             fd->read(region->lower().ptr(), program_header.p_filesz);
         }
@@ -221,6 +222,11 @@ void Process::set_waiting(WaitingStatus& waiting_status)
     m_state = Waiting;
     PM.exit_critical();
     PM.yield();
+}
+
+int Process::sys_getuid()
+{
+    return 0x1337;
 }
 
 void Process::dump_stack(bool kernel) const
