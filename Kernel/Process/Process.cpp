@@ -38,8 +38,7 @@ ResultReturn<Process*> Process::create_kernel_process(const String& name, void (
     pid_t pid = add_to_process_list ? PM.get_next_pid() : 0;
     auto process = new Process(move(name), pid, 0, 0, true);
 
-    auto result = process->initialize_kernel_stack();
-    ENSURE(result);
+    ENSURE(process->initialize_kernel_stack());
 
     process->m_entry_point = entry_point;
 
@@ -80,7 +79,7 @@ ResultReturn<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_
     } else {
         range_result = page_directory().address_allocator().allocate_at(virtual_address, size);
     }
-    ENSURE(range_result);
+    // ENSURE(range_result);
 
     m_regions.add_last(VirtualRegion::create_user_region(range_result.value(), access).leak_ptr());
     m_regions.last()->map(page_directory());
@@ -134,7 +133,7 @@ Result Process::initialize_kernel_stack()
 Result Process::initialize_user_stack()
 {
     auto user_stack_result = allocate_region(USER_STACK_SIZE, VirtualRegion::Read | VirtualRegion::Write);
-    ENSURE(user_stack_result);
+    // ENSURE(user_stack_result);
 
     m_user_stack = user_stack_result.value();
 
@@ -162,13 +161,9 @@ Result Process::switch_to_user_mode()
     u32* stack = reinterpret_cast<u32*>(m_kernel_stack->lower().get());
 
     auto program_region_result = allocate_region(Types::PageSize, VirtualRegion::Read | VirtualRegion::Write);
-    ENSURE(program_region_result);
+    // ENSURE(program_region_result);
 
     load_elf();
-
-    // auto program_region = program_region_result.value();
-    // program_region->lower().ptr()[0] = 0xeb;
-    // program_region->lower().ptr()[1] = 0xfe;
 
     stack[kernel_stack_capacity - 1] = 0x00DEAD00;                                      // Fallback return address
     stack[kernel_stack_capacity - 2] = CPU::SegmentSelector(CPU::Ring3, 4);             // SS for user mode
@@ -200,28 +195,23 @@ Result Process::switch_to_user_mode()
 
 Result Process::load_elf()
 {
-    auto fd_result = VFS::the().open(m_name, 0, 0);
-    ENSURE(fd_result);
+    auto fd = ENSURE_TAKE(VFS::the().open(m_name, 0, 0));
 
-    auto elf_result = ELF::create(fd_result.value());
-    ENSURE(elf_result);
-    auto elf_program_headers_result = elf_result.value()->read_program_headers();
-    ENSURE(elf_program_headers_result);
+    auto elf_result = ELF::create(fd);
+    // ENSURE(elf_result);
+    // auto& elf = elf_result.value();
 
-    auto& elf_program_headers = elf_program_headers_result.value();
+    auto elf_program_headers = ENSURE_TAKE(elf_result.value()->read_program_headers());
+
     for (size_t i = 0; i < elf_program_headers.size(); i++) {
         auto program_header = elf_program_headers[i];
         if (program_header.p_type == PT_LOAD) {
             size_t load_location = Types::page_round_down(program_header.p_vaddr);
             size_t load_memory_size = Types::page_round_up(program_header.p_memsz);
 
-            auto region_result = allocate_region_at(load_location, load_memory_size, VirtualRegion::Read | VirtualRegion::Execute);
-            ENSURE(region_result);
-
-            dbgprintf("Process", "entry=%x offset=%u filesz=%u\n", elf_result.value()->header().e_entry, program_header.p_offset, program_header.p_filesz);
-
-            fd_result.value()->seek(program_header.p_offset, SEEK_SET);
-            fd_result.value()->read(region_result.value()->lower().ptr(), program_header.p_filesz);
+            auto region = ENSURE_TAKE(allocate_region_at(load_location, load_memory_size, VirtualRegion::Read | VirtualRegion::Execute));
+            fd->seek(program_header.p_offset, SEEK_SET);
+            fd->read(region->lower().ptr(), program_header.p_filesz);
         }
     }
 

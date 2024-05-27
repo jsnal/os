@@ -12,10 +12,22 @@
 
 namespace Universal {
 
-#define ENSURE(result)         \
-    if (result.is_error()) {   \
-        return result.error(); \
-    }
+#define ENSURE(expr)             \
+    ({                           \
+        auto&& result = (expr);  \
+        if (result.is_error()) { \
+            return result;       \
+        }                        \
+    })
+
+#define ENSURE_TAKE(expr)          \
+    ({                             \
+        auto&& result = (expr);    \
+        if (result.is_error()) {   \
+            return result.error(); \
+        }                          \
+        result.release_value();    \
+    })
 
 class Result {
 public:
@@ -72,6 +84,11 @@ public:
     {
         ASSERT(!is_error());
         return m_value.value();
+    }
+
+    T release_value()
+    {
+        return m_value.release_value();
     }
 
 private:

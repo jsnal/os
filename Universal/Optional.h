@@ -98,6 +98,14 @@ public:
         return *reinterpret_cast<const T*>(&m_storage);
     }
 
+    T release_value()
+    {
+        T released_value = move(value());
+        value().~T();
+        m_has_value = false;
+        return released_value;
+    }
+
     void reset()
     {
         if (m_has_value) {
