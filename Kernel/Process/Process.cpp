@@ -54,11 +54,8 @@ Result Process::create_user_process(const String& path, uid_t uid, gid_t gid)
 {
     auto process = new Process(move(path), PM.get_next_pid(), uid, gid, false);
 
-    auto stack_result = process->initialize_kernel_stack();
-    ENSURE(stack_result);
-
-    stack_result = process->initialize_user_stack();
-    ENSURE(stack_result);
+    ENSURE(process->initialize_kernel_stack());
+    ENSURE(process->initialize_user_stack());
 
     PM.add_process(*process);
 
@@ -73,19 +70,17 @@ ResultReturn<VirtualRegion*> Process::allocate_region(size_t size, u8 access)
 
 ResultReturn<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_address, size_t size, u8 access)
 {
-    ResultReturn<AddressRange> range_result;
+    AddressRange range;
     if (virtual_address.is_null()) {
-        range_result = page_directory().address_allocator().allocate(size);
+        range = ENSURE_TAKE(page_directory().address_allocator().allocate(size));
     } else {
-        range_result = page_directory().address_allocator().allocate_at(virtual_address, size);
+        range = ENSURE_TAKE(page_directory().address_allocator().allocate_at(virtual_address, size));
     }
-    // ENSURE(range_result);
 
-    m_regions.add_last(VirtualRegion::create_user_region(range_result.value(), access).leak_ptr());
+    m_regions.add_last(VirtualRegion::create_user_region(range, access).leak_ptr());
     m_regions.last()->map(page_directory());
 
     dbgprintf_if(DEBUG_PROCESS, "Process", "Allocated virtual region 0x%x - 0x%x for Process '%s'\n", m_regions.last()->lower(), m_regions.last()->upper(), name().str());
-    dbgprintf("Process", "Allocated virtual region 0x%x - 0x%x for Process '%s'\n", m_regions.last()->lower(), m_regions.last()->upper(), name().str());
 
     return m_regions.last();
 }
@@ -132,11 +127,7 @@ Result Process::initialize_kernel_stack()
 
 Result Process::initialize_user_stack()
 {
-    auto user_stack_result = allocate_region(USER_STACK_SIZE, VirtualRegion::Read | VirtualRegion::Write);
-    // ENSURE(user_stack_result);
-
-    m_user_stack = user_stack_result.value();
-
+    m_user_stack = ENSURE_TAKE(allocate_region(USER_STACK_SIZE, VirtualRegion::Read | VirtualRegion::Write));
     return Result::OK;
 }
 
@@ -158,21 +149,18 @@ Result Process::switch_to_user_mode()
     const u32 user_stack_capacity = USER_STACK_SIZE / sizeof(u32);
 
     u32* user_stack = reinterpret_cast<u32*>(m_user_stack->lower().get());
-    u32* stack = reinterpret_cast<u32*>(m_kernel_stack->lower().get());
+    u32* kernel_stack = reinterpret_cast<u32*>(m_kernel_stack->lower().get());
 
-    auto program_region_result = allocate_region(Types::PageSize, VirtualRegion::Read | VirtualRegion::Write);
-    // ENSURE(program_region_result);
+    ENSURE(load_elf());
 
-    load_elf();
+    kernel_stack[kernel_stack_capacity - 1] = 0x00DEAD00;                                      // Fallback return address
+    kernel_stack[kernel_stack_capacity - 2] = CPU::SegmentSelector(CPU::Ring3, 4);             // SS for user mode
+    kernel_stack[kernel_stack_capacity - 3] = (u32)(user_stack + (kernel_stack_capacity - 4)); // ESP
+    kernel_stack[kernel_stack_capacity - 4] = 0x0202;                                          // EFLAGS
+    kernel_stack[kernel_stack_capacity - 5] = CPU::SegmentSelector(CPU::Ring3, 3);             // CS for user mode
+    kernel_stack[kernel_stack_capacity - 6] = (u32)m_entry_point;                              // EIP of user process
 
-    stack[kernel_stack_capacity - 1] = 0x00DEAD00;                                      // Fallback return address
-    stack[kernel_stack_capacity - 2] = CPU::SegmentSelector(CPU::Ring3, 4);             // SS for user mode
-    stack[kernel_stack_capacity - 3] = (u32)(user_stack + (kernel_stack_capacity - 4)); // ESP
-    stack[kernel_stack_capacity - 4] = 0x0202;                                          // EFLAGS
-    stack[kernel_stack_capacity - 5] = CPU::SegmentSelector(CPU::Ring3, 3);             // CS for user mode
-    stack[kernel_stack_capacity - 6] = (u32)m_entry_point;                              // EIP
-
-    m_previous_stack_pointer = stack + (kernel_stack_capacity - 6);
+    m_previous_stack_pointer = kernel_stack + (kernel_stack_capacity - 6);
 
     user_stack[user_stack_capacity - 1] = 0xDEAD0000; // Fallback return address
     user_stack[user_stack_capacity - 2] = 0;
@@ -180,8 +168,6 @@ Result Process::switch_to_user_mode()
     user_stack[user_stack_capacity - 4] = 0;
 
     cli();
-
-    dbgprintf("Process", "Entrypoint: 0x%x\n", m_entry_point);
 
     CPU::set_ds_register(CPU::SegmentSelector(CPU::Ring3, 4));
     CPU::set_es_register(CPU::SegmentSelector(CPU::Ring3, 4));
@@ -196,12 +182,8 @@ Result Process::switch_to_user_mode()
 Result Process::load_elf()
 {
     auto fd = ENSURE_TAKE(VFS::the().open(m_name, 0, 0));
-
-    auto elf_result = ELF::create(fd);
-    // ENSURE(elf_result);
-    // auto& elf = elf_result.value();
-
-    auto elf_program_headers = ENSURE_TAKE(elf_result.value()->read_program_headers());
+    auto elf_result = ENSURE_TAKE(ELF::create(fd));
+    auto elf_program_headers = ENSURE_TAKE(elf_result->read_program_headers());
 
     for (size_t i = 0; i < elf_program_headers.size(); i++) {
         auto program_header = elf_program_headers[i];
@@ -215,7 +197,7 @@ Result Process::load_elf()
         }
     }
 
-    m_entry_point = (void (*)())elf_result.value()->header().e_entry;
+    m_entry_point = (void (*)())elf_result->header().e_entry;
 
     return Result::OK;
 }
