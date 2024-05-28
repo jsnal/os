@@ -15,8 +15,7 @@
 Process::Process(const String& name, pid_t pid, uid_t uid, gid_t gid, bool is_kernel)
     : m_name(move(name))
     , m_pid(pid)
-    , m_uid(uid)
-    , m_gid(gid)
+    , m_user(User::root())
     , m_is_kernel(is_kernel)
     , m_state(State::Created)
 {
@@ -224,9 +223,9 @@ void Process::set_waiting(WaitingStatus& waiting_status)
     PM.yield();
 }
 
-int Process::sys_getuid()
+uid_t Process::sys_getuid()
 {
-    return 0x1337;
+    return m_user.uid();
 }
 
 void Process::dump_stack(bool kernel) const

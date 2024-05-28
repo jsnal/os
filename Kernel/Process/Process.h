@@ -10,6 +10,7 @@
 #include <Kernel/Memory/Types.h>
 #include <Kernel/Memory/VirtualRegion.h>
 #include <Kernel/Process/WaitingStatus.h>
+#include <Kernel/User.h>
 #include <Universal/LinkedList.h>
 #include <Universal/Result.h>
 #include <Universal/ShareCounted.h>
@@ -66,7 +67,7 @@ public:
     void set_ready();
     void set_waiting(WaitingStatus&);
 
-    int sys_getuid();
+    uid_t sys_getuid();
 
 private:
     Process(const String& name, pid_t, uid_t, gid_t, bool is_kernel);
@@ -81,8 +82,7 @@ private:
 
     String m_name;
     pid_t m_pid { 0 };
-    uid_t m_uid { 0 };
-    gid_t m_gid { 0 };
+    User m_user;
 
     bool m_is_kernel { false };
 
