@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <errno.h>
 #include <sys/syscall.h>
 
 static int __attribute__((noinline)) __invoke_syscall_trap(int call, int arg1, int arg2, int arg3)
@@ -23,8 +24,7 @@ static inline int __attribute((always_inline)) __invoke_syscall(int call, int ar
 {
     int ret = __invoke_syscall_trap(call, arg1, arg2, arg3);
     if (set_errno && ret < 0) {
-        // TODO: Set the errno value
-        // errno = -ret;
+        errno = -ret;
         return -1;
     }
     return ret;
