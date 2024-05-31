@@ -49,6 +49,12 @@ UniquePtr<VirtualRegion> VirtualRegion::create_user_region(const AddressRange& a
     return region;
 }
 
+void VirtualRegion::free_user_region(const VirtualRegion& region)
+{
+    for (size_t i = 0; i < region.m_physical_pages.size(); i++) {
+    }
+}
+
 void VirtualRegion::map(PageDirectory& page_directory)
 {
     if (m_page_directory.is_null()) {

@@ -85,6 +85,10 @@ ResultReturn<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_
     return m_regions.last();
 }
 
+Result Process::deallocate_region(size_t size, u8 access)
+{
+}
+
 void Process::context_switch(Process* next_process)
 {
     PM.tss()->esp0 = next_process->m_kernel_stack->upper();
@@ -226,6 +230,10 @@ void Process::set_waiting(WaitingStatus& waiting_status)
 uid_t Process::sys_getuid()
 {
     return m_user.uid();
+}
+
+void Process::sys_exit(int status)
+{
 }
 
 void Process::dump_stack(bool kernel) const

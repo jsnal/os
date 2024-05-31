@@ -17,9 +17,11 @@ int handle(int call, int arg1, int arg2, int arg3)
     Process& p = PM.current_process();
 
     switch (call) {
+        case SYS_EXIT:
+            p.sys_exit(arg1);
+            return 0;
         case SYS_GETUID:
             return p.sys_getuid();
-            break;
         default:
             dbgprintf_if(DEBUG_PROCESS, "Syscall", "Unknown syscall %u\n", call);
             break;

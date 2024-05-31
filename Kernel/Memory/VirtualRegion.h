@@ -22,6 +22,7 @@ public:
     static UniquePtr<VirtualRegion> create_kernel_region_at(PhysicalAddress, const AddressRange& address_range, u8 access);
 
     static UniquePtr<VirtualRegion> create_user_region(const AddressRange& address_range, u8 access);
+    staic void free_user_region(const VirtualRegion&);
 
     enum Access {
         Read = 1,

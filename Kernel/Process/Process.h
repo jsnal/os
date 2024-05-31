@@ -37,7 +37,7 @@ public:
         Ready,
         Waiting,
         Running,
-        Terminated
+        Dead,
     };
 
     static ResultReturn<Process*> create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list = true);
@@ -45,6 +45,7 @@ public:
 
     ResultReturn<VirtualRegion*> allocate_region(size_t size, u8 access);
     ResultReturn<VirtualRegion*> allocate_region_at(VirtualAddress, size_t size, u8 access);
+    Result deallocate_region(size_t size, u8 access);
 
     void context_switch(Process*);
 
@@ -67,6 +68,7 @@ public:
     void set_ready();
     void set_waiting(WaitingStatus&);
 
+    void sys_exit(int status);
     uid_t sys_getuid();
 
 private:

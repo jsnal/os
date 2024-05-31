@@ -12,6 +12,8 @@
 
 __BEGIN_DECLS
 
+void exit(int status);
+
 int abs(int j);
 
 char* itoa(char* dest, size_t size, int a, int base);

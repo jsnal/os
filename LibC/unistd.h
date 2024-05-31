@@ -8,4 +8,6 @@
 
 #include <sys/types.h>
 
+void _exit(int status);
+
 uid_t get_uid();

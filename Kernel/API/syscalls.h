@@ -6,4 +6,5 @@
 
 #pragma once
 
-#define SYS_GETUID 1
+#define SYS_EXIT 1
+#define SYS_GETUID 2
