@@ -17,7 +17,9 @@ public:
     File() = default;
     virtual ~File() = default;
 
-    virtual bool is_inode() = 0;
+    virtual bool is_inode() { return false; };
+    virtual bool is_character_device() { return false; };
+    virtual bool is_block_device() { return false; };
 
     virtual size_t length() const { return 0; }
 

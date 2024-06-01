@@ -49,6 +49,26 @@ u32 Inode::number_of_blocks() const
     return (m_raw_data.size + m_fs.block_size() - 1) / m_fs.block_size();
 }
 
+u32 Inode::major_device_number() const
+{
+    u32 data = m_raw_data.block_pointers[0];
+    if (data == 0) {
+        data = m_raw_data.block_pointers[1];
+    }
+
+    return (data & 0xFFF00) >> 8;
+}
+
+u32 Inode::minor_device_number() const
+{
+    u32 data = m_raw_data.block_pointers[0];
+    if (data == 0) {
+        data = m_raw_data.block_pointers[1];
+    }
+
+    return (data & 0xFFu) | ((data >> 12u) & 0xFFF00u);
+}
+
 ResultReturn<InodeId> Inode::find(const String& name)
 {
     dbgprintf_if(DEBUG_INODE, "Inode", "Searching for '%s' in %u blocks in inode %u\n", name.str(), number_of_blocks(), m_id);

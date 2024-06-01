@@ -8,6 +8,7 @@
 
 #include <Kernel/Devices/BlockDevice.h>
 #include <Kernel/Filesystem/Ext2.h>
+#include <Kernel/Filesystem/FileDescriptor.h>
 #include <Kernel/Filesystem/Inode.h>
 #include <Kernel/Filesystem/InodeId.h>
 #include <Kernel/Filesystem/VFS.h>

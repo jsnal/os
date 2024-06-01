@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Kernel/Devices/RandomDevice.h>
 #include <Universal/Result.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/String.h>
@@ -34,6 +35,8 @@ private:
     ResultReturn<SharedPtr<Inode>> traverse_path(const String& path, SharedPtr<Inode>& base);
 
     u32 m_current_filesystem_id { 0 };
+
+    UniquePtr<RandomDevice> m_random_device;
 
     UniquePtr<Ext2Filesystem> m_root_filesystem;
     SharedPtr<Inode> m_root_inode;

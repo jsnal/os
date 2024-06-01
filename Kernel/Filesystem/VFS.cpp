@@ -1,5 +1,6 @@
 #include <Kernel/API/errno.h>
 #include <Kernel/API/fcntl.h>
+#include <Kernel/Devices/Device.h>
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Devices/PartitionDevice.h>
 #include <Kernel/Filesystem/Ext2Filesystem.h>
@@ -49,6 +50,8 @@ void VFS::init()
 
     m_root_inode = move(root_inode);
 
+    m_random_device = make_unique_ptr<RandomDevice>();
+
     dbgprintf("VFS", "VFS initialized\n");
 }
 
@@ -65,6 +68,16 @@ ResultReturn<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags,
 
     if ((flags & O_DIRECTORY) && !path_inode->is_directory()) {
         return Result(ENOTDIR);
+    }
+
+    if (path_inode->is_device()) {
+        u32 major = path_inode->major_device_number();
+        u32 minor = path_inode->minor_device_number();
+
+        auto device = Device::get_device(major, minor);
+        dbgprintf("VFS", "We've got a device! %u:%u\n", device->major(), device->minor());
+
+        return device->open(0);
     }
 
     // TODO: Add many more flags here!

@@ -16,7 +16,9 @@
 class Ext2Filesystem;
 class InodeId;
 
+#define MODE_CHARACTER_DEVICE 0x2000
 #define MODE_DIRECTORY 0x4000
+#define MODE_BLOCK_DEVICE 0x6000
 
 class Inode : public ShareCounted<Inode> {
 public:
@@ -32,6 +34,12 @@ public:
     u32 number_of_blocks() const;
 
     bool is_directory() const { return (m_raw_data.mode & 0xF000) == MODE_DIRECTORY; };
+    bool is_character_device() const { return (m_raw_data.mode & 0xF000) == MODE_CHARACTER_DEVICE; };
+    bool is_block_device() const { return (m_raw_data.mode & 0xF000) == MODE_BLOCK_DEVICE; };
+    bool is_device() const { return is_block_device() || is_character_device(); }
+
+    u32 major_device_number() const;
+    u32 minor_device_number() const;
 
     ResultReturn<InodeId> find(const String&);
 

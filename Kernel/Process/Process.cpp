@@ -87,6 +87,7 @@ ResultReturn<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_
 
 Result Process::deallocate_region(size_t size, u8 access)
 {
+    return Result::OK;
 }
 
 void Process::context_switch(Process* next_process)
