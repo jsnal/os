@@ -13,7 +13,7 @@
 #include <Universal/UniquePtr.h>
 
 class Inode;
-class Ext2Filesystem;
+class Filesystem;
 class FileDescriptor;
 
 class VFS final {
@@ -28,7 +28,7 @@ public:
 
     u32 get_next_filesystem_id() { return m_current_filesystem_id++; }
 
-    Ext2Filesystem& root_filesystem() { return *m_root_filesystem; }
+    Filesystem& root_filesystem() { return *m_root_filesystem; }
     Inode& root_inode() { return *m_root_inode; }
 
 private:
@@ -38,6 +38,6 @@ private:
 
     UniquePtr<RandomDevice> m_random_device;
 
-    UniquePtr<Ext2Filesystem> m_root_filesystem;
+    UniquePtr<Filesystem> m_root_filesystem;
     SharedPtr<Inode> m_root_inode;
 };

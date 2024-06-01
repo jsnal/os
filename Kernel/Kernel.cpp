@@ -24,8 +24,6 @@
 #include <Universal/Bitmap.h>
 #include <Universal/Types.h>
 
-#include <Kernel/Devices/RandomDevice.h>
-
 #if !defined(__os__)
 #    error "Compiling with incorrect toolchain."
 #endif

@@ -28,7 +28,7 @@ void InodeFile::close()
 
 ssize_t InodeFile::read(FileDescriptor& fd, u8* buffer, off_t offset, ssize_t count)
 {
-    auto result = m_inode->read(offset, count, buffer);
+    auto result = m_inode->read(offset, count, buffer, fd);
     if (result.is_error()) {
         return -1;
     }
@@ -43,5 +43,5 @@ ssize_t InodeFile::write(FileDescriptor&, const u8* buffer, ssize_t count)
 
 size_t InodeFile::length() const
 {
-    return m_inode->data().size;
+    return m_inode->size();
 }

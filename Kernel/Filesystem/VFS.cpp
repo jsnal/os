@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2024, Jason Long <jasonlongball@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #include <Kernel/API/errno.h>
 #include <Kernel/API/fcntl.h>
 #include <Kernel/Devices/Device.h>
@@ -5,7 +11,9 @@
 #include <Kernel/Devices/PartitionDevice.h>
 #include <Kernel/Filesystem/Ext2Filesystem.h>
 #include <Kernel/Filesystem/FileDescriptor.h>
+#include <Kernel/Filesystem/Inode.h>
 #include <Kernel/Filesystem/InodeFile.h>
+#include <Kernel/Filesystem/InodeId.h>
 #include <Kernel/Filesystem/VFS.h>
 #include <Kernel/Logger.h>
 

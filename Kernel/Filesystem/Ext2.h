@@ -18,7 +18,7 @@
 
 #define EXT2_NAME_LEN 255
 
-struct [[gnu::packed]] Ext2Superblock {
+struct [[gnu::packed]] Ext2RawSuperblock {
     u32 total_inodes;
     u32 total_blocks;
     u32 superuser_blocks;
@@ -66,7 +66,7 @@ struct [[gnu::packed]] Ext2Superblock {
     u8 extra[276];
 };
 
-struct [[gnu::packed]] Ext2BlockGroupDescriptor {
+struct [[gnu::packed]] Ext2RawBlockGroupDescriptor {
     u32 block_usage_bitmap;
     u32 inode_usage_bitmap;
     u32 inode_table;
@@ -76,7 +76,7 @@ struct [[gnu::packed]] Ext2BlockGroupDescriptor {
     u8 unused[14];
 };
 
-struct [[gnu::packed]] Ext2Inode {
+struct [[gnu::packed]] Ext2RawInode {
     u16 mode;
     uid_t uid;
     u32 size;
@@ -100,7 +100,7 @@ struct [[gnu::packed]] Ext2Inode {
     u32 os_specific_2[3];
 };
 
-struct [[gnu::packed]] Ext2Directory {
+struct [[gnu::packed]] Ext2RawDirectory {
     u32 inode;
     u16 size;
     u8 name_length;

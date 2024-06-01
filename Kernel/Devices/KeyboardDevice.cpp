@@ -144,7 +144,6 @@ ssize_t KeyboardDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
 
 void KeyboardDevice::handle()
 {
-
     u32 scan_code = get_scan_code();
     bool pressed = (scan_code & 0x80) == 0;
     char converted_character = 0;

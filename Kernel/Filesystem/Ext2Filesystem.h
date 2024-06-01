@@ -8,52 +8,45 @@
 
 #include <Kernel/Devices/BlockDevice.h>
 #include <Kernel/Filesystem/Ext2.h>
-#include <Kernel/Filesystem/FileDescriptor.h>
-#include <Kernel/Filesystem/Inode.h>
-#include <Kernel/Filesystem/InodeId.h>
-#include <Kernel/Filesystem/VFS.h>
+#include <Kernel/Filesystem/Filesystem.h>
 #include <Universal/Result.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/Stdlib.h>
 #include <Universal/UniquePtr.h>
 
 class Inode;
+class InodeId;
 
-class Ext2Filesystem {
+class Ext2Filesystem : public Filesystem {
     friend Inode;
 
 public:
     Ext2Filesystem(UniquePtr<BlockDevice> disk)
-        : m_disk(move(disk))
-        , m_filesystem_id(VFS::the().get_next_filesystem_id())
+        : Filesystem()
+        , m_disk(move(disk))
     {
     }
 
     ~Ext2Filesystem() { dbgprintf("Ext2Filesystem", "Freeing!\n"); }
 
-    Result init();
+    Result init() override;
 
-    Ext2Superblock& super_block();
+    Ext2RawSuperblock& super_block();
 
-    Ext2BlockGroupDescriptor& block_group_descriptor(u32);
+    Ext2RawBlockGroupDescriptor& block_group_descriptor(u32);
 
     u32 block_size() const { return m_block_size; }
     u32 block_group_count() const { return m_block_group_count; }
     u32 block_pointers_per_block() const;
 
-    u32 id() const { return m_filesystem_id; }
+    InodeId root_inode() const override;
+    SharedPtr<Inode> inode(const InodeId&) override;
 
-    InodeId root_inode();
-    SharedPtr<Inode> inode(const InodeId&);
+    ResultReturn<u8*> read_blocks(u32 index, u32 count);
+    Result read_blocks(u32 index, u32 count, u8* buffer);
 
 private:
     Result inode_block_and_offset(const Inode& inode, u32& block_index, u32& offset);
-
-    ResultReturn<u8*> read_blocks(u32 index, u32 count);
-
-    Result read_blocks(u32 index, u32 count, u8* buffer);
-
-    u32 m_filesystem_id { 0 };
 
     UniquePtr<BlockDevice> m_disk;
 

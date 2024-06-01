@@ -6,14 +6,13 @@
 
 #pragma once
 
-#include <Kernel/Filesystem/Ext2.h>
-#include <Kernel/Filesystem/Ext2Filesystem.h>
+#include <Kernel/Filesystem/Filesystem.h>
 #include <Universal/ArrayList.h>
 #include <Universal/ShareCounted.h>
 #include <Universal/String.h>
 #include <Universal/Types.h>
 
-class Ext2Filesystem;
+class FileDescriptor;
 class InodeId;
 
 #define MODE_CHARACTER_DEVICE 0x2000
@@ -22,41 +21,45 @@ class InodeId;
 
 class Inode : public ShareCounted<Inode> {
 public:
-    Inode(Ext2Filesystem& fs, ino_t id);
+    Inode(Filesystem& fs, ino_t id)
+        : m_fs(fs)
+        , m_id(id)
+    {
+    }
 
-    const Ext2Inode& data() const { return m_raw_data; }
-
-    const ino_t id() const { return m_id; }
-
-    u32 block_group() const;
-    u32 index() const;
-    u32 block() const;
-    u32 number_of_blocks() const;
-
-    bool is_directory() const { return (m_raw_data.mode & 0xF000) == MODE_DIRECTORY; };
-    bool is_character_device() const { return (m_raw_data.mode & 0xF000) == MODE_CHARACTER_DEVICE; };
-    bool is_block_device() const { return (m_raw_data.mode & 0xF000) == MODE_BLOCK_DEVICE; };
+    bool is_directory() const { return (m_mode & 0xF000) == MODE_DIRECTORY; };
+    bool is_character_device() const { return (m_mode & 0xF000) == MODE_CHARACTER_DEVICE; };
+    bool is_block_device() const { return (m_mode & 0xF000) == MODE_BLOCK_DEVICE; };
     bool is_device() const { return is_block_device() || is_character_device(); }
 
-    u32 major_device_number() const;
-    u32 minor_device_number() const;
+    virtual ResultReturn<InodeId> find(const String&) = 0;
+    virtual ResultReturn<ssize_t> read(size_t start, size_t length, u8* buffer, FileDescriptor&) = 0;
+    virtual ResultReturn<ssize_t> write(size_t start, size_t length, u8* buffer, FileDescriptor&) = 0;
+    virtual void open(FileDescriptor&, int flags) = 0;
+    virtual void close(FileDescriptor&) = 0;
+    virtual bool can_read(FileDescriptor&) { return true; };
+    virtual bool can_write(FileDescriptor&) { return true; };
 
-    ResultReturn<InodeId> find(const String&);
+    Filesystem& fs() { return m_fs; }
+    const Filesystem& fs() const { return m_fs; }
 
-    void read_block_pointers();
+    ino_t id() const { return m_id; }
+    uid_t uid() const { return m_uid; }
+    gid_t gid() const { return m_gid; }
+    u16 mode() const { return m_mode; }
+    u32 size() const { return m_size; }
+    u32 major_device_number() const { return m_major_device_number; }
+    u32 minor_device_number() const { return m_minor_device_number; }
 
-    u32 get_block_pointer(u32 index) const;
-
-    ResultReturn<ssize_t> read(size_t start, size_t length, u8* buffer);
+protected:
+    ino_t m_id { 0 };
+    uid_t m_uid { 0 };
+    gid_t m_gid { 0 };
+    u16 m_mode { 0 };
+    u32 m_size { 0 };
+    u32 m_major_device_number { 0 };
+    u32 m_minor_device_number { 0 };
 
 private:
-    void read_single_block_pointer(u32 single_block_pointer, u32& block_index);
-    void read_double_block_pointer(u32 double_block_pointer, u32& block_index);
-    void read_triple_block_pointer(u32 triple_block_pointer, u32& block_index);
-
-    Ext2Inode m_raw_data;
-    Ext2Filesystem& m_fs;
-    ino_t m_id;
-
-    ArrayList<u32> m_block_pointers;
+    Filesystem& m_fs;
 };

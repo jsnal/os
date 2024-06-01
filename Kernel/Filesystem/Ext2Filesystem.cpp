@@ -5,6 +5,8 @@
  */
 
 #include <Kernel/Filesystem/Ext2Filesystem.h>
+#include <Kernel/Filesystem/Ext2Inode.h>
+#include <Kernel/Filesystem/InodeId.h>
 #include <Universal/Number.h>
 
 Result Ext2Filesystem::init()
@@ -36,27 +38,27 @@ Result Ext2Filesystem::init()
     return Result::OK;
 }
 
-Ext2Superblock& Ext2Filesystem::super_block()
+Ext2RawSuperblock& Ext2Filesystem::super_block()
 {
     if (m_super_block == nullptr) {
         m_super_block = new u8[1024];
         ASSERT(m_disk->read_blocks(2, 2, m_super_block).is_ok());
     }
 
-    return *reinterpret_cast<Ext2Superblock*>(m_super_block);
+    return *reinterpret_cast<Ext2RawSuperblock*>(m_super_block);
 }
 
-Ext2BlockGroupDescriptor& Ext2Filesystem::block_group_descriptor(u32 group_index)
+Ext2RawBlockGroupDescriptor& Ext2Filesystem::block_group_descriptor(u32 group_index)
 {
     if (m_block_group_descriptor_table == nullptr) {
-        u32 blocks_to_read = ceiling_divide(m_block_group_count * (u32)sizeof(Ext2BlockGroupDescriptor), m_block_size);
+        u32 blocks_to_read = ceiling_divide(m_block_group_count * (u32)sizeof(Ext2RawBlockGroupDescriptor), m_block_size);
         u8 first_block = m_block_size == 1024 ? 2 : 1;
         auto result = read_blocks(first_block, blocks_to_read);
         ASSERT(result.is_ok());
         m_block_group_descriptor_table = result.value();
     }
 
-    return reinterpret_cast<Ext2BlockGroupDescriptor*>(m_block_group_descriptor_table)[group_index];
+    return reinterpret_cast<Ext2RawBlockGroupDescriptor*>(m_block_group_descriptor_table)[group_index];
 }
 
 u32 Ext2Filesystem::block_pointers_per_block() const
@@ -64,14 +66,14 @@ u32 Ext2Filesystem::block_pointers_per_block() const
     return block_size() / sizeof(32);
 }
 
-InodeId Ext2Filesystem::root_inode()
+InodeId Ext2Filesystem::root_inode() const
 {
-    return InodeId(m_filesystem_id, EXT2_ROOT_INO);
+    return InodeId(id(), EXT2_ROOT_INO);
 }
 
 SharedPtr<Inode> Ext2Filesystem::inode(const InodeId& inode)
 {
-    return adopt(*new Inode(*this, inode.id()));
+    return adopt(*new Ext2Inode(*this, inode.id()));
 }
 
 ResultReturn<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)

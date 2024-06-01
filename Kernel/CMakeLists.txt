@@ -15,8 +15,8 @@ SET(KERNEL_SOURCES
     Devices/PartitionDevice.cpp
     Devices/RandomDevice.cpp
     Filesystem/Ext2Filesystem.cpp
+    Filesystem/Ext2Inode.cpp
     Filesystem/FileDescriptor.cpp
-    Filesystem/Inode.cpp
     Filesystem/InodeFile.cpp
     Filesystem/VFS.cpp
     Graphics/EmulatorVGAGraphicsCard.cpp
