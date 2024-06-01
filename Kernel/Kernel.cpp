@@ -9,7 +9,7 @@
 #include <Kernel/CPU/IDT.h>
 #include <Kernel/CPU/PIC.h>
 #include <Kernel/Devices/Console.h>
-#include <Kernel/Devices/Keyboard.h>
+#include <Kernel/Devices/KeyboardDevice.h>
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/Filesystem/Ext2Filesystem.h>
@@ -49,7 +49,7 @@
 {
     GraphicsManager::the().init();
 
-    Keyboard::the();
+    KeyboardDevice::the();
 
     VFS::the().init();
 

@@ -1,4 +1,4 @@
-#include <Kernel/Devices/Keyboard.h>
+#include <Kernel/Devices/KeyboardDevice.h>
 #include <Kernel/IO.h>
 #include <Kernel/Logger.h>
 
@@ -118,24 +118,36 @@ static const u8 keyboard_map_2[] = {
     KEY_NULL, KEY_NULL
 };
 
-Keyboard& Keyboard::the()
+KeyboardDevice& KeyboardDevice::the()
 {
-    static Keyboard s_the;
+    static KeyboardDevice s_the;
     return s_the;
 }
 
-Keyboard::Keyboard()
+KeyboardDevice::KeyboardDevice()
     : IRQHandler(IRQ_KEYBOARD)
+    , CharacterDevice(13, 1)
 {
     enable_irq();
 }
 
-void Keyboard::handle()
+ssize_t KeyboardDevice::read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count)
+{
+    // TODO: Implement this by saving a buffer of the last pressed keys, maybe 512 bytes?
+    return 0xdeadbeef;
+}
+
+ssize_t KeyboardDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
+{
+    return 0;
+}
+
+void KeyboardDevice::handle()
 {
 
     u32 scan_code = get_scan_code();
     bool pressed = (scan_code & 0x80) == 0;
-    // char converted_character = 0;
+    char converted_character = 0;
 
     dbgprintf_if(DEBUG_KEYBOARD, "Keyboard", "Key pressed: modifier=%x scan_code=%d %s\n", m_modifier, scan_code, pressed ? "down" : "up");
 
@@ -160,16 +172,25 @@ void Keyboard::handle()
         default:
             if (pressed) {
                 if (((m_modifier & KEYBOARD_MODIFIER_SHIFT) ^ (m_modifier & KEYBOARD_MODIFIER_CAPS_LOCK)) != 0) {
-                    // converted_character = keyboard_map_2[scan_code];
+                    converted_character = keyboard_map_2[scan_code];
                 } else {
-                    // converted_character = keyboard_map_1[scan_code];
+                    converted_character = keyboard_map_1[scan_code];
                 }
-                // vga_putchar(converted_character);
+
+                if (m_keyboard_listener != nullptr) {
+                    KeyEvent event = {
+                        .scan_code = static_cast<u16>(scan_code),
+                        .key = 0,
+                        .character = static_cast<u8>(converted_character),
+                        .modifiers = m_modifier
+                    };
+                    m_keyboard_listener->handle_key_event(event);
+                }
             }
     }
 }
 
-uint32_t Keyboard::get_scan_code()
+uint32_t KeyboardDevice::get_scan_code()
 {
     u32 code = IO::inb(KEYBOARD_PORT);
     u32 value = IO::inb(KEYBOARD_ACK);
@@ -178,7 +199,7 @@ uint32_t Keyboard::get_scan_code()
     return code;
 }
 
-void Keyboard::update_modifier(u8 modifier, bool pressed)
+void KeyboardDevice::update_modifier(u8 modifier, bool pressed)
 {
     if (pressed) {
         m_modifier |= modifier;
