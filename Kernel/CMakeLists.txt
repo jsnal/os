@@ -18,6 +18,8 @@ SET(KERNEL_SOURCES
     Filesystem/Ext2Inode.cpp
     Filesystem/FileDescriptor.cpp
     Filesystem/InodeFile.cpp
+    Filesystem/PTSFilesystem.cpp
+    Filesystem/PTSInode.cpp
     Filesystem/VFS.cpp
     Graphics/EmulatorVGAGraphicsCard.cpp
     Graphics/GraphicsManager.cpp
