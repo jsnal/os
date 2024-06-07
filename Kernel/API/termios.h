@@ -8,7 +8,7 @@
 
 #include <Universal/Types.h>
 
-#define NCCS 32
+#define NCCS 11
 
 typedef u32 speed_t;
 typedef u32 tcflag_t;
@@ -34,3 +34,16 @@ struct termios {
 #define ISIG 0x40
 #define NOFLSH 0x80
 #define TOPSTOP 0x100
+
+// Control Characters
+#define VEOF 0
+#define VEOL 1
+#define VERASE 2
+#define VINTR 3
+#define VKILL 4
+#define VMIN 5
+#define VQUIT 6
+#define VSTART 7
+#define VSTOP 8
+#define VSUSP 9
+#define VTIME 10

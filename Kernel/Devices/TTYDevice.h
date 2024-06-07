@@ -18,6 +18,10 @@ public:
 
     virtual size_t tty_write(const u8* buffer, size_t count) = 0;
 
+    bool is_signal() { return m_termios.c_lflag & ISIG; }
+    bool is_echo() { return m_termios.c_lflag & ECHO; }
+    bool is_canonical() { return m_termios.c_lflag & ICANON; }
+
 private:
     termios m_termios;
 };

@@ -14,6 +14,7 @@ SET(KERNEL_SOURCES
     Devices/PIT.cpp
     Devices/PartitionDevice.cpp
     Devices/RandomDevice.cpp
+    Devices/TTYDevice.cpp
     Filesystem/Ext2Filesystem.cpp
     Filesystem/Ext2Inode.cpp
     Filesystem/FileDescriptor.cpp
