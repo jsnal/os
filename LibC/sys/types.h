@@ -15,5 +15,6 @@ typedef unsigned short mode_t;
 typedef unsigned short uid_t;
 typedef unsigned short gid_t;
 typedef unsigned long ino_t;
+typedef unsigned long time_t;
 
 #endif

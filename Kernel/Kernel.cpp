@@ -8,6 +8,7 @@
 #include <Kernel/CPU/GDT.h>
 #include <Kernel/CPU/IDT.h>
 #include <Kernel/CPU/PIC.h>
+#include <Kernel/Devices/CMOS.h>
 #include <Kernel/Devices/Console.h>
 #include <Kernel/Devices/KeyboardDevice.h>
 #include <Kernel/Devices/PATADisk.h>
@@ -52,6 +53,8 @@
     VFS::the().init();
 
     Process::create_user_process("/bin/id", 0, 0);
+
+    dbgprintf("Kernel", "Seconds: %d\n", CMOS::timestamp());
 
     dbgprintf("Kernel", "Operating System booted!\n");
 
