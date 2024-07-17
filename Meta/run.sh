@@ -29,6 +29,7 @@ else
     fi
 
     qemu-system-i386 $extra_arguments \
+        -rtc base=utc \
         -m 128M \
         -serial stdio \
         -d cpu_reset,guest_errors \
