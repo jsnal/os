@@ -1,5 +1,6 @@
 SET(KERNEL_SOURCES
     ../Universal/String.cpp
+    ../Universal/Time.cpp
     Bus/PCI.cpp
     CPU/GDT.cpp
     CPU/IDT.cpp

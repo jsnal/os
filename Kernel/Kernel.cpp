@@ -55,8 +55,8 @@
     Process::create_user_process("/bin/id", 0, 0);
 
     Time boot_time = CMOS::boot_time();
-    dbgprintf("Kernel", "localtime=%u month=%u day=%u year=%u\n", boot_time.localtime(), boot_time.month(), boot_time.day(), boot_time.year());
 
+    dbgprintf("Kernel", "Boot date: %s %s %d %d:%d\n", boot_time.day_string(), boot_time.month_string(), boot_time.day(), boot_time.hour(), boot_time.minute());
     dbgprintf("Kernel", "Operating System booted!\n");
 
     while (true)
