@@ -58,19 +58,19 @@ const char* Time::day_string() const
 
     switch (day_index) {
         case 0:
-            return "Tuesday";
-        case 1:
             return "Wednesday";
-        case 2:
+        case 1:
             return "Thursday";
-        case 3:
+        case 2:
             return "Friday";
-        case 4:
+        case 3:
             return "Saturday";
-        case 5:
+        case 4:
             return "Sunday";
-        case 6:
+        case 5:
             return "Monday";
+        case 6:
+            return "Tuesday";
     }
     return "Unknown";
 }
