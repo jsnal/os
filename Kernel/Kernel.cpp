@@ -8,8 +8,8 @@
 #include <Kernel/CPU/GDT.h>
 #include <Kernel/CPU/IDT.h>
 #include <Kernel/CPU/PIC.h>
+#include <Kernel/DebugConsole.h>
 #include <Kernel/Devices/CMOS.h>
-#include <Kernel/Devices/Console.h>
 #include <Kernel/Devices/KeyboardDevice.h>
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Devices/PIT.h>
@@ -20,7 +20,6 @@
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/Process/Spinlock.h>
-#include <Kernel/TTY/VirtualConsole.h>
 #include <Kernel/panic.h>
 #include <Universal/Bitmap.h>
 #include <Universal/Types.h>
@@ -46,7 +45,7 @@
 
 [[noreturn]] static void kernel_main()
 {
-    GraphicsManager::the().init();
+    GraphicsManager::the().init(true);
 
     KeyboardDevice::the();
 
@@ -65,7 +64,7 @@
 
 extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multiboot_information_t* multiboot, const u32 magicNumber)
 {
-    Console::the().enable();
+    DebugConsole::the().enable();
 
     if (magicNumber != MULTIBOOT_BOOTLOADER_MAGIC) {
         panic("Multiboot header is malformed");
@@ -77,7 +76,7 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     kmalloc_init();
 
-    Console::the().enable_boot_console();
+    DebugConsole::the().enable_boot_console();
 
     GDT::init();
 

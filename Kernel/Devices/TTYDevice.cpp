@@ -28,7 +28,8 @@ TTYDevice::TTYDevice(u32 major, u32 minor)
 
 ssize_t TTYDevice::read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count)
 {
-    return 0;
+    tty_write(buffer, count);
+    return count;
 }
 
 ssize_t TTYDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)

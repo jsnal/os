@@ -1,4 +1,10 @@
-#include <Kernel/Devices/Console.h>
+/*
+ * Copyright (c) 2024, Jason Long <jasonlongball@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include <Kernel/DebugConsole.h>
 #include <Kernel/IO.h>
 #include <stdarg.h>
 
@@ -8,17 +14,17 @@
 // Print out to Bochs console through 0xE9
 #define CONSOLE_ENABLE_BOCHS
 
-Console& Console::the()
+DebugConsole& DebugConsole::the()
 {
-    static Console s_the;
+    static DebugConsole s_the;
     return s_the;
 }
 
-Console::Console()
+DebugConsole::DebugConsole()
 {
 }
 
-bool Console::enable()
+bool DebugConsole::enable()
 {
     IO::outb(COM1 + 1, 0x00);
     IO::outb(COM1 + 3, 0x80);
@@ -39,7 +45,7 @@ bool Console::enable()
     return true;
 }
 
-void Console::put_char(char c)
+void DebugConsole::put_char(char c)
 {
     if (!m_is_enabled) {
         return;
@@ -55,7 +61,7 @@ void Console::put_char(char c)
     IO::outb(COM1, c);
 }
 
-void Console::write(const char* string, size_t length)
+void DebugConsole::write(const char* string, size_t length)
 {
     if (!m_boot_console.is_null()) {
         m_boot_console->put_string(string);

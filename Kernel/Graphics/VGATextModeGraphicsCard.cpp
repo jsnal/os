@@ -58,7 +58,7 @@ void VGATextModeGraphicsCard::put_char(u8 character)
 
     set_pixel(m_cursor_row, m_cursor_column, character);
     m_cursor_column++;
-    if (m_cursor_column >= m_width) {
+    if (m_cursor_column > m_width) {
         scroll(1);
     }
     set_cursor(m_cursor_row, m_cursor_column);

@@ -6,9 +6,10 @@
 
 #pragma once
 
+#include <Universal/ShareCounted.h>
 #include <Universal/Types.h>
 
-class GraphicsCard {
+class GraphicsCard : public ShareCounted<GraphicsCard> {
 public:
     GraphicsCard() {};
 

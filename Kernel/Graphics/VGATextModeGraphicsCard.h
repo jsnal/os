@@ -11,9 +11,7 @@
 #include <Universal/SharedPtr.h>
 #include <Universal/Types.h>
 
-class VGATextModeGraphicsCard
-    : public GraphicsCard
-    , public ShareCounted<VGATextModeGraphicsCard> {
+class VGATextModeGraphicsCard : public GraphicsCard {
 public:
     enum Color {
         Black = 0,

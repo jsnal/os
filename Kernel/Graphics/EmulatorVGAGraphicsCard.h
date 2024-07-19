@@ -13,9 +13,7 @@
 #include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
 
-class EmulatorVGAGraphicsCard
-    : public GraphicsCard
-    , public ShareCounted<EmulatorVGAGraphicsCard> {
+class EmulatorVGAGraphicsCard : public GraphicsCard {
 public:
     static SharedPtr<EmulatorVGAGraphicsCard> create(Bus::PCI::Address const&, Bus::PCI::ID const&);
 

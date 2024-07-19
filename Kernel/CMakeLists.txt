@@ -8,7 +8,7 @@ SET(KERNEL_SOURCES
     CPU/PIC.cpp
     CPU/lgdt.S
     CPU/lidt.S
-    Devices/Console.cpp
+    DebugConsole.cpp
     Devices/CMOS.cpp
     Devices/Device.cpp
     Devices/KeyboardDevice.cpp
@@ -17,6 +17,7 @@ SET(KERNEL_SOURCES
     Devices/PartitionDevice.cpp
     Devices/RandomDevice.cpp
     Devices/TTYDevice.cpp
+    Devices/VirtualConsole.cpp
     Filesystem/Ext2Filesystem.cpp
     Filesystem/Ext2Inode.cpp
     Filesystem/FileDescriptor.cpp
@@ -41,7 +42,6 @@ SET(KERNEL_SOURCES
     Process/context.S
     Runtime.cpp
     Stdlib.cpp
-    TTY/VirtualConsole.cpp
     kmalloc.cpp
     kprintf.cpp
 )

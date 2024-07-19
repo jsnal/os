@@ -7,14 +7,15 @@
 #pragma once
 
 #include <Kernel/Graphics/GraphicsManager.h>
+#include <Kernel/Graphics/VGATextModeGraphicsCard.h>
 #include <stdbool.h>
 #include <sys/types.h>
 
-class Console final {
+class DebugConsole final {
 public:
-    static Console& the();
+    static DebugConsole& the();
 
-    Console();
+    DebugConsole();
 
     bool enable();
 
@@ -25,7 +26,7 @@ public:
     void disable_boot_console() { m_boot_console.clear(); }
     void enable_boot_console()
     {
-        m_boot_console = GraphicsManager::init_boot_console();
+        m_boot_console = GraphicsManager::the().graphics_card();
         m_boot_console->set_color(VGATextModeGraphicsCard::LightCyan, VGATextModeGraphicsCard::Black);
     }
 

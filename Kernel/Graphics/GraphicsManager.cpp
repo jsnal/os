@@ -15,9 +15,9 @@ GraphicsManager& GraphicsManager::the()
     return s_the;
 }
 
-SharedPtr<VGATextModeGraphicsCard> GraphicsManager::init_boot_console()
+GraphicsManager::GraphicsManager()
 {
-    return VGATextModeGraphicsCard::create();
+    m_graphics_card = VGATextModeGraphicsCard::create();
 }
 
 Result GraphicsManager::init_graphics_device(Bus::PCI::Address const& address, Bus::PCI::ID const& id)
@@ -25,7 +25,7 @@ Result GraphicsManager::init_graphics_device(Bus::PCI::Address const& address, B
     SharedPtr<EmulatorVGAGraphicsCard> graphics_card;
     switch (id.vendor) {
         case Bus::PCI::VendorId::LegacyEmulator:
-            m_graphics_cards.add_last(EmulatorVGAGraphicsCard::create(address, id));
+            m_graphics_card = EmulatorVGAGraphicsCard::create(address, id);
             break;
         default:
             dbgprintf("GraphicsManager", "Unable to find graphics card (%x:%x)\n", id.vendor, id.device);
@@ -34,18 +34,21 @@ Result GraphicsManager::init_graphics_device(Bus::PCI::Address const& address, B
     return Result::OK;
 }
 
-Result GraphicsManager::init()
+Result GraphicsManager::init(bool text_mode)
 {
     dbgprintf("GraphicsManager", "Initializing the GraphicsManager\n");
-    Bus::PCI::Address ide_controller_address = {};
-    Bus::PCI::ID ide_controller_id = {};
 
-    // Bus::PCI::enumerate_devices([&](Bus::PCI::Address address, Bus::PCI::ID id, u16 type) {
-    //     if (type == Bus::PCI::Type::Display) {
-    //         dbgprintf("GraphicsManager", "Display device found: %x:%x type: %x\n", id.device, id.vendor, type);
-    //         init_graphics_device(address, id);
-    //     }
-    // });
+    if (!text_mode) {
+        Bus::PCI::Address ide_controller_address = {};
+        Bus::PCI::ID ide_controller_id = {};
+
+        Bus::PCI::enumerate_devices([&](Bus::PCI::Address address, Bus::PCI::ID id, u16 type) {
+            if (type == Bus::PCI::Type::Display) {
+                dbgprintf("GraphicsManager", "Display device found: %x:%x type: %x\n", id.device, id.vendor, type);
+                init_graphics_device(address, id);
+            }
+        });
+    }
 
     return Result::OK;
 }

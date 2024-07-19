@@ -7,22 +7,25 @@
 #pragma once
 
 #include <Kernel/Bus/PCI.h>
-#include <Kernel/Graphics/EmulatorVGAGraphicsCard.h>
-#include <Kernel/Graphics/VGATextModeGraphicsCard.h>
+#include <Kernel/Graphics/GraphicsCard.h>
 #include <Universal/Result.h>
+#include <Universal/SharedPtr.h>
 
 class GraphicsManager final {
 public:
-    GraphicsManager() = default;
+    GraphicsManager();
 
     static GraphicsManager& the();
 
-    static SharedPtr<VGATextModeGraphicsCard> init_boot_console();
-
     Result init_graphics_device(Bus::PCI::Address const&, Bus::PCI::ID const&);
 
-    Result init();
+    Result init(bool text_mode);
+
+    SharedPtr<GraphicsCard> graphics_card() const { return m_graphics_card; }
 
 private:
-    ArrayList<SharedPtr<EmulatorVGAGraphicsCard>> m_graphics_cards;
+    SharedPtr<GraphicsCard> m_graphics_card;
+
+    // TODO: We may be able to have multiple graphics cards and drivers
+    // ArrayList<SharedPtr<EmulatorVGAGraphicsCard>> m_graphics_cards;
 };
