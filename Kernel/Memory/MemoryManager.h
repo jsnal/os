@@ -30,7 +30,9 @@ public:
     const PageDirectory& kernel_page_directory() const { return *m_kernel_page_directory; }
 
     PhysicalAddress allocate_physical_kernel_page();
+    Result free_physical_kernel_page(PhysicalAddress);
     PhysicalAddress allocate_physical_user_page();
+    Result free_physical_user_page(PhysicalAddress);
 
     UniquePtr<VirtualRegion> allocate_kernel_region(size_t size);
     UniquePtr<VirtualRegion> allocate_kernel_region_at(PhysicalAddress physical_address, size_t size);
@@ -42,6 +44,7 @@ public:
     void copy_kernel_page_directory(PageDirectory&);
 
     PageTableEntry& get_page_table_entry(PageDirectory&, VirtualAddress, bool is_kernel);
+    Result remove_page_table_entry(PageDirectory& page_directory, VirtualAddress virtual_address);
 
     void add_vm_object(VMObject&);
     void remove_vm_object(VMObject&);

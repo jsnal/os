@@ -27,7 +27,8 @@ public:
     Process& current_process() { return *m_current_process; }
     const Process& current_process() const { return *m_current_process; }
 
-    void add_process(Process&);
+    void add_process(Process&) const;
+    void remove_process(Process&) const;
 
     pid_t get_next_pid() { return m_current_pid++; }
 

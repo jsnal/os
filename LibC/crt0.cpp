@@ -17,6 +17,7 @@ int _start(int argc, char* argv[], char* env[])
     int ret = main(argc, argv, env);
     exit(ret);
 
+    // Should never reach this line
     return 0xdead;
 }
 }

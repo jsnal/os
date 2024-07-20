@@ -124,6 +124,16 @@ public:
         return m_data[index];
     }
 
+    ResultReturn<size_t> find(Function<bool(T&)> predicate)
+    {
+        for (int i = 0; i < m_size; i++) {
+            if (predicate(m_data[i])) {
+                return i;
+            }
+        }
+        return Result::Failure;
+    }
+
     // TODO: Replace this with quick-sort
     void sort(Function<bool(T&, T&)> compare)
     {

@@ -37,7 +37,7 @@ int syscall(int call)
 
 int syscall(int call, int arg1)
 {
-    return __invoke_syscall(call, 0, 0, 0);
+    return __invoke_syscall(call, arg1, 0, 0);
 }
 
 int syscall(int call, int arg1, int arg2)

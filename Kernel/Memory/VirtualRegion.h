@@ -22,7 +22,6 @@ public:
     static UniquePtr<VirtualRegion> create_kernel_region_at(PhysicalAddress, const AddressRange& address_range, u8 access);
 
     static UniquePtr<VirtualRegion> create_user_region(const AddressRange& address_range, u8 access);
-    static void free_user_region(const VirtualRegion&);
 
     enum Access {
         Read = 1,
@@ -33,6 +32,8 @@ public:
     const AddressRange& address_range() const { return m_address_range; }
 
     void map(PageDirectory&);
+    Result unmap(PageDirectory&);
+    Result free();
 
     inline size_t page_count() { return ceiling_divide(m_address_range.length(), Types::PageSize); }
 

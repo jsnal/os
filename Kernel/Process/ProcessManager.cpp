@@ -56,9 +56,23 @@ void ProcessManager::start()
     start_kernel_process(m_kernel_idle_process->previous_stack_pointer());
 }
 
-void ProcessManager::add_process(Process& process)
+void ProcessManager::add_process(Process& process) const
 {
     m_processes->add_first(&process);
+}
+
+void ProcessManager::remove_process(Process& process) const
+{
+    bool process_exists = false;
+    for (Process* p = m_processes->head(); p != nullptr; p = p->next()) {
+        if (p->pid() == process.pid()) {
+            process_exists = true;
+        }
+    }
+
+    if (process_exists) {
+        m_processes->remove(&process);
+    }
 }
 
 ResultReturn<Process*> ProcessManager::find_by_pid(pid_t pid) const

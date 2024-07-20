@@ -9,7 +9,7 @@ int main(int argc, char** argv)
 
     int id = get_uid();
 
-    while (true)
-        ;
-    return 0;
+    // while (true)
+    //     ;
+    return id;
 }

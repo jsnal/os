@@ -85,8 +85,16 @@ ResultReturn<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_
     return m_regions.last();
 }
 
-Result Process::deallocate_region(size_t size, u8 access)
+Result Process::deallocate_region(size_t index)
 {
+    if (index < 0 || index > m_regions.size()) {
+        return Result::Failure;
+    }
+
+    dbgprintf_if(DEBUG_PROCESS, "Process", "Deallocating virtual region 0x%x - 0x%x for Process '%s'\n", m_regions[index]->lower(), m_regions[index]->upper(), name().str());
+
+    m_regions[index]->unmap(page_directory());
+    m_regions[index]->free();
     return Result::OK;
 }
 
@@ -230,11 +238,21 @@ void Process::set_waiting(WaitingStatus& waiting_status)
 
 uid_t Process::sys_getuid()
 {
+    dbgprintf("Process", "%s (%u) called getuid() %d\n", m_name.str(), m_pid, m_user.uid());
+
     return m_user.uid();
 }
 
 void Process::sys_exit(int status)
 {
+    dbgprintf("Process", "%s (%u) is trying to exit with status %d\n", m_name.str(), m_pid, status);
+
+    for (int i = 0; i < m_regions.size(); i++) {
+        deallocate_region(i);
+    }
+
+    PM.remove_process(*this);
+    PM.yield();
 }
 
 void Process::dump_stack(bool kernel) const

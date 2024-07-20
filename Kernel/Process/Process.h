@@ -45,7 +45,7 @@ public:
 
     ResultReturn<VirtualRegion*> allocate_region(size_t size, u8 access);
     ResultReturn<VirtualRegion*> allocate_region_at(VirtualAddress, size_t size, u8 access);
-    Result deallocate_region(size_t size, u8 access);
+    Result deallocate_region(size_t index);
 
     void context_switch(Process*);
 

@@ -28,6 +28,8 @@ public:
     const VirtualAddress upper() const { return VirtualAddress(m_base + m_length); }
     const VirtualAddress lower() const { return m_base; }
 
+    bool operator==(const AddressRange other) const { return this->m_length == other.m_length && this->m_base == other.m_base; }
+
 private:
     VirtualAddress m_base;
     size_t m_length;

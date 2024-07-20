@@ -166,10 +166,24 @@ PhysicalAddress MemoryManager::allocate_physical_kernel_page()
     return page_result.value();
 }
 
+Result MemoryManager::free_physical_kernel_page(PhysicalAddress address)
+{
+    bool found_region = false;
+    for (size_t i = 0; i < m_kernel_physical_regions.size(); i++) {
+        auto region = m_kernel_physical_regions[i];
+        if (region->includes(address)) {
+            ENSURE(region->free_page(address));
+            found_region = true;
+            break;
+        }
+    }
+    return found_region ? Result::OK : Result::Failure;
+}
+
 PhysicalAddress MemoryManager::allocate_physical_user_page()
 {
     ResultReturn<PhysicalAddress> page_result;
-    for (int i = 0; i < m_kernel_physical_regions.size(); i++) {
+    for (int i = 0; i < m_user_physical_regions.size(); i++) {
         page_result = m_user_physical_regions[i]->allocate_page();
         if (page_result.is_ok()) {
             break;
@@ -179,6 +193,20 @@ PhysicalAddress MemoryManager::allocate_physical_user_page()
     ASSERT(page_result.is_ok());
     // memset(page_result.value().ptr(), 0, Types::PageSize);
     return page_result.value();
+}
+
+Result MemoryManager::free_physical_user_page(PhysicalAddress address)
+{
+    bool found_region = false;
+    for (size_t i = 0; i < m_user_physical_regions.size(); i++) {
+        auto region = m_user_physical_regions[i];
+        if (region->includes(address)) {
+            ENSURE(region->free_page(address));
+            found_region = true;
+            break;
+        }
+    }
+    return found_region ? Result::OK : Result::Failure;
 }
 
 UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_region(size_t size)
@@ -262,6 +290,22 @@ PageTableEntry& MemoryManager::get_page_table_entry(PageDirectory& page_director
     }
 
     return page_directory_entry.page_table_base()[page_table_index];
+}
+
+Result MemoryManager::remove_page_table_entry(PageDirectory& page_directory, VirtualAddress virtual_address)
+{
+    u16 page_directory_index = PAGE_DIRECTORY_INDEX(virtual_address);
+    u16 page_table_index = PAGE_TABLE_INDEX(virtual_address);
+    PageDirectoryEntry& page_directory_entry = page_directory.entries()[page_directory_index];
+
+    if (!page_directory_entry.is_present()) {
+        return Result::OK;
+    }
+
+    PageTableEntry& page_table_entry = page_directory_entry.page_table_base()[page_table_index];
+    page_table_entry.set_present(false);
+    page_table_entry.set_read_write(false);
+    // page_table_entry.physical_page_base()
 }
 
 void MemoryManager::add_vm_object(VMObject& vm_object)

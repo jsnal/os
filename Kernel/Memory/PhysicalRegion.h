@@ -22,6 +22,11 @@ public:
 
     void expand(PhysicalAddress lower, PhysicalAddress upper);
 
+    [[nodiscard]] bool includes(PhysicalAddress address) const
+    {
+        return address > m_lower && address < m_upper;
+    }
+
     u32 commit();
 
     ResultReturn<PhysicalAddress> allocate_page();
