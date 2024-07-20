@@ -7,11 +7,10 @@
 #pragma once
 
 #include <Kernel/Graphics/GraphicsCard.h>
-#include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/Types.h>
 
-class VGATextModeGraphicsCard : public GraphicsCard {
+class VGATextModeGraphicsCard final : public GraphicsCard {
 public:
     enum Color {
         Black = 0,
@@ -36,7 +35,9 @@ public:
 
     VGATextModeGraphicsCard();
 
-    ~VGATextModeGraphicsCard() {};
+    ~VGATextModeGraphicsCard() override = default;
+
+    [[nodiscard]] bool is_text_mode() const override { return true; }
 
     void scroll(size_t pixels) override;
     void set_color(Color foreground_color, Color background_color);

@@ -9,11 +9,14 @@
 #include <Universal/ShareCounted.h>
 #include <Universal/Types.h>
 
-class GraphicsCard : public ShareCounted<GraphicsCard> {
+class GraphicsCard : public ShareCounted<GraphicsCard>
+{
 public:
-    GraphicsCard() {};
+    GraphicsCard() = default;
 
-    ~GraphicsCard() {};
+    virtual ~GraphicsCard() = default;
+
+    [[nodiscard]] virtual bool is_text_mode() const { return false; }
 
     virtual void scroll(size_t pixels) = 0;
     virtual void set_pixel(size_t x, size_t y, u32 value) = 0;

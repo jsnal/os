@@ -11,41 +11,41 @@
 #include <Kernel/DebugConsole.h>
 #include <Kernel/Devices/CMOS.h>
 #include <Kernel/Devices/KeyboardDevice.h>
-#include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Devices/PIT.h>
-#include <Kernel/Filesystem/Ext2Filesystem.h>
+#include <Kernel/Devices/VirtualConsole.h>
 #include <Kernel/Filesystem/VFS.h>
-#include <Kernel/Graphics/GraphicsManager.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Process/ProcessManager.h>
-#include <Kernel/Process/Spinlock.h>
 #include <Kernel/panic.h>
-#include <Universal/Bitmap.h>
 #include <Universal/Types.h>
 
 #if !defined(__os__)
 #    error "Compiling with incorrect toolchain."
 #endif
 
+VirtualConsole* tty0;
+
 [[noreturn]] void simple_process_runnable1()
 {
     // dbgprintf("Kernel", "Running a simple process 1!\n");
     asm volatile("jmp $");
-    while (true) {
-    }
+    while (true) { }
 }
 
 [[noreturn]] void simple_process_runnable2()
 {
     dbgprintf("Kernel", "Running a simple process 2!\n");
-    while (true) {
-    }
+    while (true) { }
 }
 
 [[noreturn]] static void kernel_main()
 {
-    GraphicsManager::the().init(true);
+    // TODO: Only text-mode is supported currently
+    // GraphicsManager::the().init();
+
+    tty0 = new VirtualConsole(0);
+    tty0->tty_write((const u8*)"Test", 4);
 
     KeyboardDevice::the();
 
@@ -86,7 +86,7 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     PIT::the();
 
-    MemoryManager::the().init(boot_page_directory, multiboot);
+    MemoryManager::init(boot_page_directory, multiboot);
 
     Process::create_kernel_process("kernel_main", kernel_main);
     // Process::create_kernel_process("simple1", simple_process_runnable1);

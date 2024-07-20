@@ -26,7 +26,7 @@ public:
     void disable_boot_console() { m_boot_console.clear(); }
     void enable_boot_console()
     {
-        m_boot_console = GraphicsManager::the().graphics_card();
+        m_boot_console = GraphicsManager::the().text_mode_graphics();
         m_boot_console->set_color(VGATextModeGraphicsCard::LightCyan, VGATextModeGraphicsCard::Black);
     }
 

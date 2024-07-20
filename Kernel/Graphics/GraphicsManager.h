@@ -17,13 +17,17 @@ public:
 
     static GraphicsManager& the();
 
-    Result init_graphics_device(Bus::PCI::Address const&, Bus::PCI::ID const&);
+    Result init();
 
-    Result init(bool text_mode);
+    [[nodiscard]] SharedPtr<GraphicsCard> text_mode_graphics() const { return m_text_mode_graphics; }
 
-    SharedPtr<GraphicsCard> graphics_card() const { return m_graphics_card; }
+    [[nodiscard]] SharedPtr<GraphicsCard> graphics_card() const { return m_graphics_card; }
 
 private:
+    Result init_graphics_device(Bus::PCI::Address const&, Bus::PCI::ID const&);
+
+    SharedPtr<GraphicsCard> m_text_mode_graphics;
+
     SharedPtr<GraphicsCard> m_graphics_card;
 
     // TODO: We may be able to have multiple graphics cards and drivers

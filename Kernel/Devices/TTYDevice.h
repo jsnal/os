@@ -13,14 +13,14 @@ class TTYDevice : public CharacterDevice {
 public:
     TTYDevice(u32 major, u32 minor);
 
-    virtual ssize_t read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count) override;
-    virtual ssize_t write(FileDescriptor&, const u8* buffer, ssize_t count) override;
+    ssize_t read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count) override;
+    ssize_t write(FileDescriptor&, const u8* buffer, ssize_t count) override;
 
     virtual size_t tty_write(const u8* buffer, size_t count) = 0;
 
-    bool is_signal() { return m_termios.c_lflag & ISIG; }
-    bool is_echo() { return m_termios.c_lflag & ECHO; }
-    bool is_canonical() { return m_termios.c_lflag & ICANON; }
+    [[nodiscard]] bool is_signal() const { return m_termios.c_lflag & ISIG; }
+    [[nodiscard]] bool is_echo() const { return m_termios.c_lflag & ECHO; }
+    [[nodiscard]] bool is_canonical() const { return m_termios.c_lflag & ICANON; }
 
 private:
     termios m_termios;
