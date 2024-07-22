@@ -36,7 +36,7 @@ public:
 
     UniquePtr<VirtualRegion> allocate_kernel_region(size_t size);
     UniquePtr<VirtualRegion> allocate_kernel_region_at(PhysicalAddress physical_address, size_t size);
-    void free_kernel_region(PhysicalAddress, size_t size);
+    void free_kernel_region(VirtualRegion&);
 
     void protected_map(PageDirectory&, VirtualAddress, size_t);
     void identity_map(PageDirectory&, VirtualAddress, size_t);

@@ -19,6 +19,10 @@ int handle(int call, int arg1, int arg2, int arg3)
     switch (call) {
         case SYS_EXIT:
             p.sys_exit(arg1);
+            delete &p;
+            kmalloc_dump_statistics();
+
+            PM.yield();
             return 0;
         case SYS_GETUID:
             return p.sys_getuid();

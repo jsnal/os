@@ -51,7 +51,9 @@ VirtualConsole* tty0;
 
     VFS::the().init();
 
+    kmalloc_dump_statistics();
     Process::create_user_process("/bin/id", 0, 0);
+    kmalloc_dump_statistics();
 
     Time boot_time = CMOS::boot_time();
 

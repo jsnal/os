@@ -231,9 +231,12 @@ UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_region_at(PhysicalAddres
     return virtual_region;
 }
 
-void MemoryManager::free_kernel_region(PhysicalAddress physical_address, size_t size)
+void MemoryManager::free_kernel_region(VirtualRegion& region)
 {
-    ASSERT(false);
+    dbgprintf("MemoryManager", "Freeing kernel region : 0x%x - 0x%x\n", region.lower(), region.upper());
+    m_kernel_page_directory->address_allocator().free(region.address_range());
+    // ASSERT(region.unmap(*m_kernel_page_directory).is_ok());
+    //  ASSERT(region.free().is_ok());
 }
 
 void MemoryManager::protected_map(PageDirectory& page_directory, VirtualAddress virtual_address, size_t length)
@@ -306,6 +309,8 @@ Result MemoryManager::remove_page_table_entry(PageDirectory& page_directory, Vir
     page_table_entry.set_present(false);
     page_table_entry.set_read_write(false);
     // page_table_entry.physical_page_base()
+
+    return Result::OK;
 }
 
 void MemoryManager::add_vm_object(VMObject& vm_object)

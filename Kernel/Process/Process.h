@@ -40,6 +40,8 @@ public:
         Dead,
     };
 
+    ~Process();
+
     static ResultReturn<Process*> create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list = true);
     static Result create_user_process(const String& path, uid_t, gid_t);
 

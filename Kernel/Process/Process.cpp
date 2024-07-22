@@ -22,7 +22,7 @@ Process::Process(const String& name, pid_t pid, uid_t uid, gid_t gid, bool is_ke
     if (is_kernel) {
         m_page_directory = MM.kernel_page_directory();
     } else {
-        m_page_directory = PageDirectory::create_user_page_directory(*this);
+        m_page_directory = PageDirectory::create_user_page_directory();
         m_page_directory->set_base(MM.allocate_physical_kernel_page());
 
         // Copy Kernel identity map and higher-half
@@ -30,6 +30,17 @@ Process::Process(const String& name, pid_t pid, uid_t uid, gid_t gid, bool is_ke
         for (u32 page = 768; page < 1024; page++) {
             m_page_directory->entries()[page].copy(MM.kernel_page_directory().entries()[page]);
         }
+    }
+}
+
+Process::~Process()
+{
+    dbgprintf("Process", "Freeing %s\n", m_name.str());
+
+    // TODO: Manually deleting this right now because storing UniquePtr in
+    // ArrayList does not currently work
+    for (size_t i = 0; i < m_regions.size(); i++) {
+        delete m_regions[i];
     }
 }
 
@@ -251,8 +262,8 @@ void Process::sys_exit(int status)
         deallocate_region(i);
     }
 
+    MM.free_kernel_region(*m_kernel_stack);
     PM.remove_process(*this);
-    PM.yield();
 }
 
 void Process::dump_stack(bool kernel) const

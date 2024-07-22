@@ -117,15 +117,9 @@ public:
         return adopt(*new PageDirectory(address));
     }
 
-    static SharedPtr<PageDirectory> create_user_page_directory(Process& process)
+    static SharedPtr<PageDirectory> create_user_page_directory()
     {
-        return adopt(*new PageDirectory(process));
-    }
-
-    PageDirectory()
-        : m_directory_page_base()
-        , m_address_allocator(0, 0)
-    {
+        return adopt(*new PageDirectory());
     }
 
     void set_base(PhysicalAddress base) { m_directory_page_base = base; }
@@ -136,9 +130,8 @@ public:
     AddressAllocator& address_allocator() { return m_address_allocator; }
 
 private:
-    PageDirectory(Process& process)
-        : m_process(&process)
-        , m_address_allocator(USERSPACE_VIRTUAL_BASE, KERNEL_VIRTUAL_BASE - USERSPACE_VIRTUAL_BASE)
+    PageDirectory()
+        : m_address_allocator(USERSPACE_VIRTUAL_BASE, KERNEL_VIRTUAL_BASE - USERSPACE_VIRTUAL_BASE)
     {
     }
 
@@ -147,8 +140,6 @@ private:
         , m_address_allocator(KERNEL_VIRTUAL_BASE + KERNEL_IMAGE_LENGTH, 0x3F000000)
     {
     }
-
-    Process* m_process { nullptr };
 
     PhysicalAddress m_directory_page_base;
 
