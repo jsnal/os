@@ -235,8 +235,8 @@ void MemoryManager::free_kernel_region(VirtualRegion& region)
 {
     dbgprintf("MemoryManager", "Freeing kernel region : 0x%x - 0x%x\n", region.lower(), region.upper());
     m_kernel_page_directory->address_allocator().free(region.address_range());
-    // ASSERT(region.unmap(*m_kernel_page_directory).is_ok());
-    //  ASSERT(region.free().is_ok());
+    ASSERT(region.unmap(*m_kernel_page_directory).is_ok());
+    ASSERT(region.free().is_ok());
 }
 
 void MemoryManager::protected_map(PageDirectory& page_directory, VirtualAddress virtual_address, size_t length)

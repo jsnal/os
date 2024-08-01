@@ -70,6 +70,8 @@ public:
     void set_ready();
     void set_waiting(WaitingStatus&);
 
+    void reap();
+
     void sys_exit(int status);
     uid_t sys_getuid();
 

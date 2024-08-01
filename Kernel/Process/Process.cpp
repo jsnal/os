@@ -35,8 +35,6 @@ Process::Process(const String& name, pid_t pid, uid_t uid, gid_t gid, bool is_ke
 
 Process::~Process()
 {
-    dbgprintf("Process", "Freeing %s\n", m_name.str());
-
     // TODO: Manually deleting this right now because storing UniquePtr in
     // ArrayList does not currently work
     for (size_t i = 0; i < m_regions.size(); i++) {
@@ -222,7 +220,6 @@ Result Process::load_elf()
     }
 
     m_entry_point = (void (*)())elf_result->header().e_entry;
-
     return Result::OK;
 }
 
@@ -247,23 +244,28 @@ void Process::set_waiting(WaitingStatus& waiting_status)
     PM.yield();
 }
 
+void Process::reap()
+{
+    MM.free_kernel_region(*m_kernel_stack);
+    PM.remove_process(*this);
+}
+
 uid_t Process::sys_getuid()
 {
-    dbgprintf("Process", "%s (%u) called getuid() %d\n", m_name.str(), m_pid, m_user.uid());
+    dbgprintf("Process", "'%s' (%u) called getuid() %d\n", m_name.str(), m_pid, m_user.uid());
 
     return m_user.uid();
 }
 
 void Process::sys_exit(int status)
 {
-    dbgprintf("Process", "%s (%u) is trying to exit with status %d\n", m_name.str(), m_pid, status);
+    dbgprintf("Process", "'%s' (%u) exited with status %d\n", m_name.str(), m_pid, status);
 
     for (int i = 0; i < m_regions.size(); i++) {
         deallocate_region(i);
     }
 
-    MM.free_kernel_region(*m_kernel_stack);
-    PM.remove_process(*this);
+    m_state = Process::Dead;
 }
 
 void Process::dump_stack(bool kernel) const

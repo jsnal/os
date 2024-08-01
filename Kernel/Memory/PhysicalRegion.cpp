@@ -55,6 +55,7 @@ ResultReturn<PhysicalAddress> PhysicalRegion::allocate_page()
             m_bitmap.set(i, true);
             m_used_pages++;
             m_last_allocated_page = i;
+            dbgprintf_if(DEBUG_PHYSICAL_REGION, "PhysicalRegion", "Allocated physical page\n");
             return m_lower.offset(Types::PageSize * i);
         }
 
@@ -83,6 +84,6 @@ Result PhysicalRegion::free_page(PhysicalAddress address)
     m_bitmap.set(address_index, false);
     m_used_pages--;
 
-    dbgprintf("PhysicalRegion", "Freed physical page at 0x%x\n", address);
+    dbgprintf_if(DEBUG_PHYSICAL_REGION, "PhysicalRegion", "Freed physical page at 0x%x\n", address);
     return Result::OK;
 }

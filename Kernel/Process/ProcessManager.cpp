@@ -102,6 +102,13 @@ void ProcessManager::schedule()
             p = p->next();
         }
 
+        if (p->state() == Process::Dead && p->pid() != m_current_process->pid()) {
+            dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Reaping dead process '%s'\n", p->name().str());
+            p->reap();
+            delete p;
+            continue;
+        }
+
         dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Process '%s' state %d\n", p->name().str(), p->state());
         if (p->state() == Process::Ready || p->state() == Process::Created) {
             next_process = p;
@@ -119,7 +126,10 @@ void ProcessManager::schedule()
         return;
     }
 
-    previous_process->set_state(Process::Ready);
+    if (previous_process->state() == Process::Created || previous_process->state() == Process::Running) {
+        previous_process->set_state(Process::Ready);
+    }
+
     next_process->set_state(Process::Running);
     m_current_process = next_process;
 

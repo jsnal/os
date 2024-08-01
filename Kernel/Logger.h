@@ -8,13 +8,14 @@
 
 #define DEBUG_KEYBOARD 0
 #define DEBUG_PATA_DISK 0
-#define DEBUG_PROCESS 1
+#define DEBUG_PROCESS 0
 #define DEBUG_PROCESS_MANAGER 0
 #define DEBUG_MEMORY_MANAGER 0
 #define DEBUG_ADDRESS_ALLOCATOR 0
 #define DEBUG_KMALLOC 0
 #define DEBUG_EXT2_FILESYSTEM 0
 #define DEBUG_INODE 0
+#define DEBUG_PHYSICAL_REGION 0
 
 #define dbgprintf(tag, format, ...)                                                                                                      \
     do {                                                                                                                                 \

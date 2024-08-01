@@ -27,6 +27,8 @@ public:
     {
     }
 
+    virtual ~Inode() = default;
+
     bool is_directory() const { return (m_mode & 0xF000) == MODE_DIRECTORY; };
     bool is_character_device() const { return (m_mode & 0xF000) == MODE_CHARACTER_DEVICE; };
     bool is_block_device() const { return (m_mode & 0xF000) == MODE_BLOCK_DEVICE; };
