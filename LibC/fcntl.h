@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef _FCNTL_H_
-#define _FCNTL_H_
+#pragma once
 
 #define O_RDONLY 0x000000
 #define O_WRONLY 0x000001
@@ -22,5 +21,3 @@
 #define O_DIRECTORY 0x200000
 #define O_EXEC 0x400000
 #define O_SEARCH O_EXEC
-
-#endif

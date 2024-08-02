@@ -4,13 +4,18 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Kernel/API/syscalls.h>
 #include <sys/syscall.h>
+#include <sys/syscalls.h>
 #include <unistd.h>
 
 void _exit(int status)
 {
     syscall(SYS_EXIT, status);
+}
+
+ssize_t write(int fd, const void* buf, size_t count)
+{
+    return syscall(SYS_WRITE, fd, (int)buf, count);
 }
 
 uid_t get_uid(void)

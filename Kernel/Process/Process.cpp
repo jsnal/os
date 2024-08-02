@@ -1,4 +1,10 @@
-#include <Kernel/API/syscalls.h>
+/*
+ * Copyright (c) 2024, Jason Long <jasonlongball@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include <Kernel/API/errno.h>
 #include <Kernel/Assert.h>
 #include <Kernel/CPU/CPU.h>
 #include <Kernel/Filesystem/VFS.h>
@@ -250,11 +256,18 @@ void Process::reap()
     PM.remove_process(*this);
 }
 
-uid_t Process::sys_getuid()
+ssize_t Process::sys_write(int fd, const void* buf, size_t count)
 {
-    dbgprintf("Process", "'%s' (%u) called getuid() %d\n", m_name.str(), m_pid, m_user.uid());
+    if (count < 0) {
+        return -EINVAL;
+    }
 
-    return m_user.uid();
+    if (count == 0) {
+        return 0;
+    }
+
+    dbgprintf("Process", "'%s' is writing '%s' to %d\n", m_name.str(), buf, fd);
+    return count;
 }
 
 void Process::sys_exit(int status)
@@ -266,6 +279,13 @@ void Process::sys_exit(int status)
     }
 
     m_state = Process::Dead;
+}
+
+uid_t Process::sys_getuid()
+{
+    dbgprintf("Process", "'%s' (%u) called getuid() %d\n", m_name.str(), m_pid, m_user.uid());
+
+    return m_user.uid();
 }
 
 void Process::dump_stack(bool kernel) const

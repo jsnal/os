@@ -73,6 +73,7 @@ public:
     void reap();
 
     void sys_exit(int status);
+    ssize_t sys_write(int fd, const void* buf, size_t count);
     uid_t sys_getuid();
 
 private:

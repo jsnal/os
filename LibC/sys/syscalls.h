@@ -4,7 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#pragma once
+#ifndef _SYSCALLS_H_
+#define _SYSCALLS_H_
 
 #define SYS_EXIT 1
-#define SYS_GETUID 2
+#define SYS_WRITE 2
+#define SYS_GETUID 3
+
+#endif

@@ -9,6 +9,8 @@ int main(int argc, char** argv)
 
     int id = get_uid();
 
+    write(STDOUT_FILENO, "Hello World", 12);
+
     // while (true)
     //     ;
     return id;
