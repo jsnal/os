@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Kernel/CPU/TSS.h>
+#include <Kernel/Devices/TTYDevice.h>
 #include <Kernel/Memory/Types.h>
 #include <Kernel/Memory/VirtualRegion.h>
 #include <Kernel/Process/WaitingStatus.h>
@@ -43,7 +44,7 @@ public:
     ~Process();
 
     static ResultReturn<Process*> create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list = true);
-    static Result create_user_process(const String& path, uid_t, gid_t);
+    static Result create_user_process(const String& path, uid_t, gid_t, TTYDevice*);
 
     ResultReturn<VirtualRegion*> allocate_region(size_t size, u8 access);
     ResultReturn<VirtualRegion*> allocate_region_at(VirtualAddress, size_t size, u8 access);
@@ -77,7 +78,7 @@ public:
     uid_t sys_getuid();
 
 private:
-    Process(const String& name, pid_t, uid_t, gid_t, bool is_kernel);
+    Process(const String& name, pid_t, uid_t, gid_t, bool is_kernel, TTYDevice* = nullptr);
 
     static void new_process_runnable();
 
@@ -93,10 +94,13 @@ private:
 
     bool m_is_kernel { false };
 
+    SharedPtr<TTYDevice> m_tty;
+
     SharedPtr<PageDirectory> m_page_directory;
 
     // TODO: Make sure this memory is being freed!
     ArrayList<VirtualRegion*> m_regions;
+    ArrayList<SharedPtr<FileDescriptor>> m_fds;
 
     UniquePtr<VirtualRegion> m_kernel_stack { nullptr };
     UniquePtr<VirtualRegion> m_user_stack { nullptr };

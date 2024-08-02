@@ -5,6 +5,7 @@
  */
 
 #include <Kernel/API/errno.h>
+#include <Kernel/API/fcntl.h>
 #include <Kernel/Assert.h>
 #include <Kernel/CPU/CPU.h>
 #include <Kernel/Filesystem/VFS.h>
@@ -18,11 +19,12 @@
 #define KERNEL_STACK_SIZE (16 * KB)
 #define USER_STACK_SIZE (16 * KB)
 
-Process::Process(const String& name, pid_t pid, uid_t uid, gid_t gid, bool is_kernel)
+Process::Process(const String& name, pid_t pid, uid_t uid, gid_t gid, bool is_kernel, TTYDevice* tty)
     : m_name(move(name))
     , m_pid(pid)
     , m_user(User::root())
     , m_is_kernel(is_kernel)
+    , m_tty(tty)
     , m_state(State::Created)
 {
     if (is_kernel) {
@@ -36,6 +38,12 @@ Process::Process(const String& name, pid_t pid, uid_t uid, gid_t gid, bool is_ke
         for (u32 page = 768; page < 1024; page++) {
             m_page_directory->entries()[page].copy(MM.kernel_page_directory().entries()[page]);
         }
+    }
+
+    if (tty != nullptr) {
+        m_fds.add(0, tty->open(O_RDONLY).value());
+        m_fds.add(1, tty->open(O_WRONLY).value());
+        m_fds.add(2, tty->open(O_WRONLY).value());
     }
 }
 
@@ -65,9 +73,9 @@ ResultReturn<Process*> Process::create_kernel_process(const String& name, void (
     return process;
 }
 
-Result Process::create_user_process(const String& path, uid_t uid, gid_t gid)
+Result Process::create_user_process(const String& path, uid_t uid, gid_t gid, TTYDevice* tty)
 {
-    auto process = new Process(move(path), PM.get_next_pid(), uid, gid, false);
+    auto process = new Process(move(path), PM.get_next_pid(), uid, gid, false, tty);
 
     ENSURE(process->initialize_kernel_stack());
     ENSURE(process->initialize_user_stack());
@@ -266,7 +274,12 @@ ssize_t Process::sys_write(int fd, const void* buf, size_t count)
         return 0;
     }
 
+    if (fd > m_fds.size()) {
+        return -EBADF;
+    }
+
     dbgprintf("Process", "'%s' is writing '%s' to %d\n", m_name.str(), buf, fd);
+    m_fds[fd]->write((const u8*)buf, count);
     return count;
 }
 

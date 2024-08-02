@@ -20,6 +20,11 @@ void FileDescriptor::close()
     m_file->close();
 }
 
+ssize_t FileDescriptor::write(const u8* buffer, ssize_t count)
+{
+    return m_file->write(*this, buffer, count);
+}
+
 ssize_t FileDescriptor::read(u8* buffer, ssize_t count)
 {
     return m_file->read(*this, buffer, m_offset, count);

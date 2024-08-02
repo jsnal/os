@@ -20,6 +20,8 @@ public:
     void open();
     void close();
 
+    ssize_t write(const u8*, ssize_t count);
+
     ssize_t read(u8*, ssize_t count);
 
     int seek(off_t offset, int whence);
