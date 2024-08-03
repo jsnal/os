@@ -3,7 +3,9 @@ SET(LIBC_SOURCES
     stdio.cpp
     stdlib.cpp
     string.cpp
+    sys/ioctl.cpp
     sys/syscall.cpp
+    termios.cpp
     unistd.cpp
 )
 

@@ -10,5 +10,6 @@
 #define SYS_EXIT 1
 #define SYS_WRITE 2
 #define SYS_GETUID 3
+#define SYS_IOCTL 4
 
 #endif

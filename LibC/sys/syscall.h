@@ -7,6 +7,8 @@
 #ifndef _SYSCALL_H_
 #define _SYSCALL_H_
 
+#include <sys/syscall_defines.h>
+
 int syscall(int call);
 int syscall(int call, int arg1);
 int syscall(int call, int arg1, int arg2);

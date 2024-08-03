@@ -21,6 +21,8 @@ int handle(int call, int arg1, int arg2, int arg3)
             p.sys_exit(arg1);
             PM.yield();
             return 0;
+        case SYS_IOCTL:
+            return p.sys_ioctl(arg1, arg2, (uint32_t*)arg3);
         case SYS_WRITE:
             return p.sys_write(arg1, (const void*)arg2, arg3);
         case SYS_GETUID:

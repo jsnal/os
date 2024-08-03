@@ -294,6 +294,14 @@ void Process::sys_exit(int status)
     m_state = Process::Dead;
 }
 
+int Process::sys_ioctl(int fd, uint32_t request, uint32_t* argp)
+{
+    if (fd > m_fds.size()) {
+        return -EBADF;
+    }
+    return m_fds[fd]->ioctl(request, argp);
+}
+
 uid_t Process::sys_getuid()
 {
     dbgprintf("Process", "'%s' (%u) called getuid() %d\n", m_name.str(), m_pid, m_user.uid());

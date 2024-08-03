@@ -5,6 +5,7 @@
  */
 
 #include <Kernel/Devices/TTYDevice.h>
+#include <LibC/sys/ioctl_defines.h>
 
 TTYDevice::TTYDevice(u32 major, u32 minor)
     : CharacterDevice(major, minor)
@@ -40,5 +41,19 @@ ssize_t TTYDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
 
 int TTYDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
 {
+    termios* termios_p;
+    switch (request) {
+        case TCGETS:
+            termios_p = reinterpret_cast<termios*>(argp);
+            termios_p->c_iflag = m_termios.c_iflag;
+            termios_p->c_oflag = m_termios.c_oflag;
+            termios_p->c_cflag = m_termios.c_cflag;
+            termios_p->c_lflag = m_termios.c_lflag;
+            memcpy(termios_p->c_cc, m_termios.c_cc, NCCS);
+            termios_p->c_ispeed = m_termios.c_ispeed;
+            termios_p->c_ospeed = m_termios.c_ospeed;
+            break;
+    }
+
     return 0;
 }
