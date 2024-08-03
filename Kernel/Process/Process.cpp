@@ -4,16 +4,16 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Kernel/API/errno.h>
-#include <Kernel/API/fcntl.h>
 #include <Kernel/Assert.h>
 #include <Kernel/CPU/CPU.h>
 #include <Kernel/Filesystem/VFS.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
+#include <Kernel/POSIX.h>
 #include <Kernel/Process/ELF.h>
 #include <Kernel/Process/Process.h>
 #include <Kernel/Process/ProcessManager.h>
+#include <LibC/errno_defines.h>
 #include <Universal/Stdlib.h>
 
 #define KERNEL_STACK_SIZE (16 * KB)

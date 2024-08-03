@@ -45,13 +45,12 @@ VirtualConsole* tty0;
     // GraphicsManager::the().init();
 
     tty0 = new VirtualConsole(0);
-    tty0->tty_write((const u8*)"Test", 4);
 
     KeyboardDevice::the();
 
     VFS::the().init();
 
-    Process::create_user_process("/bin/id", 0, 0, tty0);
+    Process::create_user_process("/bin/shell", 0, 0, tty0);
 
     Time boot_time = CMOS::boot_time();
 
@@ -75,8 +74,6 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
     }
 
     kmalloc_init();
-
-    DebugConsole::the().enable_boot_console();
 
     GDT::init();
 

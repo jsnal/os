@@ -5,7 +5,7 @@
  */
 
 #include <sys/syscall.h>
-#include <sys/syscalls.h>
+#include <sys/syscall_defines.h>
 #include <unistd.h>
 
 void _exit(int status)

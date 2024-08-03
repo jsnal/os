@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <Kernel/API/termios.h>
 #include <Kernel/Devices/CharacterDevice.h>
+#include <Kernel/POSIX.h>
 
 class TTYDevice : public CharacterDevice {
 public:

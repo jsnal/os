@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#pragma once
+#ifndef _ERRNO_DEFINES_H_
+#define _ERRNO_DEFINES_H_
 
 #define ENOENT 2
 #define EIO 5
@@ -12,3 +13,5 @@
 #define ENOTDIR 20
 #define EISDIR 21
 #define EINVAL 22
+
+#endif

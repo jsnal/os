@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Kernel/API/errno.h>
 #include <Kernel/Filesystem/FileDescriptor.h>
 #include <Kernel/Filesystem/InodeFile.h>
-
 #include <Kernel/Logger.h>
+#include <Kernel/POSIX.h>
+#include <LibC/errno_defines.h>
 
 void FileDescriptor::open()
 {

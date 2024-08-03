@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Kernel/API/errno.h>
 #include <Kernel/Filesystem/Ext2Filesystem.h>
 #include <Kernel/Filesystem/Ext2Inode.h>
 #include <Kernel/Filesystem/InodeId.h>
+#include <Kernel/POSIX.h>
+#include <LibC/errno_defines.h>
 #include <Universal/Number.h>
 #include <Universal/Stdlib.h>
 

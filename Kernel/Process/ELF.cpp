@@ -5,6 +5,7 @@
  */
 
 #include <Kernel/Memory/VirtualRegion.h>
+#include <Kernel/POSIX.h>
 #include <Kernel/Process/ELF.h>
 
 ResultReturn<UniquePtr<ELF>> ELF::create(SharedPtr<FileDescriptor> fd)

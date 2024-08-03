@@ -8,7 +8,7 @@
 #include <Kernel/Process/Process.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/Process/Syscall.h>
-#include <LibC/sys/syscalls.h>
+#include <LibC/sys/syscall_defines.h>
 
 namespace Syscall {
 

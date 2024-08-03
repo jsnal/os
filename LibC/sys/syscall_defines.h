@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef _SYSCALLS_H_
-#define _SYSCALLS_H_
+#ifndef _SYSCALL_DEFINES_H_
+#define _SYSCALL_DEFINES_H_
 
 #define SYS_EXIT 1
 #define SYS_WRITE 2

@@ -6,13 +6,11 @@
 
 #pragma once
 
-#include <Universal/Types.h>
-
 #define NCCS 11
 
-typedef u32 speed_t;
-typedef u32 tcflag_t;
-typedef u8 cc_t;
+typedef unsigned long speed_t;
+typedef unsigned long tcflag_t;
+typedef unsigned char cc_t;
 
 struct termios {
     tcflag_t c_iflag;
@@ -47,3 +45,23 @@ struct termios {
 #define VSTOP 8
 #define VSUSP 9
 #define VTIME 10
+
+#define O_RDONLY 0x000000
+#define O_WRONLY 0x000001
+#define O_RDWR 0x000002
+#define O_APPEND 0x000008
+#define O_CREAT 0x000200
+#define O_TRUNC 0x000400
+#define O_EXCL 0x000800
+#define O_SYNC 0x002000
+#define O_NONBLOCK 0x004000
+#define O_NOCTTY 0x008000
+#define O_CLOEXEC 0x040000
+#define O_NOFOLLOW 0x100000
+#define O_DIRECTORY 0x200000
+#define O_EXEC 0x400000
+#define O_SEARCH O_EXEC
+
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2

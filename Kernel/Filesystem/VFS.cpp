@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Kernel/API/errno.h>
-#include <Kernel/API/fcntl.h>
 #include <Kernel/Devices/Device.h>
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Devices/PartitionDevice.h>
@@ -16,6 +14,8 @@
 #include <Kernel/Filesystem/InodeId.h>
 #include <Kernel/Filesystem/VFS.h>
 #include <Kernel/Logger.h>
+#include <Kernel/POSIX.h>
+#include <LibC/errno_defines.h>
 
 VFS& VFS::the()
 {
