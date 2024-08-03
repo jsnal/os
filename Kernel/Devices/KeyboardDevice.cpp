@@ -142,6 +142,11 @@ ssize_t KeyboardDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
     return 0;
 }
 
+int KeyboardDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
+{
+    return 0;
+}
+
 void KeyboardDevice::handle()
 {
     u32 scan_code = get_scan_code();

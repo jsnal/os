@@ -20,8 +20,8 @@ public:
     void close();
 
     ssize_t write(const u8*, ssize_t count);
-
     ssize_t read(u8*, ssize_t count);
+    int ioctl(uint32_t request, uint32_t* argp);
 
     int seek(off_t offset, int whence);
 

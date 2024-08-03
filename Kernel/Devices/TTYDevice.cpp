@@ -37,3 +37,8 @@ ssize_t TTYDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
     tty_write(buffer, count);
     return 0;
 }
+
+int TTYDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
+{
+    return 0;
+}

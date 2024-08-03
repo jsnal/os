@@ -28,4 +28,5 @@ public:
 
     virtual ssize_t read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count) = 0;
     virtual ssize_t write(FileDescriptor&, const u8* buffer, ssize_t count) = 0;
+    virtual int ioctl(FileDescriptor&, uint32_t request, uint32_t* argp) = 0;
 };

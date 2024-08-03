@@ -30,6 +30,11 @@ ssize_t FileDescriptor::read(u8* buffer, ssize_t count)
     return m_file->read(*this, buffer, m_offset, count);
 }
 
+int FileDescriptor::ioctl(uint32_t request, uint32_t* argp)
+{
+    return m_file->ioctl(*this, request, argp);
+}
+
 int FileDescriptor::seek(off_t offset, int whence)
 {
     off_t new_offset = m_offset;
