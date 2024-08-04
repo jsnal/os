@@ -83,7 +83,7 @@ echo "done"
 
 echo "copying kernel... "
 mkdir -p mnt/boot
-sudo cp -v "$DIR/Kernel/Kernel" mnt/boot/kernel
+sudo cp -v "$DIR/Build/Kernel/Kernel" mnt/boot/kernel
 echo "done"
 
 $DIR/Meta/build_fs.sh

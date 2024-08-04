@@ -6,8 +6,10 @@ command -v tmux >/dev/null 2>&1 || (echo "tmux not installed" && exit 1)
     make -C Build install && \
     ./Meta/build_grub.sh && \
 
-GDB_COMMAND="gdb Kernel/Kernel \
+GDB_COMMAND="gdb Build/Kernel/Kernel \
+   -ex 'debug-file-directory Build/Kernel' \
    -ex 'set arch i386:intel' \
+   -ex 'set print asm-demangle on' \
    -ex 'layout asm' \
    -ex 'layout regs' \
    -ex 'target remote localhost:1234' \

@@ -69,6 +69,8 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
         panic("Multiboot header is malformed");
     }
 
+    dbgprintf("Kernel", "TESTING\n");
+
     if (multiboot->flags & MULTIBOOT_FLAGS_BOOTLOADER_NAME) {
         dbgprintf("Kernel", "Loaded by: %s\n", multiboot->bootloader_name);
     }

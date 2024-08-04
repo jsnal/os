@@ -57,10 +57,14 @@ set(SOURCES
     ${BOOT_SOURCES}
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DKERNEL")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DKERNEL -ggdb3 -Os")
 
 add_link_options(-T ${CMAKE_SOURCE_DIR}/Kernel/linker.ld -nostdlib --build-id=none -Map=Kernel.map)
 
 add_executable(Kernel ${SOURCES})
-# target_link_libraries(Kernel gcc)
-install(TARGETS Kernel RUNTIME DESTINATION Kernel)
+add_custom_command(
+    TARGET Kernel POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} --only-keep-debug Kernel Kernel.debug
+    COMMAND ${CMAKE_OBJCOPY} --strip-debug Kernel
+    COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=Kernel.debug Kernel
+)
