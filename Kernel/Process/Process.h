@@ -19,6 +19,10 @@
 #include <Universal/String.h>
 #include <Universal/Types.h>
 
+// TODO: Each process should have a priority where some processes get more time
+//       and others get less time. Probably a range from 50 ms to 20 ms.
+#define QUANTUM_IN_MILLISECONDS 20
+
 class WaitingStatus;
 class PageDirectory;
 
@@ -50,6 +54,8 @@ public:
     ResultReturn<VirtualRegion*> allocate_region_at(VirtualAddress, size_t size, u8 access);
     Result deallocate_region(size_t index);
 
+    bool timer_expired() { return --m_ticks_left == 0; }
+    void reset_timer_ticks() { m_ticks_left = QUANTUM_IN_MILLISECONDS; }
     void context_switch(Process*);
 
     void dump_stack(bool kernel) const;
@@ -88,6 +94,8 @@ private:
 
     Result initialize_kernel_stack();
     Result initialize_user_stack();
+
+    u8 m_ticks_left { 0 };
 
     String m_name;
     pid_t m_pid { 0 };

@@ -67,4 +67,17 @@ static inline void set_gs_register(const SegmentSelector& selector)
                  :
                  : "r"(static_cast<uint16_t>(selector)));
 }
+
+static inline u32 cpu_flags()
+{
+    u32 flags;
+    asm volatile(
+        "pushf\n"
+        "pop %0\n"
+        : "=rm"(flags)
+        :
+        : "memory");
+    return flags;
+}
+
 };

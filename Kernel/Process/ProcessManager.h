@@ -21,7 +21,10 @@ public:
 
     ProcessManager();
 
+    static bool started() { return s_started; }
+
     void start();
+    void timer_tick(size_t milliseconds_since_boot);
 
     Process* current_process_ptr() { return m_current_process; }
     Process& current_process() { return *m_current_process; }
@@ -44,6 +47,7 @@ public:
     TSS* tss() { return &m_tss; }
 
 private:
+    static bool s_started;
     pid_t m_current_pid { 0 };
     Process* m_current_process { nullptr };
     Process* m_kernel_idle_process { nullptr };

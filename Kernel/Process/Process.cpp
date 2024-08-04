@@ -40,6 +40,8 @@ Process::Process(const String& name, pid_t pid, uid_t uid, gid_t gid, bool is_ke
         }
     }
 
+    reset_timer_ticks();
+
     if (tty != nullptr) {
         m_fds.add(0, tty->open(O_RDONLY).value());
         m_fds.add(1, tty->open(O_WRONLY).value());
@@ -69,7 +71,7 @@ ResultReturn<Process*> Process::create_kernel_process(const String& name, void (
         PM.add_process(*process);
     }
 
-    dbgprintf("Process", "Kernel Process '%s' (%u) spawned at 0x%x\n", process->m_name.str(), process->m_pid, entry_point);
+    dbgprintf("Process", "Kernel Process '%s' spawned at 0x%x\n", process->m_name.str(), entry_point);
     return process;
 }
 
@@ -123,6 +125,8 @@ Result Process::deallocate_region(size_t index)
 
 void Process::context_switch(Process* next_process)
 {
+    m_ticks_left = 0;
+    next_process->reset_timer_ticks();
     PM.tss()->esp0 = next_process->m_kernel_stack->upper();
     do_context_switch(&m_previous_stack_pointer, next_process->m_previous_stack_pointer, next_process->cr3());
 }

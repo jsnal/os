@@ -58,20 +58,7 @@ void PIT::handle()
     //       which case it would never be sent and the system would hang.
     eoi();
 
-    for (int i = 0; i < m_wakeup_routine_count; i++) {
-        if (m_wakeup_routines[i].wakeup_routine != nullptr && s_milliseconds_since_boot % m_wakeup_routines[i].milliseconds == 0) {
-            m_wakeup_routines[i].wakeup_routine();
-        }
+    if (ProcessManager::started()) {
+        PM.timer_tick(s_milliseconds_since_boot);
     }
-}
-
-void PIT::register_pit_wakeup(u32 milliseconds, void (*wakeup_routine_pointer)())
-{
-    if (m_wakeup_routine_count >= WAKEUP_ROUTINES_COUNT || wakeup_routine_pointer == nullptr) {
-        return;
-    }
-
-    dbgprintf("PIT", "Registering a PIT wakeup @ %x every %d ms\n", wakeup_routine_pointer, milliseconds);
-    m_wakeup_routines[m_wakeup_routine_count].milliseconds = milliseconds;
-    m_wakeup_routines[m_wakeup_routine_count++].wakeup_routine = wakeup_routine_pointer;
 }

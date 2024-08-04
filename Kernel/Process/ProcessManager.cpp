@@ -8,12 +8,7 @@
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/kmalloc.h>
 
-#define QUANTUM_IN_MILLISECONDS 50
-
-static void pit_schedule_wakeup()
-{
-    ProcessManager::the().schedule();
-}
+bool ProcessManager::s_started = false;
 
 static void kernel_idle_process()
 {
@@ -50,10 +45,16 @@ ProcessManager::ProcessManager()
 
 void ProcessManager::start()
 {
-    PIT::the().register_pit_wakeup(QUANTUM_IN_MILLISECONDS, pit_schedule_wakeup);
-
     m_current_process = m_kernel_idle_process;
+    s_started = true;
     start_kernel_process(m_kernel_idle_process->previous_stack_pointer());
+}
+
+void ProcessManager::timer_tick(size_t milliseconds_since_boot)
+{
+    if (m_current_process->timer_expired()) {
+        schedule();
+    }
 }
 
 void ProcessManager::add_process(Process& process) const
@@ -87,6 +88,8 @@ ResultReturn<Process*> ProcessManager::find_by_pid(pid_t pid) const
 
 void ProcessManager::schedule()
 {
+    ASSERT_INTERRUPTS_DISABLED();
+
     Process* next_process = nullptr;
     Process* previous_process = m_current_process;
     Process* p = m_current_process;
