@@ -45,15 +45,38 @@ int TTYDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
     switch (request) {
         case TCGETS:
             termios_p = reinterpret_cast<termios*>(argp);
-            termios_p->c_iflag = m_termios.c_iflag;
-            termios_p->c_oflag = m_termios.c_oflag;
-            termios_p->c_cflag = m_termios.c_cflag;
-            termios_p->c_lflag = m_termios.c_lflag;
-            memcpy(termios_p->c_cc, m_termios.c_cc, NCCS);
-            termios_p->c_ispeed = m_termios.c_ispeed;
-            termios_p->c_ospeed = m_termios.c_ospeed;
+            *termios_p = m_termios;
+            break;
+        case TCSETS:
+        case TCSETSW:
+        case TCSETSF:
+            termios_p = reinterpret_cast<termios*>(argp);
+            m_termios = *termios_p;
+            dump();
             break;
     }
 
     return 0;
 }
+
+#if DEBUG_TTY_DEVICE
+void TTYDevice::dump() const
+{
+    dbgprintf("TTYDevice", "c_iflag=0x%x, c_oflag=0x%x\n", m_termios.c_iflag, m_termios.c_oflag);
+    dbgprintf("TTYDevice", "c_cflag=0x%x, c_lflag=0x%x\n", m_termios.c_cflag, m_termios.c_lflag);
+    dbgprintf("TTYDevice", "c_cc={\n");
+    dbgprintf("TTYDevice", "  VEOF=%u\n", m_termios.c_cc[VEOF]);
+    dbgprintf("TTYDevice", "  VEOL=%u\n", m_termios.c_cc[VEOL]);
+    dbgprintf("TTYDevice", "  VERASE=%u\n", m_termios.c_cc[VERASE]);
+    dbgprintf("TTYDevice", "  VINTR=%u\n", m_termios.c_cc[VINTR]);
+    dbgprintf("TTYDevice", "  VKILL=%u\n", m_termios.c_cc[VKILL]);
+    dbgprintf("TTYDevice", "  VMIN=%u\n", m_termios.c_cc[VMIN]);
+    dbgprintf("TTYDevice", "  VQUIT=%u\n", m_termios.c_cc[VQUIT]);
+    dbgprintf("TTYDevice", "  VSTART=%u\n", m_termios.c_cc[VSTART]);
+    dbgprintf("TTYDevice", "  VSTOP=%u\n", m_termios.c_cc[VSTOP]);
+    dbgprintf("TTYDevice", "  VSUSP=%u\n", m_termios.c_cc[VSUSP]);
+    dbgprintf("TTYDevice", "  VTIME=%u\n", m_termios.c_cc[VERASE]);
+    dbgprintf("TTYDevice", "}\n");
+    dbgprintf("TTYDevice", "c_ispeed=0x%x, c_ospeed=0x%x\n", m_termios.c_ispeed, m_termios.c_ospeed);
+}
+#endif

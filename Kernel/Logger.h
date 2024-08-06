@@ -16,6 +16,7 @@
 #define DEBUG_EXT2_FILESYSTEM 0
 #define DEBUG_INODE 0
 #define DEBUG_PHYSICAL_REGION 0
+#define DEBUG_TTY_DEVICE 1
 
 #define dbgprintf(tag, format, ...)                                                                                                      \
     do {                                                                                                                                 \

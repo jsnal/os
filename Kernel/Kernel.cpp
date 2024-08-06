@@ -51,6 +51,7 @@ VirtualConsole* tty0;
     VFS::the().init();
 
     Process::create_user_process("/bin/shell", 0, 0, tty0);
+    Process::create_user_process("/bin/id", 0, 0, tty0);
 
     Time boot_time = CMOS::boot_time();
 

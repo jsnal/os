@@ -24,5 +24,9 @@ public:
     [[nodiscard]] bool is_canonical() const { return m_termios.c_lflag & ICANON; }
 
 private:
+#if DEBUG_TTY_DEVICE
+    void dump() const;
+#endif
+
     termios m_termios;
 };

@@ -23,6 +23,46 @@ struct termios {
     speed_t c_ospeed;
 };
 
+// Input Modes
+#define IGNBRK 0000001
+#define BRKINT 0000002
+#define IGNPAR 0000004
+#define PARMRK 0000010
+#define INPCK 0000020
+#define ISTRIP 0000040
+#define INLCR 0000100
+#define IGNCR 0000200
+#define ICRNL 0000400
+#define IUCLC 0001000
+#define IXON 0002000
+#define IXANY 0004000
+#define IXOFF 0010000
+#define IMAXBEL 0020000
+#define IUTF8 0040000
+
+// Output Modes
+#define OPOST 0000001
+#define OLCUC 0000002
+#define ONLCR 0000004
+#define OCRNL 0000010
+#define ONOCR 0000020
+#define ONLRET 0000040
+#define OFILL 0000100
+#define OFDEL 0000200
+
+// Control Modes
+#define CSIZE 0000060
+#define CS5 0000000
+#define CS6 0000020
+#define CS7 0000040
+#define CS8 0000060
+#define CSTOPB 0000100
+#define CREAD 0000200
+#define PARENB 0000400
+#define PARODD 0001000
+#define HUPCL 0002000
+#define CLOCAL 0004000
+
 // Local Modes
 #define ECHO 0x1
 #define ECHOE 0x2
@@ -47,8 +87,14 @@ struct termios {
 #define VSUSP 9
 #define VTIME 10
 
+// When changes take effect
+#define TCSANOW 0
+#define TCSADRAIN 1
+#define TCSAFLUSH 2
+
 __BEGIN_DECLS
 
 int tcgetattr(int fd, struct termios* termios_p);
+int tcsetattr(int fd, int optional_actions, const struct termios* termios_p);
 
 __END_DECLS

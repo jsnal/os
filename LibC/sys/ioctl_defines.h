@@ -5,4 +5,6 @@
  */
 
 #define TCGETS 0
-#define TCSETS 0
+#define TCSETS 1
+#define TCSETSW 2
+#define TCSETSF 3
