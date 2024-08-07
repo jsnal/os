@@ -6,7 +6,7 @@ function(MAKE_PROGRAM PROGRAM_NAME)
     install(TARGETS ${PROGRAM_NAME} RUNTIME DESTINATION Programs/bin)
 endfunction()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -lc")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lc")
 
 MAKE_PROGRAM(id)
 MAKE_PROGRAM(shell)

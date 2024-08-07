@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -43,7 +44,7 @@ static bool enable_raw_mode()
 
 int main(int argc, char** argv)
 {
-    write(STDOUT_FILENO, "Starting shell\n", 16);
+    printf("Starting shell 0x%x\n", 0x1337);
 
     enable_raw_mode();
     return 0;
