@@ -179,10 +179,10 @@ ResultReturn<ssize_t> Ext2Inode::read(size_t start, size_t length, u8* buffer, F
 
         if (block_index == first_block) {
             if (bytes_left < ext2_fs().block_size() - first_block_start) {
-                memcpy(buffer, read_buffer + start, bytes_left);
+                memcpy(buffer, read_buffer + first_block_start, bytes_left);
                 bytes_left = 0;
             } else {
-                memcpy(buffer, read_buffer + start, ext2_fs().block_size() - first_block_start);
+                memcpy(buffer, read_buffer + first_block_start, ext2_fs().block_size() - first_block_start);
                 bytes_left -= ext2_fs().block_size() - first_block_start;
                 buffer += ext2_fs().block_size() - first_block_start;
             }
