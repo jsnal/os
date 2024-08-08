@@ -18,6 +18,8 @@ __BEGIN_DECLS
 
 void _exit(int status);
 
+int isatty(int fd);
+
 ssize_t write(int fd, const void* buf, size_t count);
 
 uid_t get_uid();

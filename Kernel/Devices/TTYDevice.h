@@ -13,6 +13,8 @@ class TTYDevice : public CharacterDevice {
 public:
     TTYDevice(u32 major, u32 minor);
 
+    [[nodiscard]] bool is_tty_device() override { return true; }
+
     ssize_t read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count) override;
     ssize_t write(FileDescriptor&, const u8* buffer, ssize_t count) override;
     int ioctl(FileDescriptor&, uint32_t request, uint32_t* argp) override;

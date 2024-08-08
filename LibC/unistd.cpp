@@ -15,6 +15,11 @@ void _exit(int status)
     syscall(SYS_EXIT, status);
 }
 
+int isatty(int fd)
+{
+    return syscall(SYS_ISATTY, fd);
+}
+
 ssize_t write(int fd, const void* buf, size_t count)
 {
     return syscall(SYS_WRITE, fd, (int)buf, count);

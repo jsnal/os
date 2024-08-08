@@ -8,6 +8,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#define LINE_LENGTH 256
+
 static struct termios original_termios;
 
 static bool enable_raw_mode()
@@ -42,10 +44,20 @@ static bool enable_raw_mode()
     return true;
 }
 
+static bool readline(const char* prompt, char* line, size_t length)
+{
+    if (!isatty(STDIN_FILENO)) {
+        printf("Not a TTY\n");
+    } else {
+        enable_raw_mode();
+    }
+    return true;
+}
+
 int main(int argc, char** argv)
 {
+    char line_buffer[LINE_LENGTH];
     printf("Starting shell 0x%x\n", 0x1337);
-
-    enable_raw_mode();
+    readline("$ ", line_buffer, LINE_LENGTH);
     return 0;
 }

@@ -11,5 +11,6 @@
 #define SYS_WRITE 2
 #define SYS_GETUID 3
 #define SYS_IOCTL 4
+#define SYS_ISATTY 5
 
 #endif

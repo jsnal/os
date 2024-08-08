@@ -20,6 +20,7 @@ public:
     virtual bool is_inode() { return false; };
     virtual bool is_character_device() { return false; };
     virtual bool is_block_device() { return false; };
+    virtual bool is_tty_device() { return false; }
 
     virtual size_t length() const { return 0; }
 

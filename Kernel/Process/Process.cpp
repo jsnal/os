@@ -268,6 +268,14 @@ void Process::reap()
     PM.remove_process(*this);
 }
 
+ResultReturn<SharedPtr<FileDescriptor>> Process::find_file_descriptor(int fd)
+{
+    if (fd < 0 || fd > m_fds.size() || m_fds[fd].is_null()) {
+        return Result(Result::Failure);
+    }
+    return m_fds[fd];
+}
+
 ssize_t Process::sys_write(int fd, const void* buf, size_t count)
 {
     if (count < 0) {
@@ -278,12 +286,13 @@ ssize_t Process::sys_write(int fd, const void* buf, size_t count)
         return 0;
     }
 
-    if (fd > m_fds.size()) {
+    auto fd_result = find_file_descriptor(fd);
+    if (fd_result.is_error()) {
         return -EBADF;
     }
 
     dbgprintf("Process", "'%s' is writing '%s' to %d\n", m_name.str(), buf, fd);
-    m_fds[fd]->write((const u8*)buf, count);
+    fd_result.release_value()->write((const u8*)buf, count);
     return count;
 }
 
@@ -300,10 +309,11 @@ void Process::sys_exit(int status)
 
 int Process::sys_ioctl(int fd, uint32_t request, uint32_t* argp)
 {
-    if (fd > m_fds.size()) {
+    auto fd_result = find_file_descriptor(fd);
+    if (fd_result.is_error()) {
         return -EBADF;
     }
-    return m_fds[fd]->ioctl(request, argp);
+    return fd_result.release_value()->ioctl(request, argp);
 }
 
 uid_t Process::sys_getuid()
@@ -311,6 +321,15 @@ uid_t Process::sys_getuid()
     dbgprintf("Process", "'%s' (%u) called getuid() %d\n", m_name.str(), m_pid, m_user.uid());
 
     return m_user.uid();
+}
+
+int Process::sys_isatty(int fd)
+{
+    auto fd_result = find_file_descriptor(fd);
+    if (fd_result.is_error()) {
+        return -EBADF;
+    }
+    return fd_result.release_value()->file()->is_tty_device();
 }
 
 void Process::dump_stack(bool kernel) const

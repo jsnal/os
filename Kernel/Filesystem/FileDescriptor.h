@@ -27,6 +27,8 @@ public:
 
     off_t offset() const { return m_offset; }
 
+    SharedPtr<File> file() const { return m_file; }
+
 private:
     SharedPtr<File> m_file;
 

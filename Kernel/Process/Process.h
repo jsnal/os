@@ -83,6 +83,7 @@ public:
     int sys_ioctl(int fd, uint32_t request, uint32_t* argp);
     ssize_t sys_write(int fd, const void* buf, size_t count);
     uid_t sys_getuid();
+    int sys_isatty(int fd);
 
 private:
     Process(const String& name, pid_t, uid_t, gid_t, bool is_kernel, TTYDevice* = nullptr);
@@ -94,6 +95,8 @@ private:
 
     Result initialize_kernel_stack();
     Result initialize_user_stack();
+
+    ResultReturn<SharedPtr<FileDescriptor>> find_file_descriptor(int fd);
 
     u8 m_ticks_left { 0 };
 
