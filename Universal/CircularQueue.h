@@ -7,6 +7,10 @@
 #include <Universal/Result.h>
 #include <Universal/Types.h>
 
+#ifdef KERNEL
+#    include <Kernel/kmalloc.h>
+#endif
+
 template<typename T>
 class CircularQueue {
 public:
@@ -14,7 +18,7 @@ public:
         : m_capacity(capacity)
         , m_size(0)
     {
-        m_queue = new T[capacity];
+        m_queue = new T[capacity]();
     }
 
     CircularQueue(CircularQueue&& other)

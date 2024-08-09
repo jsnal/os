@@ -82,6 +82,7 @@ public:
     void sys_exit(int status);
     int sys_ioctl(int fd, uint32_t request, uint32_t* argp);
     ssize_t sys_write(int fd, const void* buf, size_t count);
+    ssize_t sys_read(int fd, void* buf, size_t count);
     uid_t sys_getuid();
     int sys_isatty(int fd);
 

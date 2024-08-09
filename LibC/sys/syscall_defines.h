@@ -9,8 +9,9 @@
 
 #define SYS_EXIT 1
 #define SYS_WRITE 2
-#define SYS_GETUID 3
-#define SYS_IOCTL 4
-#define SYS_ISATTY 5
+#define SYS_READ 3
+#define SYS_GETUID 4
+#define SYS_IOCTL 5
+#define SYS_ISATTY 6
 
 #endif

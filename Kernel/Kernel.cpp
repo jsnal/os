@@ -45,6 +45,7 @@ VirtualConsole* tty0;
     // GraphicsManager::the().init();
 
     tty0 = new VirtualConsole(0);
+    tty0->set_focused(true);
 
     KeyboardDevice::the();
 

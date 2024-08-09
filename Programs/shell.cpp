@@ -46,10 +46,24 @@ static bool enable_raw_mode()
 
 static bool readline(const char* prompt, char* line, size_t length)
 {
+    char c;
+
     if (!isatty(STDIN_FILENO)) {
         printf("Not a TTY\n");
     } else {
-        enable_raw_mode();
+        if (!enable_raw_mode()) {
+            return false;
+        }
+
+        while (true) {
+            read(STDIN_FILENO, &c, 1);
+            write(STDOUT_FILENO, &c, 1);
+            c = '\0';
+            //            if (c == 'A') {
+            //                printf("Read: %c\n", c);
+            //                c = '\0';
+            //            }
+        }
     }
     return true;
 }

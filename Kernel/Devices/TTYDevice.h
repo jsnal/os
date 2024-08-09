@@ -8,6 +8,7 @@
 
 #include <Kernel/Devices/CharacterDevice.h>
 #include <Kernel/POSIX.h>
+#include <Universal/CircularQueue.h>
 
 class TTYDevice : public CharacterDevice {
 public:
@@ -25,10 +26,13 @@ public:
     [[nodiscard]] bool is_echo() const { return m_termios.c_lflag & ECHO; }
     [[nodiscard]] bool is_canonical() const { return m_termios.c_lflag & ICANON; }
 
+    void handle_input(char);
+
 private:
 #if DEBUG_TTY_DEVICE
     void dump() const;
 #endif
 
+    CircularQueue<u8> m_input;
     termios m_termios;
 };

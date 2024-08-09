@@ -291,8 +291,26 @@ ssize_t Process::sys_write(int fd, const void* buf, size_t count)
         return -EBADF;
     }
 
-    dbgprintf("Process", "'%s' is writing '%s' to %d\n", m_name.str(), buf, fd);
     fd_result.release_value()->write((const u8*)buf, count);
+    return count;
+}
+
+ssize_t Process::sys_read(int fd, void* buf, size_t count)
+{
+    if (count < 0) {
+        return -EINVAL;
+    }
+
+    if (count == 0) {
+        return 0;
+    }
+
+    auto fd_result = find_file_descriptor(fd);
+    if (fd_result.is_error()) {
+        return -EBADF;
+    }
+
+    fd_result.release_value()->read((u8*)buf, count);
     return count;
 }
 

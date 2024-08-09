@@ -9,6 +9,7 @@
 
 TTYDevice::TTYDevice(u32 major, u32 minor)
     : CharacterDevice(major, minor)
+    , m_input(1024)
 {
     memset(&m_termios, 0, sizeof(termios));
     m_termios.c_lflag = ECHO | ISIG | ICANON;
@@ -29,14 +30,22 @@ TTYDevice::TTYDevice(u32 major, u32 minor)
 
 ssize_t TTYDevice::read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count)
 {
-    tty_write(buffer, count);
+    if (count > m_input.size()) {
+        count = m_input.size();
+    }
+
+    // TODO: Handle canonical mode
+
+    for (int i = 0; i < count; i++) {
+        buffer[i] = m_input.dequeue().value();
+    }
     return count;
 }
 
 ssize_t TTYDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
 {
     tty_write(buffer, count);
-    return 0;
+    return count;
 }
 
 int TTYDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
@@ -57,6 +66,11 @@ int TTYDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
     }
 
     return 0;
+}
+
+void TTYDevice::handle_input(char c)
+{
+    m_input.enqueue(c);
 }
 
 #if DEBUG_TTY_DEVICE

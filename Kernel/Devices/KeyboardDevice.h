@@ -19,6 +19,7 @@ struct KeyEvent {
 
 class KeyboardListener {
 public:
+    virtual ~KeyboardListener() = default;
     virtual void handle_key_event(KeyEvent) = 0;
 };
 

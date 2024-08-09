@@ -23,6 +23,8 @@ int handle(int call, int arg1, int arg2, int arg3)
             return 0;
         case SYS_WRITE:
             return p.sys_write(arg1, (const void*)arg2, arg3);
+        case SYS_READ:
+            return p.sys_read(arg1, (void*)arg2, arg3);
         case SYS_GETUID:
             return p.sys_getuid();
         case SYS_IOCTL:
