@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <errno.h>
 #include <sys/syscall.h>
 #include <sys/syscall_defines.h>
 #include <unistd.h>
@@ -17,17 +18,20 @@ void _exit(int status)
 
 int isatty(int fd)
 {
-    return syscall(SYS_ISATTY, fd);
+    int ret = syscall(SYS_ISATTY, fd);
+    RETURN_ERRNO(ret, ret, -1);
 }
 
 ssize_t write(int fd, const void* buf, size_t count)
 {
-    return syscall(SYS_WRITE, fd, (int)buf, count);
+    int ret = syscall(SYS_WRITE, fd, (int)buf, count);
+    RETURN_ERRNO(ret, ret, -1);
 }
 
 ssize_t read(int fd, void* buf, size_t count)
 {
-    return syscall(SYS_READ, fd, (int)buf, count);
+    int ret = syscall(SYS_READ, fd, (int)buf, count);
+    RETURN_ERRNO(ret, ret, -1);
 }
 
 uid_t get_uid(void)

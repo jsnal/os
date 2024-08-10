@@ -10,6 +10,16 @@
 #include <errno_defines.h>
 #include <sys/cdefs.h>
 
+#define RETURN_ERRNO(syscall_return, success_return, fail_return) \
+    do {                                                          \
+        if (syscall_return < 0) {                                 \
+            errno = -syscall_return;                              \
+            return fail_return;                                   \
+        }                                                         \
+        errno = 0;                                                \
+        return success_return;                                    \
+    } while (0)
+
 __BEGIN_DECLS
 
 extern int __errno;

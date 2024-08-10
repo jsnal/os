@@ -59,10 +59,6 @@ static bool readline(const char* prompt, char* line, size_t length)
             read(STDIN_FILENO, &c, 1);
             write(STDOUT_FILENO, &c, 1);
             c = '\0';
-            //            if (c == 'A') {
-            //                printf("Read: %c\n", c);
-            //                c = '\0';
-            //            }
         }
     }
     return true;

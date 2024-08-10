@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <errno.h>
 #include <stdarg.h>
 #include <sys/ioctl.h>
 #include <sys/syscall.h>
@@ -15,5 +16,5 @@ int ioctl(int fd, unsigned long request, ...)
     unsigned arg = va_arg(ap, unsigned);
     int ret = syscall(SYS_IOCTL, fd, (int)request, (int)arg);
     va_end(ap);
-    return ret;
+    RETURN_ERRNO(ret, ret, -1);
 }
