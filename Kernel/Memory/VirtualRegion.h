@@ -34,6 +34,7 @@ public:
     void map(PageDirectory&);
     Result unmap(PageDirectory&);
     Result free();
+    Result contains(VirtualAddress);
 
     inline size_t page_count() { return ceiling_divide(m_address_range.length(), Types::PageSize); }
 

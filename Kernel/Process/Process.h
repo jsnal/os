@@ -97,6 +97,7 @@ private:
     Result initialize_kernel_stack();
     Result initialize_user_stack();
 
+    Result is_address_accessible(VirtualAddress);
     ResultReturn<SharedPtr<FileDescriptor>> find_file_descriptor(int fd);
 
     u8 m_ticks_left { 0 };

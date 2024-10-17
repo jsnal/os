@@ -103,6 +103,11 @@ Result VirtualRegion::free()
     return Result::OK;
 }
 
+Result VirtualRegion::contains(VirtualAddress address)
+{
+    return m_address_range.lower() >= address && address <= m_address_range.upper();
+}
+
 void VirtualRegion::invalidate_page(VirtualAddress address)
 {
     asm volatile("invlpg [%0]"

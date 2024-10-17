@@ -268,6 +268,16 @@ void Process::reap()
     PM.remove_process(*this);
 }
 
+Result Process::is_address_accessible(VirtualAddress address)
+{
+    for (int i = 0; i < m_regions.size(); i++) {
+        if (m_regions[i]->contains(address)) {
+            return Result::OK;
+        }
+    }
+    return Result::Failure;
+}
+
 ResultReturn<SharedPtr<FileDescriptor>> Process::find_file_descriptor(int fd)
 {
     if (fd < 0 || fd > m_fds.size() || m_fds[fd].is_null()) {
@@ -286,13 +296,16 @@ ssize_t Process::sys_write(int fd, const void* buf, size_t count)
         return 0;
     }
 
+    if (!is_address_accessible((u32)buf)) {
+        return -EFAULT;
+    }
+
     auto fd_result = find_file_descriptor(fd);
     if (fd_result.is_error()) {
         return -EBADF;
     }
 
-    fd_result.release_value()->write((const u8*)buf, count);
-    return count;
+    return fd_result.release_value()->write((const u8*)buf, count);
 }
 
 ssize_t Process::sys_read(int fd, void* buf, size_t count)
@@ -305,13 +318,16 @@ ssize_t Process::sys_read(int fd, void* buf, size_t count)
         return 0;
     }
 
+    if (!is_address_accessible((u32)buf)) {
+        return -EFAULT;
+    }
+
     auto fd_result = find_file_descriptor(fd);
     if (fd_result.is_error()) {
         return -EBADF;
     }
 
-    fd_result.release_value()->read((u8*)buf, count);
-    return count;
+    return fd_result.release_value()->read((u8*)buf, count);
 }
 
 void Process::sys_exit(int status)
@@ -327,6 +343,10 @@ void Process::sys_exit(int status)
 
 int Process::sys_ioctl(int fd, uint32_t request, uint32_t* argp)
 {
+    if (!is_address_accessible((u32)argp)) {
+        return -EFAULT;
+    }
+
     auto fd_result = find_file_descriptor(fd);
     if (fd_result.is_error()) {
         return -EBADF;
