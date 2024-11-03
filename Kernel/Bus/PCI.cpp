@@ -24,12 +24,7 @@
 #define PCI_SLOTS_ON_BUS 32
 #define PCI_FUNCTIONS_ON_SLOT 8
 
-#define PCI_BAR0 0x10
-#define PCI_BAR1 0x14
-#define PCI_BAR2 0x18
-#define PCI_BAR3 0x1C
-#define PCI_BAR4 0x20
-#define PCI_BAR5 0x24
+#define PCI_INTERRUPT_LINE 0x3C
 
 namespace Bus::PCI {
 
@@ -60,34 +55,39 @@ u32 read32(Address address, u8 field)
     return IO::inl(PCI_DATA_PORT);
 }
 
+u8 read_interrupt_line(Address address)
+{
+    return read8(address, PCI_INTERRUPT_LINE);
+}
+
 u32 read_BAR0(Address address)
 {
-    return read32(address, PCI_BAR0);
+    return read32(address, Bar::Zero);
 }
 
 u32 read_BAR1(Address address)
 {
-    return read32(address, PCI_BAR1);
+    return read32(address, Bar::One);
 }
 
 u32 read_BAR2(Address address)
 {
-    return read32(address, PCI_BAR2);
+    return read32(address, Bar::Two);
 }
 
 u32 read_BAR3(Address address)
 {
-    return read32(address, PCI_BAR3);
+    return read32(address, Bar::Three);
 }
 
 u32 read_BAR4(Address address)
 {
-    return read32(address, PCI_BAR4);
+    return read32(address, Bar::Four);
 }
 
 u32 read_BAR5(Address address)
 {
-    return read32(address, PCI_BAR5);
+    return read32(address, Bar::Five);
 }
 
 void write8(Address address, u8 field, u8 value)
@@ -102,10 +102,23 @@ void write16(Address address, u8 field, u16 value)
     IO::outw(PCI_DATA_PORT + (field & 2), value);
 }
 
-void write32(Address address, u8 field, u16 value)
+void write32(Address address, u8 field, u32 value)
 {
     IO::outl(PCI_ADDRESS_PORT, get_io_address(address, field));
-    IO::outw(PCI_DATA_PORT, value);
+    IO::outl(PCI_DATA_PORT, value);
+}
+
+size_t get_BAR_size(Address address, Bar bar)
+{
+    u32 bar_val = read32(address, bar);
+    write32(address, bar, 0xFFFFFFFF);
+    u32 size_mask = read32(address, bar);
+    write32(address, bar, bar_val);
+
+    if (size_mask == 0 || size_mask == 0xFFFFFFFF) {
+        return 0;
+    }
+    return (~(size_mask & 0xFFFFFFF0)) + 1;
 }
 
 void enable_interrupt(Address address)

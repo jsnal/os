@@ -34,6 +34,7 @@ SET(KERNEL_SOURCES
     Memory/PhysicalRegion.cpp
     Memory/VMObject.cpp
     Memory/VirtualRegion.cpp
+    Network/E1000NetworkCard.cpp
     Process/ELF.cpp
     Process/Process.cpp
     Process/ProcessManager.cpp

@@ -16,6 +16,7 @@
 #include <Kernel/Filesystem/VFS.h>
 #include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
+#include <Kernel/Network/E1000NetworkCard.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/panic.h>
 #include <Universal/Types.h>
@@ -50,6 +51,8 @@ VirtualConsole* tty0;
     KeyboardDevice::the();
 
     VFS::the().init();
+
+    E1000NetworkCard::detect();
 
     Process::create_user_process("/bin/shell", 0, 0, tty0);
     Process::create_user_process("/bin/id", 0, 0, tty0);
