@@ -268,14 +268,14 @@ void Process::reap()
     PM.remove_process(*this);
 }
 
-Result Process::is_address_accessible(VirtualAddress address)
+bool Process::is_address_accessible(VirtualAddress address)
 {
     for (int i = 0; i < m_regions.size(); i++) {
         if (m_regions[i]->contains(address)) {
-            return Result::OK;
+            return true;
         }
     }
-    return Result::Failure;
+    return false;
 }
 
 ResultReturn<SharedPtr<FileDescriptor>> Process::find_file_descriptor(int fd)
