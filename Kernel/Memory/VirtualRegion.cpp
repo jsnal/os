@@ -30,6 +30,16 @@ UniquePtr<VirtualRegion> VirtualRegion::create_kernel_region(const AddressRange&
     return region;
 }
 
+UniquePtr<VirtualRegion> VirtualRegion::create_kernel_dma_region(const AddressRange& address_range, u8 access)
+{
+    auto region = make_unique_ptr<VirtualRegion>(address_range, access);
+    auto start_address = MM.allocate_physical_contiguous_kernel_pages(region->m_physical_pages.size());
+    for (size_t i = 0; i < region->m_physical_pages.size(); i++) {
+        region->m_physical_pages[i] = start_address.offset(i * Types::PageSize);
+    }
+    return region;
+}
+
 UniquePtr<VirtualRegion> VirtualRegion::create_kernel_region_at(PhysicalAddress physical_address, const AddressRange& address_range, u8 access)
 {
     auto region = make_unique_ptr<VirtualRegion>(address_range, access);

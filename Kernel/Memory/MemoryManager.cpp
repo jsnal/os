@@ -166,6 +166,21 @@ PhysicalAddress MemoryManager::allocate_physical_kernel_page()
     return page_result.value();
 }
 
+PhysicalAddress MemoryManager::allocate_physical_contiguous_kernel_pages(u32 number_of_pages)
+{
+    ResultReturn<PhysicalAddress> page_result;
+    for (int i = 0; i < m_kernel_physical_regions.size(); i++) {
+        page_result = m_kernel_physical_regions[i]->allocate_contiguous_pages(number_of_pages);
+        if (page_result.is_ok()) {
+            break;
+        }
+    }
+
+    ASSERT(page_result.is_ok());
+    // memset(page_result.value().ptr(), 0, Types::PageSize);
+    return page_result.value();
+}
+
 Result MemoryManager::free_physical_kernel_page(PhysicalAddress address)
 {
     bool found_region = false;
@@ -216,6 +231,17 @@ UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_region(size_t size)
 
     auto virtual_region = VirtualRegion::create_kernel_region(address_range.value(), VirtualRegion::Read | VirtualRegion::Write | VirtualRegion::Execute);
     dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Allocated Kernel region from 0x%x to 0x%x\n", virtual_region->lower(), virtual_region->upper());
+    virtual_region->map(*m_kernel_page_directory);
+    return virtual_region;
+}
+
+UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_dma_region(size_t size)
+{
+    auto address_range = m_kernel_page_directory->address_allocator().allocate(size);
+    ASSERT(address_range.is_ok());
+
+    auto virtual_region = VirtualRegion::create_kernel_dma_region(address_range.value(), VirtualRegion::Read | VirtualRegion::Write);
+    dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Allocated Kernel DMA region from 0x%x to 0x%x\n", virtual_region->lower(), virtual_region->upper());
     virtual_region->map(*m_kernel_page_directory);
     return virtual_region;
 }

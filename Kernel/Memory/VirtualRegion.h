@@ -19,6 +19,7 @@ public:
     ~VirtualRegion();
 
     static UniquePtr<VirtualRegion> create_kernel_region(const AddressRange& address_range, u8 access);
+    static UniquePtr<VirtualRegion> create_kernel_dma_region(const AddressRange& address_range, u8 access);
     static UniquePtr<VirtualRegion> create_kernel_region_at(PhysicalAddress, const AddressRange& address_range, u8 access);
 
     static UniquePtr<VirtualRegion> create_user_region(const AddressRange& address_range, u8 access);
