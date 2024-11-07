@@ -33,6 +33,7 @@ private:
     UniquePtr<VirtualRegion> m_mmio_region;
     bool m_eeprom_exists { false };
 
+    UniquePtr<VirtualRegion> m_tx_region;
     // TODO: Make MAC address class
     u8 m_mac_address[6];
 };

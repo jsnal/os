@@ -33,6 +33,8 @@ E1000NetworkCard::E1000NetworkCard(Bus::PCI::Address address, u8 interrupt_line)
 
     m_mmio_region = MM.allocate_kernel_region_at(m_mmio_physical_base, mmio_size);
 
+    m_tx_region = MM.allocate_kernel_dma_region(8196 * 16);
+
     detect_eeprom();
     dbgprintf("E1000NetworkCard", "EEPROM exists: %d\n", m_eeprom_exists);
 

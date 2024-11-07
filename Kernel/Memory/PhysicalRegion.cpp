@@ -61,7 +61,7 @@ ResultReturn<PhysicalAddress> PhysicalRegion::allocate_page()
 {
     PhysicalAddress address;
 
-    if (m_used_pages == m_total_pages) {
+    if (m_used_pages >= m_total_pages) {
         return Result(Types::OutOfMemory);
     }
 
@@ -112,7 +112,7 @@ void PhysicalRegion::allocate_page_at(u32 page_index)
 
 ResultReturn<u32> PhysicalRegion::find_contiguous_pages(u32 number_of_pages)
 {
-    if (m_used_pages == m_total_pages) {
+    if (m_used_pages >= m_total_pages) {
         return Result(Types::OutOfMemory);
     }
 
@@ -121,6 +121,9 @@ ResultReturn<u32> PhysicalRegion::find_contiguous_pages(u32 number_of_pages)
     for (u32 i = 0; i < m_total_pages; i++) {
         if (!m_bitmap.get(i)) {
             number_of_pages_found++;
+            if (number_of_pages_found == number_of_pages) {
+                break;
+            }
         } else {
             number_of_pages_found = 0;
             start_page = i + 1;
