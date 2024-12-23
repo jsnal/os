@@ -66,7 +66,7 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
     for (u32 position = 0, i = 0; position < multiboot->memory_map_length; position += sizeof(multiboot_mmap_t), i++) {
         multiboot_mmap_t* mmap = multiboot->memory_map + i;
 
-        dbgprintf("MemoryManager", "  %x%x:%x%x %d (%s)\n",
+        dbgprintf("MemoryManager", "  %08x%08x:%08x%08x %d (%s)\n",
             (u32)(mmap->base_address >> 32),
             (u32)(mmap->base_address & 0xffffffff),
             (u32)(mmap->length >> 32),
@@ -135,13 +135,13 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
     dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Physical Kernel Regions:\n");
     for (size_t i = 0; i < m_kernel_physical_regions.size(); i++) {
         m_kernel_physical_regions[i]->commit();
-        dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "  Region %u: 0x%x:0x%x\n", i, m_kernel_physical_regions[i]->lower(), m_kernel_physical_regions[i]->upper());
+        dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "  Region %u: 0x%08x:0x%08x\n", i, m_kernel_physical_regions[i]->lower(), m_kernel_physical_regions[i]->upper());
     }
 
     dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Physical User Regions:\n");
     for (size_t i = 0; i < m_user_physical_regions.size(); i++) {
         m_user_physical_regions[i]->commit();
-        dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "  Region %u: 0x%x:0x%x\n", i, m_user_physical_regions[i]->lower(), m_user_physical_regions[i]->upper());
+        dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "  Region %u: 0x%08x:0x%08x\n", i, m_user_physical_regions[i]->lower(), m_user_physical_regions[i]->upper());
     }
 
     // Ensure that the boot 4 MB are identity mapped

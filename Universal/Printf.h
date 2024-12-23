@@ -99,6 +99,25 @@
     return string_length;
 }
 
+[[gnu::always_inline]] inline size_t write_alternate_form(const char type, char* buffer)
+{
+    size_t length = 0;
+    switch (type) {
+        case 'p':
+        case 'x':
+        case 'X':
+            buffer[length++] = '0';
+            buffer[length++] = 'x';
+            break;
+        case 'b':
+            buffer[length++] = '0';
+            buffer[length++] = 'b';
+            break;
+    }
+
+    return length;
+}
+
 [[gnu::always_inline]] inline int printf_buffer(char* str, size_t size, const char* format, va_list ap)
 {
     int length = 0;
@@ -108,8 +127,32 @@
     char* value_cp;
 
     for (; *format && remaining > 0; ++format) {
+        bool alternate = false;
+        u32 width = 0;
+
         if (*format == '%') {
+
+        keep_parsing:
             ++format;
+
+            if (*format >= '0' && *format <= '9') {
+                width *= 10;
+                width += *format - '0';
+                if (*(format + 1)) {
+                    goto keep_parsing;
+                }
+            }
+
+            if (*format == '#') {
+                alternate = true;
+                if (*(format + 1)) {
+                    goto keep_parsing;
+                }
+            }
+
+            if (alternate) {
+                length += write_alternate_form(*format, &str[length]);
+            }
 
             switch (*format) {
                 case '%':
@@ -123,22 +166,22 @@
                     value_cp = va_arg(ap, char*);
                     length += write_string(value_cp, &str[length], remaining);
                     break;
-                // TODO: Add width specifier (%08x)
                 case 'b':
                     value_ui = va_arg(ap, unsigned int);
-                    length += write_unsigned_number(value_ui, &str[length], 2, false, 8, remaining);
+                    length += write_unsigned_number(value_ui, &str[length], 2, false, width, remaining);
                     break;
+                case 'p':
                 case 'x':
                     value_ui = va_arg(ap, unsigned int);
-                    length += write_unsigned_number(value_ui, &str[length], 16, false, 8, remaining);
+                    length += write_unsigned_number(value_ui, &str[length], 16, false, width, remaining);
                     break;
                 case 'X':
                     value_ui = va_arg(ap, unsigned int);
-                    length += write_unsigned_number(value_ui, &str[length], 16, true, 8, remaining);
+                    length += write_unsigned_number(value_ui, &str[length], 16, true, width, remaining);
                     break;
                 case 'u':
                     value_ui = va_arg(ap, unsigned long);
-                    length += write_unsigned_number(value_ui, &str[length], 10, false, 0, remaining);
+                    length += write_unsigned_number(value_ui, &str[length], 10, false, width, remaining);
                     break;
                 case 'd':
                     value_i = va_arg(ap, int);
