@@ -1,4 +1,5 @@
 SET(KERNEL_SOURCES
+    ../Universal/PrintFormat.cpp
     ../Universal/String.cpp
     ../Universal/Time.cpp
     Bus/PCI.cpp

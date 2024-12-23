@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Universal/Printf.h>
+#include <Universal/PrintFormat.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -49,7 +49,7 @@ int printf(const char* format, ...)
 
 int vsnprintf(char* str, size_t size, const char* format, va_list ap)
 {
-    return printf_buffer(str, size, format, ap);
+    return print_format_buffer(str, size, format, ap);
 }
 
 __END_DECLS

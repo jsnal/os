@@ -4,16 +4,16 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#pragma once
-
+#include <Universal/PrintFormat.h>
 #include <Universal/Stdlib.h>
-#include <Universal/Types.h>
 #include <stdarg.h>
 #include <stdbool.h>
 
 #define CONVERT_BUFFER_SIZE 64
 
-[[gnu::always_inline]] inline size_t convert_unsigned_number(unsigned long number, char* buffer, size_t size, int base, bool caps)
+namespace Universal {
+
+static size_t convert_unsigned_number(unsigned long number, char* buffer, size_t size, int base, bool caps)
 {
     const char* digits = caps ? "0123456789ABCDEF" : "0123456789abcdef";
     size_t pos = 0;
@@ -26,7 +26,7 @@
     return pos;
 }
 
-[[gnu::always_inline]] inline size_t convert_signed_number(long number, char* buffer, size_t size, int base, bool caps)
+static size_t convert_signed_number(long number, char* buffer, size_t size, int base, bool caps)
 {
     bool negative = false;
     size_t pos = 0;
@@ -44,7 +44,7 @@
     return pos;
 }
 
-[[gnu::always_inline]] inline size_t write_unsigned_number(unsigned long number, char* buffer, int base, bool caps, int width, int max)
+static size_t write_unsigned_number(unsigned long number, char* buffer, int base, bool caps, int width, int max)
 {
     size_t written = 0;
     size_t convert_size;
@@ -67,7 +67,7 @@
     return written;
 }
 
-[[gnu::always_inline]] inline size_t write_signed_number(long number, char* buffer, int max)
+static size_t write_signed_number(long number, char* buffer, int max)
 {
     size_t written = 0;
     int convert_size;
@@ -82,7 +82,7 @@
     return written;
 }
 
-[[gnu::always_inline]] inline size_t write_string(const char* string, char* buffer, int max)
+static size_t write_string(const char* string, char* buffer, int max)
 {
     int string_length = strlen(string);
 
@@ -99,7 +99,7 @@
     return string_length;
 }
 
-[[gnu::always_inline]] inline size_t write_alternate_form(const char type, char* buffer)
+static size_t write_alternate_form(const char type, char* buffer)
 {
     size_t length = 0;
     switch (type) {
@@ -118,7 +118,7 @@
     return length;
 }
 
-[[gnu::always_inline]] inline int printf_buffer(char* str, size_t size, const char* format, va_list ap)
+int print_format_buffer(char* str, size_t size, const char* format, va_list ap)
 {
     int length = 0;
     int remaining = size;
@@ -199,13 +199,4 @@
     return length;
 }
 
-[[gnu::always_inline]] inline int printf_buffer(char* str, size_t size, const char* format, ...)
-{
-    size_t length;
-    va_list ap;
-    va_start(ap, format);
-    length = printf_buffer(str, size, format, ap);
-    va_end(ap);
-
-    return length;
 }
