@@ -46,6 +46,8 @@ public:
     VirtualAddress lower() const { return m_address_range.lower(); }
     VirtualAddress upper() const { return m_address_range.upper(); }
 
+    const Array<PhysicalAddress>& physical_pages() const { return m_physical_pages; }
+
     VirtualRegion* m_next { nullptr };
     VirtualRegion* m_previous { nullptr };
 
