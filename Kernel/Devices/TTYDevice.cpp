@@ -61,7 +61,6 @@ int TTYDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
         case TCSETSF:
             termios_p = reinterpret_cast<termios*>(argp);
             m_termios = *termios_p;
-            dump();
             break;
     }
 

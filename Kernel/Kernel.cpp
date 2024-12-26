@@ -52,7 +52,15 @@ VirtualConsole* tty0;
 
     VFS::the().init();
 
+    //    auto region = MM.allocate_kernel_dma_region(8 * 16);
+    //    auto region2 = MM.allocate_kernel_dma_region(8192 * 16);
+    //    dbgprintf("Kernel", "region lower paddr %#x\n", region->physical_pages()[0].get());
+    //    dbgprintf("Kernel", "region2 lower vaddr %#x upper vaddr %#x\n", region2->lower(), region2->upper());
+    //    dbgprintf("Kernel", "region2 lower paddr %#x\n", region2->physical_pages()[0].get());
+
     auto card = E1000NetworkCard::detect();
+    u8 buf[4] = { 'A', 'B', 'C', 'D' };
+    card->send(buf, 4);
 
     Process::create_user_process("/bin/shell", 0, 0, tty0);
     Process::create_user_process("/bin/id", 0, 0, tty0);

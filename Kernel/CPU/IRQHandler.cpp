@@ -10,7 +10,7 @@
 
 IRQHandler* s_handlers[IRQ_HANDLER_COUNT];
 
-IRQHandler::IRQHandler(int irq)
+IRQHandler::IRQHandler(u8 irq)
     : m_irq(irq)
 {
     s_handlers[m_irq] = this;
@@ -21,6 +21,18 @@ IRQHandler::~IRQHandler()
 {
     PIC::mask(m_irq);
     s_handlers[m_irq] = nullptr;
+}
+
+void IRQHandler::set_irq(u8 irq)
+{
+    if (m_irq != 0xFF) {
+        PIC::mask(m_irq);
+        s_handlers[m_irq] = nullptr;
+    }
+
+    disable_irq();
+    m_irq = irq;
+    s_handlers[m_irq] = this;
 }
 
 void IRQHandler::handle_all_irqs(const InterruptFrame& frame)
@@ -47,6 +59,7 @@ void IRQHandler::handle_all_irqs(const InterruptFrame& frame)
 
     handler->eoi();
 }
+
 void IRQHandler::eoi()
 {
     if (!m_eoi_sent) {

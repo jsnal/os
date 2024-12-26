@@ -23,8 +23,10 @@ public:
 protected:
     IRQHandler() {};
 
-    IRQHandler(int irq);
+    IRQHandler(u8 irq);
     ~IRQHandler();
+
+    void set_irq(u8 irq);
 
     bool enabled() const { return m_enabled; }
 
@@ -36,7 +38,7 @@ protected:
 private:
     virtual void handle() = 0;
 
-    u8 m_irq { 0 };
+    u8 m_irq { 0xFF };
 
     bool m_enabled { false };
     bool m_eoi_sent { false };

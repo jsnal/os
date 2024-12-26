@@ -5,24 +5,17 @@
  */
 
 #include <Kernel/Bus/PCI.h>
+#include <Kernel/CPU/IRQHandler.h>
 #include <Kernel/Memory/VirtualRegion.h>
 #include <Universal/UniquePtr.h>
 
-class E1000NetworkCard {
+class E1000NetworkCard : public IRQHandler {
 public:
     static UniquePtr<E1000NetworkCard> detect();
 
     E1000NetworkCard(Bus::PCI::Address, u8 interrupt_line);
 
-private:
-    struct [[gnu::packed]] rx_desc {
-        volatile u64 addr;
-        volatile u16 length;
-        volatile u16 checksum;
-        volatile u8 status;
-        volatile u8 errors;
-        volatile u16 special;
-    };
+    void send(const u8* data, size_t length);
 
     struct [[gnu::packed]] tx_desc {
         volatile u64 addr;
@@ -34,13 +27,27 @@ private:
         volatile u16 special;
     };
 
+private:
+    struct [[gnu::packed]] rx_desc {
+        volatile u64 addr;
+        volatile u16 length;
+        volatile u16 checksum;
+        volatile u8 status;
+        volatile u8 errors;
+        volatile u16 special;
+    };
+
     void detect_eeprom();
     u32 read_from_eeprom(u8);
 
     void read_mac_address();
 
+    void link_init();
+    void irq_init();
     void rx_init();
     void tx_init();
+
+    void handle() override;
 
     void out8(u16 address, u8 value);
     void out16(u16 address, u16 value);

@@ -243,6 +243,7 @@ UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_dma_region(size_t size)
     auto virtual_region = VirtualRegion::create_kernel_dma_region(address_range.value(), VirtualRegion::Read | VirtualRegion::Write);
     dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Allocated Kernel DMA region from 0x%x to 0x%x\n", virtual_region->lower(), virtual_region->upper());
     virtual_region->map(*m_kernel_page_directory);
+    flush_tlb();
     return virtual_region;
 }
 
@@ -254,6 +255,7 @@ UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_region_at(PhysicalAddres
     auto virtual_region = VirtualRegion::create_kernel_region_at(physical_address, address_range.value(), VirtualRegion::Read | VirtualRegion::Write | VirtualRegion::Execute);
     dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Allocated Kernel region from 0x%x to 0x%x\n", virtual_region->lower(), virtual_region->upper());
     virtual_region->map(*m_kernel_page_directory);
+    flush_tlb();
     return virtual_region;
 }
 

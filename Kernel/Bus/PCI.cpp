@@ -121,6 +121,15 @@ size_t get_BAR_size(Address address, Bar bar)
     return (~(size_mask & 0xFFFFFFF0)) + 1;
 }
 
+void enable_bus_mastering(Address address)
+{
+    Command command = {
+        .value = read16(address, PCI_COMMAND)
+    };
+    command.attributes.bus_master = true;
+    write16(address, PCI_COMMAND, command.value);
+}
+
 void enable_interrupt(Address address)
 {
     Command command = {

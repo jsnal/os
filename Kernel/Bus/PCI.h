@@ -11,6 +11,8 @@
 
 namespace Bus::PCI {
 
+#define PCI_INTERRUPT_LINE 0x3C
+
 enum Type {
     Bridge = 0x0604,
     MassStorage = 0x0101,
@@ -94,6 +96,7 @@ void write32(Address, u8 field, u32 value);
 
 size_t get_BAR_size(Address, Bar bar);
 
+void enable_bus_mastering(Address);
 void enable_interrupt(Address);
 
 void enumerate_devices(EnumerateCallback);
