@@ -36,6 +36,7 @@ if [ ! -d ${BOCHS_NAME} ]; then
       --enable-cdrom \
       --enable-x86-debugger \
       --enable-iodebug \
+      --enable-e1000 \
       --disable-plugins \
       --disable-docbook \
       --with-x --with-x11 --with-sdl2
