@@ -50,8 +50,9 @@ ResultReturn<PhysicalAddress> PhysicalRegion::allocate_contiguous_pages(u32 numb
     }
 
     u32 start_page = contiguous_pages.value();
-    for (u32 i = start_page; i < number_of_pages; i++) {
-        allocate_page_at(i);
+    u32 current_page = start_page;
+    for (u32 i = 0; i < number_of_pages; i++) {
+        allocate_page_at(current_page++);
     }
 
     return m_lower.offset(Types::PageSize * start_page);
