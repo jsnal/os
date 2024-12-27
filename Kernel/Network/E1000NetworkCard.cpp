@@ -121,7 +121,7 @@ UniquePtr<E1000NetworkCard> E1000NetworkCard::detect()
     }
 
     u8 interrupt_line = Bus::PCI::read_interrupt_line(network_card_address);
-    dbgprintf("E1000NetworkCard", "E1000 network card found at 0x%x\n", network_card_address);
+    dbgprintf("E1000NetworkCard", "E1000 network card found @ %#08x\n", network_card_address);
     return make_unique_ptr<E1000NetworkCard>(network_card_address, interrupt_line);
 }
 
@@ -131,24 +131,20 @@ E1000NetworkCard::E1000NetworkCard(Bus::PCI::Address address, u8 interrupt_line)
 {
     m_mmio_physical_base = Bus::PCI::read_BAR0(m_pci_address);
     size_t mmio_size = Bus::PCI::get_BAR_size(m_pci_address, Bus::PCI::Bar::Zero);
+    m_mmio_region = MM.allocate_kernel_region_at(m_mmio_physical_base, mmio_size);
 
     Bus::PCI::enable_bus_mastering(m_pci_address);
 
-    m_mmio_region = MM.allocate_kernel_region_at(m_mmio_physical_base, mmio_size);
-    dbgprintf("E1000NetworkCard", "MMIO base %#x\n", m_mmio_physical_base);
-
     detect_eeprom();
-    dbgprintf("E1000NetworkCard", "EEPROM exists: %d\n", m_eeprom_exists);
-
     read_mac_address();
     dbgprintf("E1000NetworkCard", "MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
         m_mac_address[0], m_mac_address[1], m_mac_address[2],
         m_mac_address[3], m_mac_address[4], m_mac_address[5]);
 
+    link_init();
+    irq_init();
     rx_init();
     tx_init();
-    irq_init();
-    link_init();
 }
 
 void E1000NetworkCard::detect_eeprom()
@@ -182,19 +178,18 @@ u32 E1000NetworkCard::read_from_eeprom(u8 address)
 void E1000NetworkCard::read_mac_address()
 {
     if (m_eeprom_exists) {
-        uint32_t temp;
-        temp = read_from_eeprom(0);
-        m_mac_address[0] = temp & 0xff;
-        m_mac_address[1] = temp >> 8;
-        temp = read_from_eeprom(1);
-        m_mac_address[2] = temp & 0xff;
-        m_mac_address[3] = temp >> 8;
-        temp = read_from_eeprom(2);
-        m_mac_address[4] = temp & 0xff;
-        m_mac_address[5] = temp >> 8;
+        uint32_t tmp = read_from_eeprom(0);
+        m_mac_address[0] = tmp & 0xff;
+        m_mac_address[1] = tmp >> 8;
+        tmp = read_from_eeprom(1);
+        m_mac_address[2] = tmp & 0xff;
+        m_mac_address[3] = tmp >> 8;
+        tmp = read_from_eeprom(2);
+        m_mac_address[4] = tmp & 0xff;
+        m_mac_address[5] = tmp >> 8;
     } else {
-        uint8_t* mem_base_mac_8 = (uint8_t*)(m_mmio_region->lower().offset(0x5400).get());
-        uint32_t* mem_base_mac_32 = (uint32_t*)(m_mmio_region->lower().offset(0x5400).get());
+        uint8_t* mem_base_mac_8 = reinterpret_cast<uint8_t*>(m_mmio_region->lower().offset(0x5400).get());
+        uint32_t* mem_base_mac_32 = reinterpret_cast<uint32_t*>(m_mmio_region->lower().offset(0x5400).get());
         if (mem_base_mac_32[0] != 0) {
             for (int i = 0; i < 6; i++) {
                 m_mac_address[i] = mem_base_mac_8[i];
@@ -218,18 +213,18 @@ void E1000NetworkCard::irq_init()
     out32(REG_IMASK, INT_LSC | INT_RXT0 | INT_RXO);
     in32(REG_ICAUSE);
     Bus::PCI::enable_interrupt(m_pci_address);
-    dbgprintf("E1000NetworkCard", "PCI IRQ line %d\n", irq);
 }
 
 void E1000NetworkCard::rx_init()
 {
     // Allocate all DMA memory for descriptors and buffers ahead of time
-    m_rx_desc_region = MM.allocate_kernel_dma_region(sizeof(rx_desc) * E1000_NUM_RX_DESC + 16);
+    m_rx_desc_region = MM.allocate_kernel_dma_region(sizeof(rx_desc) * E1000_NUM_RX_DESC);
     m_rx_buffer_region = MM.allocate_kernel_dma_region(E1000_RX_BUFFER_SIZE * E1000_NUM_RX_DESC);
+    ASSERT((m_rx_desc_region->lower() % 16) == 0);
 
-    u64 physical_desc_start = m_rx_desc_region->physical_pages()[0].get();
-    u64 physical_buffer_start = m_rx_buffer_region->physical_pages()[0].get();
-    rx_desc* descs = reinterpret_cast<rx_desc*>(m_rx_desc_region->lower().get());
+    u32 physical_desc_start = m_rx_desc_region->physical_pages()[0].get();
+    u32 physical_buffer_start = m_rx_buffer_region->physical_pages()[0].get();
+    auto descs = rx_descs_base();
     for (u32 i = 0; i < E1000_NUM_RX_DESC; i++) {
         descs[i].addr = physical_buffer_start + (E1000_RX_BUFFER_SIZE * i);
         descs[i].status = 0;
@@ -237,8 +232,8 @@ void E1000NetworkCard::rx_init()
 
     // Only 32-bit addresses need to be supported so high 4 bytes
     // of descriptor address can always we set to 0
-    out32(REG_TXDESCLO, physical_desc_start);
-    out32(REG_TXDESCHI, 0);
+    out32(REG_RXDESCLO, physical_desc_start);
+    out32(REG_RXDESCHI, 0);
     out32(REG_RXDESCLEN, E1000_NUM_RX_DESC * sizeof(rx_desc));
     out32(REG_RXDESCHEAD, 0);
     out32(REG_RXDESCTAIL, E1000_NUM_RX_DESC - 1);
@@ -248,12 +243,13 @@ void E1000NetworkCard::rx_init()
 void E1000NetworkCard::tx_init()
 {
     // Allocate all DMA memory for descriptors and buffers ahead of time
-    m_tx_desc_region = MM.allocate_kernel_dma_region(sizeof(tx_desc) * E1000_NUM_TX_DESC + 16);
+    m_tx_desc_region = MM.allocate_kernel_dma_region(sizeof(tx_desc) * E1000_NUM_TX_DESC);
     m_tx_buffer_region = MM.allocate_kernel_dma_region(E1000_TX_BUFFER_SIZE * E1000_NUM_TX_DESC);
+    ASSERT((m_tx_desc_region->lower() % 16) == 0);
 
     u32 physical_desc_start = m_tx_desc_region->physical_pages()[0].get();
     u32 physical_buffer_start = m_tx_buffer_region->physical_pages()[0].get();
-    tx_desc* descs = reinterpret_cast<tx_desc*>(m_tx_desc_region->lower().get());
+    auto descs = tx_descs_base();
     for (u32 i = 0; i < E1000_NUM_TX_DESC; i++) {
         descs[i].addr = physical_buffer_start + (E1000_TX_BUFFER_SIZE * i);
         descs[i].cmd = 0;
@@ -263,7 +259,6 @@ void E1000NetworkCard::tx_init()
     // Only 32-bit addresses need to be supported so high 4 bytes
     // of descriptor address can always we set to 0
     out32(REG_TXDESCHI, 0);
-    ASSERT(physical_desc_start % 16 == 0);
     out32(REG_TXDESCLO, physical_desc_start);
     out32(REG_TXDESCLEN, E1000_NUM_TX_DESC * sizeof(tx_desc));
     out32(REG_TXDESCHEAD, 0);
@@ -275,8 +270,8 @@ void E1000NetworkCard::tx_init()
 void E1000NetworkCard::send(const u8* data, size_t length)
 {
     u32 current_tx_desc = in32(REG_TXDESCTAIL) % E1000_NUM_TX_DESC;
-    tx_desc& desc = reinterpret_cast<tx_desc*>(m_tx_desc_region->lower().ptr())[current_tx_desc];
-    u8* buffer = reinterpret_cast<u8*>(m_tx_buffer_region->lower().get() + (E1000_TX_BUFFER_SIZE * current_tx_desc));
+    tx_desc& desc = tx_descs_base()[current_tx_desc];
+    u8* buffer = reinterpret_cast<u8*>(m_tx_buffer_region->lower().offset(E1000_TX_BUFFER_SIZE * current_tx_desc).get());
 
     memcpy(buffer, data, length);
     desc.status = 0;
@@ -284,15 +279,51 @@ void E1000NetworkCard::send(const u8* data, size_t length)
     desc.cmd = CMD_EOP | CMD_IFCS | CMD_RS;
     out32(REG_TXDESCTAIL, (current_tx_desc + 1) % E1000_NUM_TX_DESC);
 
-    // PM.enter_critical();
+    PM.enter_critical();
     while (!(desc.status & 0xff))
         ;
+    PM.exit_critical();
     dbgprintf("E1000NetworkCard", "Data sent!!\n");
+}
+
+void E1000NetworkCard::receive()
+{
+    dbgprintf("E1000NetworkCard", "Data received!!\n");
+
+    do {
+        u32 current_rx_desc = (in32(REG_RXDESCTAIL) + 1) % E1000_NUM_RX_DESC;
+        rx_desc& desc = rx_descs_base()[current_rx_desc];
+
+        if (!(desc.status & 0x1)) {
+            break;
+        }
+
+        u8* buffer = reinterpret_cast<u8*>(m_rx_buffer_region->lower().offset(E1000_RX_BUFFER_SIZE * current_rx_desc).get());
+        dbgprintf("E1000NetworkCard", "Received %u byte frame\n", desc.length);
+
+        // TODO: Send buffer to network stack
+
+        desc.status = 0;
+        out32(REG_RXDESCTAIL, current_rx_desc);
+    } while (true);
 }
 
 void E1000NetworkCard::handle_irq(const InterruptFrame&)
 {
-    dbgprintf("E1000NetworkCard", "Handling an interrupt!\n");
+    out32(REG_IMASK, 0x1);
+
+    u32 status = in32(REG_ICAUSE);
+    if (status & INT_LSC) {
+        link_init();
+    }
+
+    if (status & INT_RXO) {
+        errprintf("RX buffer overflowed!\n");
+    }
+
+    if (status & INT_RXT0) {
+        receive();
+    }
 }
 
 void E1000NetworkCard::out8(u16 address, u8 value)

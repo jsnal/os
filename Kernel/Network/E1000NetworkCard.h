@@ -42,10 +42,15 @@ private:
 
     void read_mac_address();
 
+    rx_desc* rx_descs_base() const { return reinterpret_cast<rx_desc*>(m_rx_desc_region->lower().ptr()); }
+    tx_desc* tx_descs_base() const { return reinterpret_cast<tx_desc*>(m_tx_desc_region->lower().ptr()); }
+
     void link_init();
     void irq_init();
     void rx_init();
     void tx_init();
+
+    void receive();
 
     void handle_irq(const InterruptFrame&) override;
 
@@ -57,9 +62,10 @@ private:
     u32 in32(u16 address);
 
     Bus::PCI::Address m_pci_address;
-    u8 m_interrupt_line { 0 };
     PhysicalAddress m_mmio_physical_base;
     UniquePtr<VirtualRegion> m_mmio_region;
+
+    u8 m_interrupt_line { 0 };
     bool m_eeprom_exists { false };
 
     UniquePtr<VirtualRegion> m_tx_desc_region;

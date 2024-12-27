@@ -37,6 +37,7 @@ Result IRQHandler::set_irq(u8 irq)
     disable_irq();
     m_irq = static_cast<IRQ>(irq);
     s_handlers[m_irq] = this;
+    PIC::unmask(m_irq);
 
     return Result::OK;
 }
