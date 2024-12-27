@@ -52,7 +52,7 @@ VirtualConsole* tty0;
 
     VFS::the().init();
 
-    auto card = E1000NetworkCard::detect();
+    auto card = Network::E1000NetworkCard::detect();
 
     Process::create_user_process("/bin/shell", 0, 0, tty0);
     Process::create_user_process("/bin/id", 0, 0, tty0);

@@ -7,7 +7,10 @@
 #include <Kernel/Bus/PCI.h>
 #include <Kernel/CPU/IRQHandler.h>
 #include <Kernel/Memory/VirtualRegion.h>
+#include <Kernel/Network/MACAddress.h>
 #include <Universal/UniquePtr.h>
+
+namespace Network {
 
 class E1000NetworkCard : public IRQHandler {
 public:
@@ -73,6 +76,7 @@ private:
     UniquePtr<VirtualRegion> m_rx_desc_region;
     UniquePtr<VirtualRegion> m_rx_buffer_region;
 
-    // TODO: Make MAC address class
-    u8 m_mac_address[6];
+    MACAddress m_mac_address;
 };
+
+}

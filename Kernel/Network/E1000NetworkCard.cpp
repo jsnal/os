@@ -104,6 +104,8 @@
 #define E1000_RX_BUFFER_SIZE 8192
 #define E1000_TX_BUFFER_SIZE 8192
 
+namespace Network {
+
 UniquePtr<E1000NetworkCard> E1000NetworkCard::detect()
 {
     static const Bus::PCI::ID target_id = { Bus::PCI::VendorId::Intel, Bus::PCI::DeviceId::E1000Emulated };
@@ -138,8 +140,8 @@ E1000NetworkCard::E1000NetworkCard(Bus::PCI::Address address, u8 interrupt_line)
     detect_eeprom();
     read_mac_address();
     dbgprintf("E1000NetworkCard", "MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
-        m_mac_address[0], m_mac_address[1], m_mac_address[2],
-        m_mac_address[3], m_mac_address[4], m_mac_address[5]);
+        m_mac_address.get()[0], m_mac_address.get()[1], m_mac_address.get()[2],
+        m_mac_address.get()[3], m_mac_address.get()[4], m_mac_address.get()[5]);
 
     link_init();
     irq_init();
@@ -177,25 +179,28 @@ u32 E1000NetworkCard::read_from_eeprom(u8 address)
 
 void E1000NetworkCard::read_mac_address()
 {
+    u8 mac_address[MACAddress::length];
     if (m_eeprom_exists) {
         uint32_t tmp = read_from_eeprom(0);
-        m_mac_address[0] = tmp & 0xff;
-        m_mac_address[1] = tmp >> 8;
+        mac_address[0] = tmp & 0xff;
+        mac_address[1] = tmp >> 8;
         tmp = read_from_eeprom(1);
-        m_mac_address[2] = tmp & 0xff;
-        m_mac_address[3] = tmp >> 8;
+        mac_address[2] = tmp & 0xff;
+        mac_address[3] = tmp >> 8;
         tmp = read_from_eeprom(2);
-        m_mac_address[4] = tmp & 0xff;
-        m_mac_address[5] = tmp >> 8;
+        mac_address[4] = tmp & 0xff;
+        mac_address[5] = tmp >> 8;
     } else {
         uint8_t* mem_base_mac_8 = reinterpret_cast<uint8_t*>(m_mmio_region->lower().offset(0x5400).get());
         uint32_t* mem_base_mac_32 = reinterpret_cast<uint32_t*>(m_mmio_region->lower().offset(0x5400).get());
         if (mem_base_mac_32[0] != 0) {
-            for (int i = 0; i < 6; i++) {
-                m_mac_address[i] = mem_base_mac_8[i];
+            for (int i = 0; i < MACAddress::length; i++) {
+                mac_address[i] = mem_base_mac_8[i];
             }
         }
     }
+
+    m_mac_address = mac_address;
 }
 
 void E1000NetworkCard::link_init()
@@ -354,4 +359,6 @@ u16 E1000NetworkCard::in16(u16 address)
 u32 E1000NetworkCard::in32(u16 address)
 {
     return *(volatile u32*)(m_mmio_region->lower().offset(address).get());
+}
+
 }
