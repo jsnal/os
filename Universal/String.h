@@ -24,6 +24,8 @@ public:
 
     ~String();
 
+    static String format(const char* format, ...);
+
     String& operator=(const String&);
     String& operator=(String&&);
 

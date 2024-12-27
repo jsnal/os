@@ -42,6 +42,19 @@ String::~String()
     delete[] m_data;
 }
 
+String String::format(const char* format, ...)
+{
+    // TODO: Allow for arbitrary length
+    char message[512];
+    va_list ap;
+
+    va_start(ap, format);
+    print_format_buffer(message, 512, format, ap);
+    va_end(ap);
+
+    return String(message);
+}
+
 String& String::operator=(const String& other)
 {
     if (this != &other) {

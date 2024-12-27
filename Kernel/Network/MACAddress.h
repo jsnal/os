@@ -37,7 +37,11 @@ public:
 
     const u8* get() const { return m_data; }
 
-    // TODO: Add to_string()
+    const String to_string() const
+    {
+        return String::format("%02x:%02x:%02x:%02x:%02x:%02x",
+            m_data[0], m_data[1], m_data[2], m_data[3], m_data[4], m_data[5]);
+    }
 
 private:
     u8 m_data[length];

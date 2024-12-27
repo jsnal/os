@@ -139,9 +139,7 @@ E1000NetworkCard::E1000NetworkCard(Bus::PCI::Address address, u8 interrupt_line)
 
     detect_eeprom();
     read_mac_address();
-    dbgprintf("E1000NetworkCard", "MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
-        m_mac_address.get()[0], m_mac_address.get()[1], m_mac_address.get()[2],
-        m_mac_address.get()[3], m_mac_address.get()[4], m_mac_address.get()[5]);
+    dbgprintf("E1000NetworkCard", "MAC Address: %s\n", m_mac_address.to_string().str());
 
     link_init();
     irq_init();
