@@ -8,9 +8,9 @@
 #include <Kernel/CPU/PIC.h>
 #include <Kernel/Logger.h>
 
-IRQHandler* s_handlers[IRQ_HANDLER_COUNT];
+IRQHandler* s_handlers[IRQHandler::handler_count];
 
-IRQHandler::IRQHandler(u8 irq)
+IRQHandler::IRQHandler(IRQ irq)
     : m_irq(irq)
 {
     s_handlers[m_irq] = this;
@@ -23,16 +23,22 @@ IRQHandler::~IRQHandler()
     s_handlers[m_irq] = nullptr;
 }
 
-void IRQHandler::set_irq(u8 irq)
+Result IRQHandler::set_irq(u8 irq)
 {
+    if (irq < 0 || irq > 16 || s_handlers[irq] != nullptr) {
+        return Result::Failure;
+    }
+
     if (m_irq != -1) {
         PIC::mask(m_irq);
         s_handlers[m_irq] = nullptr;
     }
 
     disable_irq();
-    m_irq = irq;
+    m_irq = static_cast<IRQ>(irq);
     s_handlers[m_irq] = this;
+
+    return Result::OK;
 }
 
 void IRQHandler::handle_all_irqs(const InterruptFrame& frame)

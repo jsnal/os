@@ -99,7 +99,7 @@ UniquePtr<PATADisk> PATADisk::create(Channel channel, Type type)
 }
 
 PATADisk::PATADisk(Bus::PCI::Address address, Channel channel, Type type)
-    : IRQHandler(channel == Primary ? IRQ_DISK_PRIMARY : IRQ_DISK_SECONDARY)
+    : IRQHandler(channel == Primary ? IRQ::DISK_PRIMARY : IRQ::DISK_SECONDARY)
     , BlockDevice()
     , m_io_base(channel == Primary ? 0x1F0 : 0x170)
     , m_control_base(channel == Primary ? 0x3F6 : 0x376)

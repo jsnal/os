@@ -33,7 +33,7 @@ PIT& PIT::the()
 }
 
 PIT::PIT()
-    : IRQHandler(IRQ_PIT)
+    : IRQHandler(IRQ::PIT)
 {
     IO::outb(PIT_COMMAND, PIT_SELECT_CHANNEL_0 | PIT_WRITE_WORD | PIT_MODE_SQUARE_WAVE);
 

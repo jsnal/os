@@ -31,7 +31,7 @@ static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t
 
 extern "C" void isr_handler(InterruptFrame* frame)
 {
-    if (frame == nullptr || frame->interrupt_number > EXCEPTION_HANDLER_COUNT + IRQ_HANDLER_COUNT - 1) {
+    if (frame == nullptr || frame->interrupt_number > EXCEPTION_HANDLER_COUNT + IRQHandler::handler_count - 1) {
         if (frame == nullptr) {
             panic("Interrupt ? is not handled! Error ?!\n");
         }

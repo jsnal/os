@@ -125,7 +125,7 @@ KeyboardDevice& KeyboardDevice::the()
 }
 
 KeyboardDevice::KeyboardDevice()
-    : IRQHandler(IRQ_KEYBOARD)
+    : IRQHandler(IRQ::KEYBOARD)
     , CharacterDevice(13, 1)
 {
     enable_irq();

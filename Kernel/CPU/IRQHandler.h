@@ -9,23 +9,30 @@
 #include <Kernel/CPU/IDT.h>
 #include <Universal/Types.h>
 
-#define IRQ_HANDLER_COUNT 16
-
-#define IRQ_PIT 0
-#define IRQ_KEYBOARD 1
-#define IRQ_DISK_PRIMARY 14
-#define IRQ_DISK_SECONDARY 15
-
 class IRQHandler {
 public:
+    // Number of possible IRQs but all of them are not supported
+    constexpr static u8 handler_count = 16;
+
+    enum IRQ {
+        UNKNOWN = -1,
+        PIT = 0,
+        KEYBOARD = 1,
+        PERIPHERAL_1 = 9,
+        PERIPHERAL_2 = 10,
+        PERIPHERAL_3 = 11,
+        DISK_PRIMARY = 14,
+        DISK_SECONDARY = 15
+    };
+
     static void handle_all_irqs(const InterruptFrame&);
 
 protected:
     IRQHandler() = default;
-    IRQHandler(u8 irq);
+    IRQHandler(IRQ irq);
     ~IRQHandler();
 
-    void set_irq(u8 irq);
+    Result set_irq(u8 irq);
 
     void send_eoi();
 
@@ -36,9 +43,7 @@ protected:
 private:
     virtual void handle_irq(const InterruptFrame&) = 0;
 
-    // Use -1 as a sentinel value since 0 is a valid IRQ
-    i16 m_irq { -1 };
-
+    IRQ m_irq { UNKNOWN };
     bool m_enabled { false };
     bool m_eoi_sent { false };
 };
