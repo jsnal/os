@@ -21,24 +21,23 @@ public:
     static void handle_all_irqs(const InterruptFrame&);
 
 protected:
-    IRQHandler() {};
-
+    IRQHandler() = default;
     IRQHandler(u8 irq);
     ~IRQHandler();
 
     void set_irq(u8 irq);
 
-    bool enabled() const { return m_enabled; }
+    void send_eoi();
 
-    void eoi();
-
-    void enable_irq();
-    void disable_irq();
+    bool irq_enabled() const { return m_enabled; }
+    void enable_irq() { m_enabled = true; };
+    void disable_irq() { m_enabled = false; };
 
 private:
-    virtual void handle() = 0;
+    virtual void handle_irq(const InterruptFrame&) = 0;
 
-    u8 m_irq { 0xFF };
+    // Use -1 as a sentinel value since 0 is a valid IRQ
+    i16 m_irq { -1 };
 
     bool m_enabled { false };
     bool m_eoi_sent { false };

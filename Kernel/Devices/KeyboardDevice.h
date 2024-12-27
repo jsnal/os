@@ -38,7 +38,7 @@ public:
     void set_keyboard_listener(KeyboardListener* keyboard_listener) { m_keyboard_listener = keyboard_listener; }
 
 private:
-    void handle() override;
+    void handle_irq(const InterruptFrame&) override;
 
     u32 get_scan_code();
 

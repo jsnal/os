@@ -43,7 +43,7 @@ public:
     Bus::PCI::Address pci_address() const { return m_pci_address; }
 
 private:
-    void handle() override;
+    void handle_irq(const InterruptFrame&) override;
 
     static void disk_interrupts_handler();
 

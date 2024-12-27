@@ -290,7 +290,7 @@ void E1000NetworkCard::send(const u8* data, size_t length)
     dbgprintf("E1000NetworkCard", "Data sent!!\n");
 }
 
-void E1000NetworkCard::handle()
+void E1000NetworkCard::handle_irq(const InterruptFrame&)
 {
     dbgprintf("E1000NetworkCard", "Handling an interrupt!\n");
 }

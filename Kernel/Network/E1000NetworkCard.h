@@ -17,16 +17,6 @@ public:
 
     void send(const u8* data, size_t length);
 
-    struct [[gnu::packed]] tx_desc {
-        volatile u64 addr;
-        volatile u16 length;
-        volatile u8 cso;
-        volatile u8 cmd;
-        volatile u8 status;
-        volatile u8 css;
-        volatile u16 special;
-    };
-
 private:
     struct [[gnu::packed]] rx_desc {
         volatile u64 addr;
@@ -34,6 +24,16 @@ private:
         volatile u16 checksum;
         volatile u8 status;
         volatile u8 errors;
+        volatile u16 special;
+    };
+
+    struct [[gnu::packed]] tx_desc {
+        volatile u64 addr;
+        volatile u16 length;
+        volatile u8 cso;
+        volatile u8 cmd;
+        volatile u8 status;
+        volatile u8 css;
         volatile u16 special;
     };
 
@@ -47,7 +47,7 @@ private:
     void rx_init();
     void tx_init();
 
-    void handle() override;
+    void handle_irq(const InterruptFrame&) override;
 
     void out8(u16 address, u8 value);
     void out16(u16 address, u16 value);

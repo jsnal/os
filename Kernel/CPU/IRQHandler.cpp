@@ -25,7 +25,7 @@ IRQHandler::~IRQHandler()
 
 void IRQHandler::set_irq(u8 irq)
 {
-    if (m_irq != 0xFF) {
+    if (m_irq != -1) {
         PIC::mask(m_irq);
         s_handlers[m_irq] = nullptr;
     }
@@ -53,27 +53,17 @@ void IRQHandler::handle_all_irqs(const InterruptFrame& frame)
 
     handler->m_eoi_sent = false;
 
-    if (handler->enabled()) {
-        handler->handle();
+    if (handler->irq_enabled()) {
+        handler->handle_irq(frame);
     }
 
-    handler->eoi();
+    handler->send_eoi();
 }
 
-void IRQHandler::eoi()
+void IRQHandler::send_eoi()
 {
     if (!m_eoi_sent) {
         PIC::eoi(m_irq);
         m_eoi_sent = true;
     }
-}
-
-void IRQHandler::enable_irq()
-{
-    m_enabled = true;
-}
-
-void IRQHandler::disable_irq()
-{
-    m_enabled = false;
 }

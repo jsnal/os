@@ -28,7 +28,7 @@ public:
     static u32 seconds_since_boot() { return s_seconds_since_boot; }
 
 private:
-    void handle() override;
+    void handle_irq(const InterruptFrame&) override;
 
     static u32 s_milliseconds_since_boot;
     static u32 s_seconds_since_boot;

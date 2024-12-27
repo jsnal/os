@@ -47,7 +47,7 @@ PIT::PIT()
     dbgprintf("PIT", "Initialized PIT: %u Hz, square wave (0x%x)\n", TICKS_PER_SECOND, timer_reload);
 }
 
-void PIT::handle()
+void PIT::handle_irq(const InterruptFrame&)
 {
     s_milliseconds_since_boot++;
     if (s_milliseconds_since_boot % TICKS_PER_SECOND == 0) {
@@ -56,7 +56,7 @@ void PIT::handle()
 
     // NOTE: Go ahead and send the end-of-interrupt just in case a process is about to yield, in
     //       which case it would never be sent and the system would hang.
-    eoi();
+    send_eoi();
 
     if (ProcessManager::started()) {
         PM.timer_tick(s_milliseconds_since_boot);
