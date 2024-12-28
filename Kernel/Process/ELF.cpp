@@ -37,7 +37,7 @@ ResultReturn<Array<ELFProgramHeader>> ELF::read_program_headers()
     }
 
     Array<ELFProgramHeader> program_headers(m_header.e_phnum);
-    int nread = m_fd->read(reinterpret_cast<u8*>(program_headers.raw_data()), m_header.e_phnum * m_header.e_phentsize);
+    int nread = m_fd->read(program_headers.ptr(), m_header.e_phnum * m_header.e_phentsize);
     if (nread < 0) {
         return Result(nread);
     }

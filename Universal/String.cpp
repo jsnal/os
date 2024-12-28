@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <Universal/PrintFormat.h>
 #include <Universal/Stdlib.h>
 #include <Universal/String.h>
 

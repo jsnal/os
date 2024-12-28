@@ -177,7 +177,7 @@ u32 E1000NetworkCard::read_from_eeprom(u8 address)
 
 void E1000NetworkCard::read_mac_address()
 {
-    u8 mac_address[MACAddress::length];
+    u8 mac_address[MACAddress::kLength];
     if (m_eeprom_exists) {
         uint32_t tmp = read_from_eeprom(0);
         mac_address[0] = tmp & 0xff;
@@ -192,7 +192,7 @@ void E1000NetworkCard::read_mac_address()
         uint8_t* mem_base_mac_8 = reinterpret_cast<uint8_t*>(m_mmio_region->lower().offset(0x5400).get());
         uint32_t* mem_base_mac_32 = reinterpret_cast<uint32_t*>(m_mmio_region->lower().offset(0x5400).get());
         if (mem_base_mac_32[0] != 0) {
-            for (int i = 0; i < MACAddress::length; i++) {
+            for (int i = 0; i < MACAddress::kLength; i++) {
                 mac_address[i] = mem_base_mac_8[i];
             }
         }

@@ -14,13 +14,13 @@ namespace Network {
 
 class [[gnu::packed]] MACAddress {
 public:
-    constexpr static u8 length = 8;
+    static constexpr u8 kLength = 8;
 
     MACAddress() = default;
 
-    MACAddress(const u8 data[length])
+    MACAddress(const u8 data[kLength])
     {
-        memcpy(m_data, data, length);
+        memcpy(m_data, data, kLength);
     }
 
     MACAddress(u8 a, u8 b, u8 c, u8 d, u8 e, u8 f)
@@ -44,7 +44,7 @@ public:
     }
 
 private:
-    u8 m_data[length];
+    u8 m_data[kLength];
 };
 
 }
