@@ -115,6 +115,16 @@ TEST_CASE(copy_and_move_inlined_data)
     CHECK_EQUAL((u32)9, array_copy[1]);
     CHECK_EQUAL((u32)5, array_copy[9]);
 
+    auto array_copy_equals = array;
+    CHECK_EQUAL((size_t)10, array.size());
+    CHECK_EQUAL((size_t)10, array_copy_equals.size());
+    CHECK_EQUAL((u32)10, array[0]);
+    CHECK_EQUAL((u32)9, array[1]);
+    CHECK_EQUAL((u32)5, array[9]);
+    CHECK_EQUAL((u32)10, array_copy_equals[0]);
+    CHECK_EQUAL((u32)9, array_copy_equals[1]);
+    CHECK_EQUAL((u32)5, array_copy_equals[9]);
+
     auto array_moved(move(array));
     CHECK_EQUAL((size_t)10, array_moved.size());
     CHECK_EQUAL((size_t)0, array.size());

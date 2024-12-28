@@ -53,20 +53,24 @@ public:
         other.m_size = 0;
     }
 
-    ~Array()
-    {
-        for (size_t i = 0; i < m_size; i++) {
-            data()[i].~T();
-        }
-        m_size = 0;
+    ~Array() { clear(); }
 
-        if (m_data != nullptr) {
-            delete[] m_data;
-            m_data = nullptr;
+    Array& operator=(const Array& other)
+    {
+        if (this != &other) {
+            clear();
+            m_size = other.m_size;
+            if (!is_inlined()) {
+                m_data = new T[m_size];
+            }
+
+            for (size_t i = 0; i < m_size; i++) {
+                data()[i] = other.data()[i];
+            }
         }
+        return *this;
     }
 
-    Array& operator=(const Array&) = delete;
     Array& operator=(Array&&) = delete;
 
     const T* data() const { return is_inlined() ? inline_data() : m_data; }
@@ -81,6 +85,19 @@ public:
     T& operator[](size_t i) { return data()[i]; }
 
 private:
+    void clear()
+    {
+        for (size_t i = 0; i < m_size; i++) {
+            data()[i].~T();
+        }
+        m_size = 0;
+
+        if (m_data != nullptr) {
+            delete[] m_data;
+            m_data = nullptr;
+        }
+    }
+
     constexpr bool is_inlined() const { return InlineCapacity > 0; }
 
     T* inline_data() { return reinterpret_cast<T*>(m_inline_data); }

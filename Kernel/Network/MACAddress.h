@@ -6,13 +6,14 @@
 
 #pragma once
 
+#include <Universal/Array.h>
 #include <Universal/Stdlib.h>
 #include <Universal/String.h>
 #include <Universal/Types.h>
 
 namespace Network {
 
-class [[gnu::packed]] MACAddress {
+class MACAddress {
 public:
     static constexpr u8 kLength = 8;
 
@@ -20,31 +21,37 @@ public:
 
     MACAddress(const u8 data[kLength])
     {
-        memcpy(m_data, data, kLength);
+        memcpy(m_address.ptr(), data, kLength);
     }
 
     MACAddress(u8 a, u8 b, u8 c, u8 d, u8 e, u8 f)
     {
-        m_data[0] = a;
-        m_data[1] = b;
-        m_data[2] = c;
-        m_data[3] = d;
-        m_data[4] = e;
-        m_data[5] = f;
+        m_address[0] = a;
+        m_address[1] = b;
+        m_address[2] = c;
+        m_address[3] = d;
+        m_address[4] = e;
+        m_address[5] = f;
     }
 
     ~MACAddress() = default;
 
-    const u8* get() const { return m_data; }
+    const Array<u8, kLength>& address() const { return m_address; }
+
+    u8 operator[](size_t i) const
+    {
+        ASSERT(i < kLength);
+        return m_address[i];
+    }
 
     const String to_string() const
     {
         return String::format("%02x:%02x:%02x:%02x:%02x:%02x",
-            m_data[0], m_data[1], m_data[2], m_data[3], m_data[4], m_data[5]);
+            m_address[0], m_address[1], m_address[2], m_address[3], m_address[4], m_address[5]);
     }
 
 private:
-    u8 m_data[kLength];
+    Array<u8, kLength> m_address;
 };
 
 }
