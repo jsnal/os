@@ -71,8 +71,7 @@ int main(int argc, char** argv)
 
     pid_t pid = fork();
 
-    getuid();
-    printf("Hello world!\n");
+    printf("Hello, World!\n");
 
     if (pid < 0) {
         return 1;

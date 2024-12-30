@@ -18,7 +18,6 @@ start_kernel_process:
 
 .global start_user_process
 start_user_process:
-    mov esp, [esp + 4]
     iret
 
 .global do_context_switch

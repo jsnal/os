@@ -28,7 +28,7 @@ class PageDirectory;
 
 extern "C" {
 void start_kernel_process(u32* old_stack_pointer);
-void start_user_process(u32* old_stack_pointer);
+void start_user_process();
 void do_context_switch(u32** old_stack_pointer, u32* new_stack_pointer, u32 cr3);
 }
 
@@ -49,7 +49,7 @@ public:
 
     static ResultReturn<Process*> create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list = true);
     static Result create_user_process(const String& path, uid_t, gid_t, TTYDevice*);
-    static ResultReturn<Process*> fork_user_process(const Process& parent, SyscallRegisters& frame);
+    static ResultReturn<Process*> fork_user_process(Process& parent, SyscallRegisters& frame);
 
     ResultReturn<VirtualRegion*> allocate_region(size_t size, u8 access);
     ResultReturn<VirtualRegion*> allocate_region_at(VirtualAddress, size_t size, u8 access);
@@ -90,13 +90,14 @@ public:
     int sys_isatty(int fd);
 
 private:
+    static constexpr size_t kKernelStackSize = 16 * KB;
+    static constexpr size_t kUserStackSize = 16 * KB;
+
     Process(const String& name, pid_t, uid_t, gid_t, bool is_kernel, TTYDevice* = nullptr);
     Process(const Process& parent);
 
-    static void new_process_runnable();
-    static void forked_process_runnable();
+    static void prepare_user_process();
 
-    Result switch_to_user_mode(bool forked);
     Result load_elf();
 
     Result initialize_kernel_stack(const SyscallRegisters&);

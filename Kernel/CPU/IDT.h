@@ -21,6 +21,9 @@ struct [[gnu::packed]] IDTPointer {
 
 struct SegmentRegisters {
     u32 ds;
+    u32 es;
+    u32 fs;
+    u32 gs;
 };
 
 struct GeneralPurposeRegisters {

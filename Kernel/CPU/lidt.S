@@ -34,6 +34,9 @@ idt_load:
 isr_common:
     pusha
     push ds
+    push es
+    push fs
+    push gs
 
     // Load the kernel's data segment
     mov ax, 0x10
@@ -46,13 +49,10 @@ isr_common:
     call isr_handler
     add esp, 0x4
 
-    // Load the original data segment
-    pop eax
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-
+    pop gs
+    pop fs
+    pop es
+    pop ds
     popa
     add esp, 0x8
     iret
@@ -61,6 +61,9 @@ isr_common:
 isr_syscall:
     pusha
     push ds
+    push es
+    push fs
+    push gs
 
     // Load the kernel's data segment
     mov ax, 0x10
@@ -73,13 +76,10 @@ isr_syscall:
     call syscall_handler
     add esp, 0x4
 
-    // Load the original data segment
-    pop eax
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-
+    pop gs
+    pop fs
+    pop es
+    pop ds
     popa
     iret
 
