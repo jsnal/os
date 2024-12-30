@@ -16,6 +16,12 @@ void _exit(int status)
     syscall(SYS_EXIT, status);
 }
 
+pid_t fork()
+{
+    pid_t ret = syscall(SYS_FORK);
+    RETURN_ERRNO(ret, ret, -1);
+}
+
 int isatty(int fd)
 {
     int ret = syscall(SYS_ISATTY, fd);
@@ -34,7 +40,12 @@ ssize_t read(int fd, void* buf, size_t count)
     RETURN_ERRNO(ret, ret, -1);
 }
 
-uid_t get_uid(void)
+pid_t getpid()
+{
+    return syscall_no_errno(SYS_GETPID);
+}
+
+uid_t getuid()
 {
     return syscall_no_errno(SYS_GETUID);
 }

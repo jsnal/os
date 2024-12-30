@@ -19,8 +19,11 @@ struct [[gnu::packed]] IDTPointer {
     u32 base;
 };
 
-struct InterruptFrame {
+struct SegmentRegisters {
     u32 ds;
+};
+
+struct GeneralPurposeRegisters {
     u32 edi;
     u32 esi;
     u32 ebp;
@@ -29,8 +32,9 @@ struct InterruptFrame {
     u32 edx;
     u32 ecx;
     u32 eax;
-    u32 interrupt_number;
-    u32 error_number;
+};
+
+struct InterruptFrame {
     u32 eip;
     u32 cs;
     u32 eflags;
@@ -38,7 +42,21 @@ struct InterruptFrame {
     u32 ss;
 };
 
-typedef void (*ExceptionHandler)(const InterruptFrame&);
+struct SyscallRegisters {
+    SegmentRegisters segment;
+    GeneralPurposeRegisters general_purpose;
+    InterruptFrame frame;
+};
+
+struct InterruptRegisters {
+    SegmentRegisters segment;
+    GeneralPurposeRegisters general_purpose;
+    u32 interrupt_number;
+    u32 error_number;
+    InterruptFrame frame;
+};
+
+typedef void (*ExceptionHandler)(const InterruptRegisters&);
 
 static inline void sti()
 {
@@ -54,7 +72,7 @@ namespace IDT {
 
 Result register_exception_handler(u32 exception_number, ExceptionHandler);
 
-void dump_interrupt_frame(const InterruptFrame&);
+void dump_interrupt_registers(const InterruptRegisters&);
 
 void init();
 
@@ -64,7 +82,7 @@ extern "C" {
 
 void idt_load(u32 base);
 
-void isr_handler(InterruptFrame*);
+void isr_handler(InterruptRegisters*);
 
 void isr_0();
 void isr_1();

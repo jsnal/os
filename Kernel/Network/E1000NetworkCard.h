@@ -55,7 +55,7 @@ private:
 
     void receive();
 
-    void handle_irq(const InterruptFrame&) override;
+    void handle_irq(const InterruptRegisters&) override;
 
     void out8(u16 address, u8 value);
     void out16(u16 address, u16 value);

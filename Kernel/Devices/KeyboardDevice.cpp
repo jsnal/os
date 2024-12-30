@@ -147,7 +147,7 @@ int KeyboardDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
     return 0;
 }
 
-void KeyboardDevice::handle_irq(const InterruptFrame&)
+void KeyboardDevice::handle_irq(const InterruptRegisters&)
 {
     u32 scan_code = get_scan_code();
     bool pressed = (scan_code & 0x80) == 0;

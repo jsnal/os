@@ -7,11 +7,11 @@
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Memory/VirtualRegion.h>
 
-VirtualRegion::VirtualRegion(const AddressRange& address_range, u8 access)
+VirtualRegion::VirtualRegion(const AddressRange& address_range, u8 access, bool is_kernel_region)
     : m_address_range(address_range)
     , m_physical_pages(page_count())
     , m_access(access)
-    , m_is_kernel_region(true)
+    , m_is_kernel_region(is_kernel_region)
 {
     MM.add_virtual_region(*this);
 }
@@ -23,7 +23,7 @@ VirtualRegion::~VirtualRegion()
 
 UniquePtr<VirtualRegion> VirtualRegion::create_kernel_region(const AddressRange& address_range, u8 access)
 {
-    auto region = make_unique_ptr<VirtualRegion>(address_range, access);
+    auto region = make_unique_ptr<VirtualRegion>(address_range, access, true);
     for (size_t i = 0; i < region->m_physical_pages.size(); i++) {
         region->m_physical_pages[i] = MM.allocate_physical_kernel_page();
     }
@@ -32,7 +32,7 @@ UniquePtr<VirtualRegion> VirtualRegion::create_kernel_region(const AddressRange&
 
 UniquePtr<VirtualRegion> VirtualRegion::create_kernel_dma_region(const AddressRange& address_range, u8 access)
 {
-    auto region = make_unique_ptr<VirtualRegion>(address_range, access);
+    auto region = make_unique_ptr<VirtualRegion>(address_range, access, true);
     auto start_address = MM.allocate_physical_contiguous_kernel_pages(region->m_physical_pages.size());
     for (size_t i = 0; i < region->m_physical_pages.size(); i++) {
         region->m_physical_pages[i] = start_address.offset(i * Types::PageSize);
@@ -42,7 +42,7 @@ UniquePtr<VirtualRegion> VirtualRegion::create_kernel_dma_region(const AddressRa
 
 UniquePtr<VirtualRegion> VirtualRegion::create_kernel_region_at(PhysicalAddress physical_address, const AddressRange& address_range, u8 access)
 {
-    auto region = make_unique_ptr<VirtualRegion>(address_range, access);
+    auto region = make_unique_ptr<VirtualRegion>(address_range, access, true);
     for (size_t i = 0; i < region->m_physical_pages.size(); i++) {
         region->m_physical_pages[i] = physical_address.offset(i * Types::PageSize);
     }
@@ -51,8 +51,7 @@ UniquePtr<VirtualRegion> VirtualRegion::create_kernel_region_at(PhysicalAddress 
 
 UniquePtr<VirtualRegion> VirtualRegion::create_user_region(const AddressRange& address_range, u8 access)
 {
-    auto region = make_unique_ptr<VirtualRegion>(address_range, access);
-    region->m_is_kernel_region = false;
+    auto region = make_unique_ptr<VirtualRegion>(address_range, access, false);
     for (size_t i = 0; i < region->m_physical_pages.size(); i++) {
         region->m_physical_pages[i] = MM.allocate_physical_user_page();
     }
@@ -116,6 +115,13 @@ Result VirtualRegion::free()
 Result VirtualRegion::contains(VirtualAddress address)
 {
     return address >= m_address_range.lower() && address <= m_address_range.upper();
+}
+
+UniquePtr<VirtualRegion> VirtualRegion::clone() const
+{
+    auto cloned_region = make_unique_ptr<VirtualRegion>(m_address_range, m_access, m_is_kernel_region);
+    cloned_region->m_physical_pages = m_physical_pages;
+    return cloned_region;
 }
 
 void VirtualRegion::invalidate_page(VirtualAddress address)

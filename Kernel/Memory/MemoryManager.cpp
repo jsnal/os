@@ -21,7 +21,7 @@ MemoryManager::MemoryManager()
 {
 }
 
-static void page_fault_exception_handler(const InterruptFrame& frame)
+static void page_fault_exception_handler(const InterruptRegisters& regs)
 {
     u32 fault_address;
     asm volatile("mov %0, cr2"
@@ -30,7 +30,7 @@ static void page_fault_exception_handler(const InterruptFrame& frame)
     if (fault_address == 0x0) {
         panic("Dereference of null pointer caused page fault\n");
     }
-    panic("Page fault at %x, error %u\n", fault_address, frame.error_number);
+    panic("Page fault at %x, error %u\n", fault_address, regs.error_number);
 }
 
 void MemoryManager::init(u32* boot_page_directory, const multiboot_information_t* multiboot)

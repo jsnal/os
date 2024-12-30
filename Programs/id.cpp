@@ -13,7 +13,7 @@ int main(int argc, char** argv)
     char test_string[22] = "Hello from Userland!\n";
     size_t test_string_length = strlen(test_string);
 
-    int id = get_uid();
+    int id = getuid();
 
     write(STDOUT_FILENO, test_string, test_string_length);
 

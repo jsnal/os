@@ -311,7 +311,7 @@ void E1000NetworkCard::receive()
     } while (true);
 }
 
-void E1000NetworkCard::handle_irq(const InterruptFrame&)
+void E1000NetworkCard::handle_irq(const InterruptRegisters&)
 {
     out32(REG_IMASK, 0x1);
 

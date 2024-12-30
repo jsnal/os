@@ -25,7 +25,7 @@ public:
         DISK_SECONDARY = 15
     };
 
-    static void handle_all_irqs(const InterruptFrame&);
+    static void handle_all_irqs(const InterruptRegisters&);
 
 protected:
     IRQHandler() = default;
@@ -41,7 +41,7 @@ protected:
     void disable_irq() { m_enabled = false; };
 
 private:
-    virtual void handle_irq(const InterruptFrame&) = 0;
+    virtual void handle_irq(const InterruptRegisters&) = 0;
 
     IRQ m_irq { UNKNOWN };
     bool m_enabled { false };

@@ -47,7 +47,7 @@ PIT::PIT()
     dbgprintf("PIT", "Initialized PIT: %u Hz, square wave (0x%x)\n", TICKS_PER_SECOND, timer_reload);
 }
 
-void PIT::handle_irq(const InterruptFrame&)
+void PIT::handle_irq(const InterruptRegisters&)
 {
     s_milliseconds_since_boot++;
     if (s_milliseconds_since_boot % TICKS_PER_SECOND == 0) {

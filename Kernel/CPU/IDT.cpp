@@ -15,7 +15,7 @@ static ExceptionHandler s_exception_handlers[EXCEPTION_HANDLER_COUNT];
 
 static IDTPointer s_idt_pointer;
 
-static void divide_by_zero_exception_handler(const InterruptFrame&)
+static void divide_by_zero_exception_handler(const InterruptRegisters&)
 {
     panic("Divide by zero detected!\n");
 }
@@ -29,25 +29,25 @@ static void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t
     s_idt_entries[num].flags = flags;
 }
 
-extern "C" void isr_handler(InterruptFrame* frame)
+extern "C" void isr_handler(InterruptRegisters* regs)
 {
-    if (frame == nullptr || frame->interrupt_number > EXCEPTION_HANDLER_COUNT + IRQHandler::handler_count - 1) {
-        if (frame == nullptr) {
+    if (regs == nullptr || regs->interrupt_number > EXCEPTION_HANDLER_COUNT + IRQHandler::handler_count - 1) {
+        if (regs == nullptr) {
             panic("Interrupt ? is not handled! Error ?!\n");
         }
-        panic("Interrupt %d is not handled! Error %d!\n", frame->interrupt_number, frame->error_number);
+        panic("Interrupt %d is not handled! Error %d!\n", regs->interrupt_number, regs->error_number);
     }
 
-    if (number_between_inclusive(frame->interrupt_number, 0, 31)) {
-        if (s_exception_handlers[frame->interrupt_number] != nullptr) {
-            s_exception_handlers[frame->interrupt_number](*frame);
+    if (number_between_inclusive(regs->interrupt_number, 0, 31)) {
+        if (s_exception_handlers[regs->interrupt_number] != nullptr) {
+            s_exception_handlers[regs->interrupt_number](*regs);
         }
 
-        dbgprintf("IDT", "Interrupt fired: %d\n", frame->interrupt_number);
-        IDT::dump_interrupt_frame(*frame);
+        dbgprintf("IDT", "Interrupt fired: %d\n", regs->interrupt_number);
+        IDT::dump_interrupt_registers(*regs);
         panic("");
     } else {
-        IRQHandler::handle_all_irqs(*frame);
+        IRQHandler::handle_all_irqs(*regs);
     }
 }
 
@@ -63,12 +63,12 @@ Result register_exception_handler(u32 exception_number, ExceptionHandler handler
     return Result::Failure;
 }
 
-void dump_interrupt_frame(const InterruptFrame& frame)
+void dump_interrupt_registers(const InterruptRegisters& regs)
 {
-    dbgprintf("IDT", "EAX=%x EBX=%x ECX=%x EDX=%x\n", frame.eax, frame.ebx, frame.ecx, frame.edx);
-    dbgprintf("IDT", "ESI=%x EDI=%x EBP=%x ESP=%x\n", frame.esi, frame.edi, frame.ebp, frame.esp);
-    dbgprintf("IDT", "DS=%x CS=%x SS=%x\n", frame.ds, frame.cs, frame.ss);
-    dbgprintf("IDT", "EFLAGS=%x\n", frame.eflags);
+    dbgprintf("IDT", "EAX=%x EBX=%x ECX=%x EDX=%x\n", regs.general_purpose.eax, regs.general_purpose.ebx, regs.general_purpose.ecx, regs.general_purpose.edx);
+    dbgprintf("IDT", "ESI=%x EDI=%x EBP=%x ESP=%x\n", regs.general_purpose.esi, regs.general_purpose.edi, regs.general_purpose.ebp, regs.general_purpose.esp);
+    dbgprintf("IDT", "DS=%x CS=%x SS=%x\n", regs.segment.ds, regs.frame.cs, regs.frame.ss);
+    dbgprintf("IDT", "EFLAGS=%x\n", regs.frame.eflags);
 }
 
 void init()

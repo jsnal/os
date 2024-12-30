@@ -68,6 +68,22 @@ int main(int argc, char** argv)
 {
     char line_buffer[LINE_LENGTH];
     printf("Starting shell 0x%x\n", 0x1337);
+
+    pid_t pid = fork();
+
+    getuid();
+    printf("Hello world!\n");
+
+    if (pid < 0) {
+        return 1;
+    } else if (pid == 0) {
+        // Child process
+        printf("Hello from the child process! PID: %d\n", getpid());
+    } else {
+        // Parent process
+        printf("Hello from the parent process! PID: %d, Child PID: %d\n", getpid(), pid);
+    }
+
     readline("$ ", line_buffer, LINE_LENGTH);
     return 0;
 }

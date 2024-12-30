@@ -15,7 +15,7 @@
 
 class VirtualRegion : public LinkedListNode<VirtualRegion> {
 public:
-    VirtualRegion(const AddressRange&, u8 access);
+    VirtualRegion(const AddressRange&, u8 access, bool is_kernel_region);
     ~VirtualRegion();
 
     static UniquePtr<VirtualRegion> create_kernel_region(const AddressRange& address_range, u8 access);
@@ -36,6 +36,8 @@ public:
     Result unmap(PageDirectory&);
     Result free();
     Result contains(VirtualAddress);
+
+    UniquePtr<VirtualRegion> clone() const;
 
     inline size_t page_count() { return ceiling_divide(m_address_range.length(), Types::PageSize); }
 

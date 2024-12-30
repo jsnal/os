@@ -17,13 +17,15 @@
 __BEGIN_DECLS
 
 void _exit(int status);
+pid_t fork();
 
 int isatty(int fd);
 
 ssize_t write(int fd, const void* buf, size_t count);
 ssize_t read(int fd, void* buf, size_t count);
 
-uid_t get_uid();
+pid_t getpid();
+uid_t getuid();
 
 __END_DECLS
 

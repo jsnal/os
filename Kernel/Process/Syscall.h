@@ -10,6 +10,6 @@
 
 namespace Syscall {
 
-extern "C" void syscall_handler(InterruptFrame&);
+extern "C" void syscall_handler(SyscallRegisters&);
 
 }

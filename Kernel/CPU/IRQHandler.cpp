@@ -42,9 +42,9 @@ Result IRQHandler::set_irq(u8 irq)
     return Result::OK;
 }
 
-void IRQHandler::handle_all_irqs(const InterruptFrame& frame)
+void IRQHandler::handle_all_irqs(const InterruptRegisters& regs)
 {
-    u8 irq_number = frame.interrupt_number - 32;
+    u8 irq_number = regs.interrupt_number - 32;
     IRQHandler* handler = s_handlers[irq_number];
 
     if (handler == nullptr) {
@@ -61,7 +61,7 @@ void IRQHandler::handle_all_irqs(const InterruptFrame& frame)
     handler->m_eoi_sent = false;
 
     if (handler->irq_enabled()) {
-        handler->handle_irq(frame);
+        handler->handle_irq(regs);
     }
 
     handler->send_eoi();

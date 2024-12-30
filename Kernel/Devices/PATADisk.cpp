@@ -209,7 +209,7 @@ void PATADisk::wait_until_ready() const
     }
 }
 
-void PATADisk::handle_irq(const InterruptFrame&)
+void PATADisk::handle_irq(const InterruptRegisters&)
 {
     dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Received an interrupt while waiting\n");
     clear_interrupts();
