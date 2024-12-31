@@ -96,11 +96,13 @@ private:
     Process(const String& name, pid_t, uid_t, gid_t, bool is_kernel, TTYDevice* = nullptr);
     Process(const Process& parent);
 
-    static void prepare_user_process();
+    static void prepare_new_user_process();
+    static void prepare_forked_user_process();
 
     Result load_elf();
 
     Result initialize_kernel_stack(const SyscallRegisters&);
+    Result initialize_forked_kernel_stack(const SyscallRegisters&);
     Result initialize_user_stack();
 
     bool is_address_accessible(VirtualAddress);

@@ -117,6 +117,18 @@ Result VirtualRegion::contains(VirtualAddress address)
     return address >= m_address_range.lower() && address <= m_address_range.upper();
 }
 
+Result VirtualRegion::copy(const VirtualRegion& dest)
+{
+    for (size_t i = 0; i < m_physical_pages.size(); i++) {
+        dbgprintf("Process", "Copy from %#08x to %#08x\n", m_physical_pages[i].get(), dest.physical_pages()[i].get());
+        auto* p = ENSURE_TAKE(MM.temporary_map(dest.physical_pages()[i])).ptr();
+        memcpy(p, lower().ptr() + Memory::kPageSize * i, Memory::kPageSize);
+        MM.temporary_unmap();
+    }
+
+    return Result::OK;
+}
+
 UniquePtr<VirtualRegion> VirtualRegion::clone() const
 {
     auto cloned_region = make_unique_ptr<VirtualRegion>(m_address_range, m_access, m_is_kernel_region);

@@ -83,6 +83,8 @@ int main(int argc, char** argv)
         printf("Hello from the parent process! PID: %d, Child PID: %d\n", getpid(), pid);
     }
 
-    readline("$ ", line_buffer, LINE_LENGTH);
+    while (true)
+        ;
+    // readline("$ ", line_buffer, LINE_LENGTH);
     return 0;
 }

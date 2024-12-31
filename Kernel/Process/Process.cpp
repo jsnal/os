@@ -93,6 +93,10 @@ ResultReturn<Process*> Process::create_kernel_process(const String& name, void (
     SyscallRegisters regs = {};
     regs.frame.eip = reinterpret_cast<u32>(process->m_entry_point);
     regs.frame.eflags = 0x0202;
+    regs.segment.ds = CPU::SegmentSelector(CPU::Ring0, 2);
+    regs.segment.es = CPU::SegmentSelector(CPU::Ring0, 2);
+    regs.segment.fs = CPU::SegmentSelector(CPU::Ring0, 2);
+    regs.segment.gs = CPU::SegmentSelector(CPU::Ring0, 2);
 
     ENSURE(process->initialize_kernel_stack(regs));
 
@@ -109,8 +113,12 @@ Result Process::create_user_process(const String& path, uid_t uid, gid_t gid, TT
     auto process = new Process(move(path), PM.get_next_pid(), uid, gid, false, tty);
 
     SyscallRegisters regs = {};
-    regs.frame.eip = reinterpret_cast<u32>(prepare_user_process);
+    regs.frame.eip = reinterpret_cast<u32>(prepare_new_user_process);
     regs.frame.eflags = 0x0202;
+    regs.segment.ds = CPU::SegmentSelector(CPU::Ring0, 2);
+    regs.segment.es = CPU::SegmentSelector(CPU::Ring0, 2);
+    regs.segment.fs = CPU::SegmentSelector(CPU::Ring0, 2);
+    regs.segment.gs = CPU::SegmentSelector(CPU::Ring0, 2);
 
     ENSURE(process->initialize_kernel_stack(regs));
     ENSURE(process->initialize_user_stack());
@@ -125,28 +133,21 @@ ResultReturn<Process*> Process::fork_user_process(Process& parent, SyscallRegist
 {
     auto child = new Process(parent);
 
-    child->m_user_stack = parent.m_user_stack->clone();
     regs.general_purpose.eax = 0;
-    // regs.frame.eip = 0xDEADBEEF;
 
-    ENSURE(child->initialize_kernel_stack(regs));
-    ENSURE(child->initialize_user_stack());
-
-    // child->m_user_stack->map(*parent.m_page_directory);
-    // memcpy(child->m_user_stack.ptr(), parent.m_user_stack.ptr(), parent.m_user_stack->address_range().length());
+    ENSURE(child->initialize_forked_kernel_stack(regs));
 
     for (size_t i = 0; i < parent.m_regions.size(); i++) {
-        dbgprintf("Process", "Parent Region %u: %#08x - %#08x (%#08x)\n", i, parent.m_regions[i]->lower(),
-            parent.m_regions[i]->upper(), parent.m_regions[i]->physical_pages()[i]);
-
-        child->m_regions.add_last(parent.m_regions[i]->clone().leak_ptr());
-        child->m_regions.last()->map(*child->m_page_directory);
-
-        dbgprintf("Process", "Child Region %u: %#08x - %#08x (%#08x)\n", i, child->m_regions[i]->lower(),
-            child->m_regions[i]->upper(), child->m_regions[i]->physical_pages()[i]);
+        ENSURE_TAKE(child->allocate_region_at(parent.m_regions[i]->lower(), parent.m_regions[i]->length(), parent.m_regions[i]->get_access()));
+        parent.m_regions[i]->copy(*child->m_regions[i]);
     }
 
+    // For now the stack will always be the first region
+    child->m_user_stack = child->m_regions[0];
+
     PM.add_process(*child);
+
+    // hang();
 
     dbgprintf("Process", "User Process '%s' (%u) forked to spawn %u\n", parent.m_name.str(), parent.m_pid, child->m_pid);
     return child;
@@ -192,6 +193,7 @@ void Process::context_switch(Process* next_process)
     m_ticks_left = 0;
     next_process->reset_timer_ticks();
     PM.tss()->esp0 = next_process->m_kernel_stack->upper();
+    // dbgprintf("Process", "Old stack pointer: %#08x, New stack pointer %#08x, TSS %#08x\n", m_previous_stack_pointer, next_process->m_previous_stack_pointer, PM.tss()->esp0);
     do_context_switch(&m_previous_stack_pointer, next_process->m_previous_stack_pointer, next_process->cr3());
 }
 
@@ -229,16 +231,57 @@ Result Process::initialize_kernel_stack(const SyscallRegisters& regs)
     stack[capacity - 15] = regs.general_purpose.esi;           // ESI
     stack[capacity - 16] = regs.general_purpose.edi;           // EDI
     stack[capacity - 17] = regs.frame.eflags;                  // EFLAGS
-                                                               //    stack[capacity - 18] = CPU::SegmentSelector(CPU::Ring0, 2); // CS
-                                                               //    stack[capacity - 19] = CPU::SegmentSelector(CPU::Ring0, 2); // FS
-                                                               //    stack[capacity - 20] = CPU::SegmentSelector(CPU::Ring0, 2); // ES
-                                                               //    stack[capacity - 21] = CPU::SegmentSelector(CPU::Ring0, 2); // DS
-    stack[capacity - 18] = regs.segment.gs;                    // CPU::SegmentSelector(CPU::Ring0, 2); // GS
-    stack[capacity - 19] = regs.segment.fs;                    // CPU::SegmentSelector(CPU::Ring0, 2); // FS
-    stack[capacity - 20] = regs.segment.es;                    // CPU::SegmentSelector(CPU::Ring0, 2); // ES
-    stack[capacity - 21] = regs.segment.ds;                    // CPU::SegmentSelector(CPU::Ring0, 2); // DS
+    stack[capacity - 18] = regs.segment.gs;                    // GS
+    stack[capacity - 19] = regs.segment.fs;                    // FS
+    stack[capacity - 20] = regs.segment.es;                    // ES
+    stack[capacity - 21] = regs.segment.ds;                    // DS
+
+    //    CPU::SegmentSelector(CPU::Ring0, 2); // DS
+    //    CPU::SegmentSelector(CPU::Ring0, 2); // ES
+    //    CPU::SegmentSelector(CPU::Ring0, 2); // FS
+    //    CPU::SegmentSelector(CPU::Ring0, 2); // GS
 
     m_previous_stack_pointer = stack + (capacity - 21);
+    for (size_t i = 0; i < m_kernel_stack->physical_pages().size(); i++) {
+        dbgprintf("Process", "paddr kernel stack %u: %#08x\n", i, m_kernel_stack->physical_pages()[i]);
+    }
+    dbgprintf("Process", "Kernel stack: %#08x\n", m_kernel_stack->upper());
+
+    return Result::OK;
+}
+
+Result Process::initialize_forked_kernel_stack(const SyscallRegisters& regs)
+{
+    m_kernel_stack = MM.allocate_kernel_region(kKernelStackSize);
+    const u32 capacity = kKernelStackSize / sizeof(u32);
+
+    if (m_kernel_stack.ptr() == nullptr) {
+        return Result::Failure;
+    }
+
+    u32* stack = reinterpret_cast<u32*>(m_kernel_stack->lower().get());
+    stack[capacity - 1] = 0x0000DEAD;                          // Fallback return address
+    stack[capacity - 2] = CPU::SegmentSelector(CPU::Ring3, 4); // User mode SS
+    stack[capacity - 3] = regs.general_purpose.esp;            // User mode ESP, setup later
+    stack[capacity - 4] = regs.frame.eflags;                   // User mode EFLAGS
+    stack[capacity - 5] = CPU::SegmentSelector(CPU::Ring3, 3); // CS for user mode
+    stack[capacity - 6] = regs.frame.eip;                      // EIP
+    stack[capacity - 7] = (u32)start_user_process;             // User mode entry point, bad address as a placeholder
+    stack[capacity - 8] = regs.general_purpose.eax;            // EAX
+    stack[capacity - 9] = regs.general_purpose.ecx;            // ECX
+    stack[capacity - 10] = regs.general_purpose.edx;           // EDX
+    stack[capacity - 11] = regs.general_purpose.ebx;           // EBX
+    stack[capacity - 12] = 0;                                  // ESP
+    stack[capacity - 13] = regs.general_purpose.ebp;           // EBP
+    stack[capacity - 14] = regs.general_purpose.esi;           // ESI
+    stack[capacity - 15] = regs.general_purpose.edi;           // EDI
+    stack[capacity - 16] = regs.frame.eflags;                  // EFLAGS
+    stack[capacity - 17] = regs.segment.gs;                    // GS
+    stack[capacity - 18] = regs.segment.fs;                    // FS
+    stack[capacity - 19] = regs.segment.es;                    // ES
+    stack[capacity - 20] = regs.segment.ds;                    // DS
+
+    m_previous_stack_pointer = stack + (capacity - 20);
 
     return Result::OK;
 }
@@ -249,7 +292,7 @@ Result Process::initialize_user_stack()
     return Result::OK;
 }
 
-void Process::prepare_user_process()
+void Process::prepare_new_user_process()
 {
     auto& process = PM.current_process();
 
@@ -278,6 +321,11 @@ void Process::prepare_user_process()
     CPU::set_es_register(CPU::SegmentSelector(CPU::Ring3, 4));
     CPU::set_fs_register(CPU::SegmentSelector(CPU::Ring3, 4));
     CPU::set_gs_register(CPU::SegmentSelector(CPU::Ring3, 4));
+}
+
+void Process::prepare_forked_user_process()
+{
+    dbgprintf("Process", "Ye we're forked\n");
 }
 
 Result Process::load_elf()
