@@ -303,13 +303,35 @@ void MemoryManager::identity_map(PageDirectory& page_directory, VirtualAddress v
     flush_tlb();
 }
 
-VirtualAddress MemoryManager::temporary_map(PhysicalAddress)
+ResultReturn<VirtualAddress> MemoryManager::temporary_map(PhysicalAddress physical_address)
 {
-    return 0;
+    if (m_is_temporary_page_mapped) {
+        return Result(Result::Failure);
+    }
+
+    auto& page_table_entry = get_page_table_entry(kernel_page_directory(), kKernelTemporaryMapBase, true);
+    page_table_entry.set_physical_page_base(physical_address);
+    page_table_entry.set_user(false);
+    page_table_entry.set_present(true);
+    page_table_entry.set_read_write(true);
+    invalidate_page(kKernelTemporaryMapBase);
+    m_is_temporary_page_mapped = true;
+    return VirtualAddress(kKernelTemporaryMapBase);
 }
 
 void MemoryManager::temporary_unmap()
 {
+    if (!m_is_temporary_page_mapped) {
+        return;
+    }
+
+    auto& page_table_entry = get_page_table_entry(kernel_page_directory(), kKernelTemporaryMapBase, true);
+    page_table_entry.set_physical_page_base(0);
+    page_table_entry.set_user(false);
+    page_table_entry.set_present(false);
+    page_table_entry.set_read_write(false);
+    invalidate_page(kKernelTemporaryMapBase);
+    m_is_temporary_page_mapped = false;
 }
 
 void MemoryManager::copy_kernel_page_directory(PageDirectory& page_directory)
@@ -382,10 +404,4 @@ void MemoryManager::remove_virtual_region(VirtualRegion& virtual_region)
     } else {
         m_user_virtual_regions.remove(&virtual_region);
     }
-}
-
-void MemoryManager::flush_tlb()
-{
-    asm volatile("mov eax, cr3; \
-                  mov cr3, eax");
 }

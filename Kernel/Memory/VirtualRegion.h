@@ -54,8 +54,6 @@ public:
     VirtualRegion* m_previous { nullptr };
 
 private:
-    void invalidate_page(VirtualAddress);
-
     AddressRange m_address_range;
 
     Array<PhysicalAddress> m_physical_pages;

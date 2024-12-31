@@ -74,7 +74,7 @@ void VirtualRegion::map(PageDirectory& page_directory)
         page_table_entry.set_present(is_readable());
         page_table_entry.set_read_write(is_writable());
 
-        invalidate_page(page_virtual_address);
+        Memory::invalidate_page(page_virtual_address);
     }
 }
 
@@ -94,7 +94,7 @@ Result VirtualRegion::unmap(PageDirectory& page_directory)
         page_table_entry.set_present(false);
         page_table_entry.set_read_write(false);
 
-        invalidate_page(page_virtual_address);
+        Memory::invalidate_page(page_virtual_address);
     }
 
     return Result::OK;
@@ -122,11 +122,4 @@ UniquePtr<VirtualRegion> VirtualRegion::clone() const
     auto cloned_region = make_unique_ptr<VirtualRegion>(m_address_range, m_access, m_is_kernel_region);
     cloned_region->m_physical_pages = m_physical_pages;
     return cloned_region;
-}
-
-void VirtualRegion::invalidate_page(VirtualAddress address)
-{
-    asm volatile("invlpg [%0]"
-                 :
-                 : "r"(address.get()));
 }

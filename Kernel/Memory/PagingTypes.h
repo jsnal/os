@@ -48,4 +48,17 @@ static constexpr inline u32 virtual_to_physical(u32 virtual_address)
     return virtual_address - kKernelVirtualBase;
 }
 
+static inline void flush_tlb()
+{
+    asm volatile("mov eax, cr3; \
+                  mov cr3, eax");
+}
+
+static inline void invalidate_page(u32 address)
+{
+    asm volatile("invlpg [%0]"
+                 :
+                 : "r"(address));
+}
+
 }

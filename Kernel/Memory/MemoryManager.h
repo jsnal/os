@@ -43,7 +43,7 @@ public:
     void protected_map(PageDirectory&, VirtualAddress, size_t);
     void identity_map(PageDirectory&, VirtualAddress, size_t);
 
-    VirtualAddress temporary_map(PhysicalAddress);
+    ResultReturn<VirtualAddress> temporary_map(PhysicalAddress);
     void temporary_unmap();
 
     void copy_kernel_page_directory(PageDirectory&);
@@ -60,8 +60,6 @@ public:
 private:
     void internal_init(u32* boot_page_directory, const multiboot_information_t*);
 
-    void flush_tlb();
-
     SharedPtr<PageDirectory> m_kernel_page_directory;
 
     ArrayList<SharedPtr<PhysicalRegion>> m_kernel_physical_regions;
@@ -71,4 +69,6 @@ private:
     LinkedList<VirtualRegion> m_user_virtual_regions;
 
     LinkedList<VMObject> m_vm_objects;
+
+    bool m_is_temporary_page_mapped { false };
 };
