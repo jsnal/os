@@ -6,11 +6,9 @@
 
 #pragma once
 
-#include <Kernel/Memory/Types.h>
+#include <Kernel/Memory/PagingTypes.h>
 #include <Universal/Bitmap.h>
 #include <Universal/Types.h>
-
-using namespace Memory;
 
 struct AllocationHeader {
     size_t allocation_size;
@@ -21,7 +19,7 @@ template<size_t CHUNK_SIZE>
 class Heap {
 public:
     Heap(u8* heap, size_t heap_size)
-        : m_total_chunks((heap_size - Types::PageSize) / CHUNK_SIZE)
+        : m_total_chunks((heap_size - Memory::kPageSize) / CHUNK_SIZE)
         , m_chunks(heap)
         , m_bitmap(heap + m_total_chunks * CHUNK_SIZE, m_total_chunks)
     {

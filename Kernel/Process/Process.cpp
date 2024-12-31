@@ -132,11 +132,6 @@ ResultReturn<Process*> Process::fork_user_process(Process& parent, SyscallRegist
     ENSURE(child->initialize_kernel_stack(regs));
     ENSURE(child->initialize_user_stack());
 
-    user_stack[user_stack_capacity - 1] = 0xDEAD0000; // Fallback return address
-    user_stack[user_stack_capacity - 2] = 0;
-    user_stack[user_stack_capacity - 3] = 0;
-    user_stack[user_stack_capacity - 4] = 0;
-
     // child->m_user_stack->map(*parent.m_page_directory);
     // memcpy(child->m_user_stack.ptr(), parent.m_user_stack.ptr(), parent.m_user_stack->address_range().length());
 
@@ -294,8 +289,8 @@ Result Process::load_elf()
     for (size_t i = 0; i < elf_program_headers.size(); i++) {
         auto program_header = elf_program_headers[i];
         if (program_header.p_type == PT_LOAD) {
-            size_t load_location = Types::page_round_down(program_header.p_vaddr);
-            size_t load_memory_size = Types::page_round_up(program_header.p_memsz);
+            size_t load_location = Memory::page_round_down(program_header.p_vaddr);
+            size_t load_memory_size = Memory::page_round_up(program_header.p_memsz);
 
             auto region = ENSURE_TAKE(allocate_region_at(load_location, load_memory_size, ELF::program_flags_to_access(program_header.p_flags)));
             fd->seek(program_header.p_offset, SEEK_SET);

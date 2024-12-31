@@ -8,6 +8,7 @@
 
 #include <Kernel/Memory/Address.h>
 #include <Kernel/Memory/AddressAllocator.h>
+#include <Kernel/Memory/PagingTypes.h>
 #include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/Types.h>
@@ -131,13 +132,13 @@ public:
 
 private:
     PageDirectory()
-        : m_address_allocator(USERSPACE_VIRTUAL_BASE, KERNEL_VIRTUAL_BASE - USERSPACE_VIRTUAL_BASE)
+        : m_address_allocator(Memory::kUserVirtualBase, Memory::kUserVirtualLength)
     {
     }
 
     PageDirectory(PhysicalAddress address)
         : m_directory_page_base(address)
-        , m_address_allocator(KERNEL_VIRTUAL_BASE + KERNEL_IMAGE_LENGTH, 0x3F000000)
+        , m_address_allocator(Memory::kKernelFreePagesVirtualBase, Memory::kKernelFreePagesLength)
     {
     }
 

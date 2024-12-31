@@ -35,7 +35,7 @@ UniquePtr<VirtualRegion> VirtualRegion::create_kernel_dma_region(const AddressRa
     auto region = make_unique_ptr<VirtualRegion>(address_range, access, true);
     auto start_address = MM.allocate_physical_contiguous_kernel_pages(region->m_physical_pages.size());
     for (size_t i = 0; i < region->m_physical_pages.size(); i++) {
-        region->m_physical_pages[i] = start_address.offset(i * Types::PageSize);
+        region->m_physical_pages[i] = start_address.offset(i * Memory::kPageSize);
     }
     return region;
 }
@@ -44,7 +44,7 @@ UniquePtr<VirtualRegion> VirtualRegion::create_kernel_region_at(PhysicalAddress 
 {
     auto region = make_unique_ptr<VirtualRegion>(address_range, access, true);
     for (size_t i = 0; i < region->m_physical_pages.size(); i++) {
-        region->m_physical_pages[i] = physical_address.offset(i * Types::PageSize);
+        region->m_physical_pages[i] = physical_address.offset(i * Memory::kPageSize);
     }
     return region;
 }
@@ -65,7 +65,7 @@ void VirtualRegion::map(PageDirectory& page_directory)
     }
 
     for (size_t i = 0; i < m_physical_pages.size(); i++) {
-        auto page_virtual_address = m_address_range.lower().offset(i * Types::PageSize);
+        auto page_virtual_address = m_address_range.lower().offset(i * Memory::kPageSize);
         auto& page_table_entry = MM.get_page_table_entry(page_directory, page_virtual_address, !m_is_kernel_region);
         auto physical_page = m_physical_pages[i];
 
@@ -85,7 +85,7 @@ Result VirtualRegion::unmap(PageDirectory& page_directory)
     }
 
     for (size_t i = 0; i < m_physical_pages.size(); i++) {
-        auto page_virtual_address = m_address_range.lower().offset(i * Types::PageSize);
+        auto page_virtual_address = m_address_range.lower().offset(i * Memory::kPageSize);
         auto& page_table_entry = MM.get_page_table_entry(page_directory, page_virtual_address, !m_is_kernel_region);
         auto physical_page = m_physical_pages[i];
 

@@ -43,6 +43,9 @@ public:
     void protected_map(PageDirectory&, VirtualAddress, size_t);
     void identity_map(PageDirectory&, VirtualAddress, size_t);
 
+    VirtualAddress temporary_map(PhysicalAddress);
+    void temporary_unmap();
+
     void copy_kernel_page_directory(PageDirectory&);
 
     PageTableEntry& get_page_table_entry(PageDirectory&, VirtualAddress, bool is_kernel);

@@ -5,8 +5,8 @@
  */
 
 #include <Kernel/Logger.h>
+#include <Kernel/Memory/PagingTypes.h>
 #include <Kernel/Memory/PhysicalRegion.h>
-#include <Kernel/Memory/Types.h>
 #include <Kernel/kmalloc.h>
 
 using namespace Memory;
@@ -35,7 +35,7 @@ void PhysicalRegion::expand(PhysicalAddress lower, PhysicalAddress upper)
 
 u32 PhysicalRegion::commit()
 {
-    m_total_pages = (m_upper - m_lower) / Types::PageSize;
+    m_total_pages = (m_upper - m_lower) / Memory::kPageSize;
     u8* bitmap_address = static_cast<u8*>(kcalloc(m_total_pages / 8));
     m_bitmap = Bitmap::wrap(bitmap_address, m_total_pages);
 
@@ -55,7 +55,7 @@ ResultReturn<PhysicalAddress> PhysicalRegion::allocate_contiguous_pages(u32 numb
         allocate_page_at(current_page++);
     }
 
-    return m_lower.offset(Types::PageSize * start_page);
+    return m_lower.offset(Memory::kPageSize * start_page);
 }
 
 ResultReturn<PhysicalAddress> PhysicalRegion::allocate_page()
@@ -63,14 +63,14 @@ ResultReturn<PhysicalAddress> PhysicalRegion::allocate_page()
     PhysicalAddress address;
 
     if (m_used_pages >= m_total_pages) {
-        return Result(Types::OutOfMemory);
+        return Result(Memory::kOutOfMemory);
     }
 
     for (u32 i = m_last_allocated_page; i < m_total_pages; i++) {
         if (!m_bitmap.get(i)) {
             allocate_page_at(i);
             m_last_allocated_page = i;
-            return m_lower.offset(Types::PageSize * i);
+            return m_lower.offset(Memory::kPageSize * i);
         }
 
         if (i >= m_total_pages) {
@@ -81,20 +81,20 @@ ResultReturn<PhysicalAddress> PhysicalRegion::allocate_page()
     }
 
     dbgprintf("PhysicalRegion", "No free pages left!\n");
-    return Result(Types::OutOfMemory);
+    return Result(Memory::kOutOfMemory);
 }
 
 Result PhysicalRegion::free_page(PhysicalAddress address)
 {
     if (address < m_lower || address > m_upper || m_used_pages == 0) {
-        return Types::AddressOutOfRange;
+        return Memory::kAddressOutOfRange;
     }
 
     if (!address.is_page_aligned()) {
-        return Types::NotPageAligned;
+        return Memory::kNotPageAligned;
     }
 
-    u32 address_index = (address - m_lower) / Types::PageSize;
+    u32 address_index = (address - m_lower) / Memory::kPageSize;
     m_bitmap.set(address_index, false);
     m_used_pages--;
 
@@ -108,13 +108,13 @@ void PhysicalRegion::allocate_page_at(u32 page_index)
     m_bitmap.set(page_index, true);
     m_used_pages++;
     dbgprintf_if(DEBUG_PHYSICAL_REGION, "PhysicalRegion", "Allocated physical page at 0x%x\n",
-        m_lower.offset(Types::PageSize * page_index));
+        m_lower.offset(Memory::kPageSize * page_index));
 }
 
 ResultReturn<u32> PhysicalRegion::find_contiguous_pages(u32 number_of_pages)
 {
     if (m_used_pages >= m_total_pages) {
-        return Result(Types::OutOfMemory);
+        return Result(Memory::kOutOfMemory);
     }
 
     u32 start_page = 0;

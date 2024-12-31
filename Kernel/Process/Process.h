@@ -8,7 +8,7 @@
 
 #include <Kernel/CPU/TSS.h>
 #include <Kernel/Devices/TTYDevice.h>
-#include <Kernel/Memory/Types.h>
+#include <Kernel/Memory/PagingTypes.h>
 #include <Kernel/Memory/VirtualRegion.h>
 #include <Kernel/Process/WaitingStatus.h>
 #include <Kernel/User.h>

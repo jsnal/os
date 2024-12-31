@@ -19,7 +19,7 @@ ResultReturn<AddressRange> AddressAllocator::allocate(size_t length)
 
     // TODO: Always round up to the nearest page since we always allocate
     //       that much anyways. Maybe don't do this in the future
-    length = Types::page_round_up(length);
+    length = Memory::page_round_up(length);
 
     int i;
     for (i = 0; i < m_ranges.size(); i++) {

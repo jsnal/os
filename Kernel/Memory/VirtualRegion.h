@@ -39,7 +39,7 @@ public:
 
     UniquePtr<VirtualRegion> clone() const;
 
-    inline size_t page_count() { return ceiling_divide(m_address_range.length(), Types::PageSize); }
+    inline size_t page_count() { return ceiling_divide(m_address_range.length(), Memory::kPageSize); }
 
     inline bool is_readable() { return m_access & Read; }
     inline bool is_writable() { return m_access & Write; }
