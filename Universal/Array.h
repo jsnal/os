@@ -84,6 +84,9 @@ public:
     const T& operator[](size_t i) const { return data()[i]; }
     T& operator[](size_t i) { return data()[i]; }
 
+    const T& first() const { return data()[0]; }
+    T& first() { return data()[0]; }
+
 private:
     void clear()
     {

@@ -71,20 +71,15 @@ int main(int argc, char** argv)
 
     pid_t pid = fork();
 
-    printf("Hello, World!\n");
-
     if (pid < 0) {
         return 1;
     } else if (pid == 0) {
-        // Child process
         printf("Hello from the child process! PID: %d\n", getpid());
+        return 0;
     } else {
-        // Parent process
         printf("Hello from the parent process! PID: %d, Child PID: %d\n", getpid(), pid);
     }
 
-    while (true)
-        ;
-    // readline("$ ", line_buffer, LINE_LENGTH);
+    readline("$ ", line_buffer, LINE_LENGTH);
     return 0;
 }

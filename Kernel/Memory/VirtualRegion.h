@@ -38,7 +38,6 @@ public:
     Result contains(VirtualAddress);
 
     Result copy(const VirtualRegion&);
-    UniquePtr<VirtualRegion> clone() const;
 
     inline size_t page_count() { return ceiling_divide(m_address_range.length(), Memory::kPageSize); }
 

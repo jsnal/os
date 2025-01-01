@@ -47,7 +47,7 @@ void ProcessManager::start()
 {
     m_current_process = m_kernel_idle_process;
     s_started = true;
-    start_kernel_process(m_kernel_idle_process->previous_stack_pointer());
+    start_first_process(m_kernel_idle_process->previous_stack_pointer());
 }
 
 void ProcessManager::timer_tick(size_t milliseconds_since_boot)

@@ -27,9 +27,9 @@ class WaitingStatus;
 class PageDirectory;
 
 extern "C" {
-void start_kernel_process(u32* old_stack_pointer);
-void start_user_process();
-void do_context_switch(u32** old_stack_pointer, u32* new_stack_pointer, u32 cr3);
+void start_first_process(u32* old_stack_pointer);
+void first_context_switch();
+void context_switch(u32** old_stack_pointer, u32* new_stack_pointer, u32 cr3);
 }
 
 class Process : public LinkedListNode<Process> {
@@ -96,13 +96,9 @@ private:
     Process(const String& name, pid_t, uid_t, gid_t, bool is_kernel, TTYDevice* = nullptr);
     Process(const Process& parent);
 
-    static void prepare_new_user_process();
-    static void prepare_forked_user_process();
-
     Result load_elf();
 
     Result initialize_kernel_stack(const SyscallRegisters&);
-    Result initialize_forked_kernel_stack(const SyscallRegisters&);
     Result initialize_user_stack();
 
     bool is_address_accessible(VirtualAddress);

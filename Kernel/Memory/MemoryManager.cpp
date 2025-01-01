@@ -267,7 +267,7 @@ UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_region_at(PhysicalAddres
 
 void MemoryManager::free_kernel_region(VirtualRegion& region)
 {
-    dbgprintf("MemoryManager", "Freeing kernel region : 0x%x - 0x%x\n", region.lower(), region.upper());
+    dbgprintf_if(DEBUG_MEMORY_MANAGER, "MemoryManager", "Freeing kernel region : 0x%x - 0x%x\n", region.lower(), region.upper());
     m_kernel_page_directory->address_allocator().free(region.address_range());
     ASSERT(region.unmap(*m_kernel_page_directory).is_ok());
     ASSERT(region.free().is_ok());

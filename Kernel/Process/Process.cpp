@@ -91,8 +91,12 @@ ResultReturn<Process*> Process::create_kernel_process(const String& name, void (
     process->m_entry_point = entry_point;
 
     SyscallRegisters regs = {};
-    regs.frame.eip = reinterpret_cast<u32>(process->m_entry_point);
+    regs.frame.ss = 0;
+    regs.frame.user_esp = 0;
     regs.frame.eflags = 0x0202;
+    regs.frame.cs = CPU::SegmentSelector(CPU::Ring0, 1);
+    regs.frame.eip = (u32)entry_point;
+
     regs.segment.ds = CPU::SegmentSelector(CPU::Ring0, 2);
     regs.segment.es = CPU::SegmentSelector(CPU::Ring0, 2);
     regs.segment.fs = CPU::SegmentSelector(CPU::Ring0, 2);
@@ -112,16 +116,20 @@ Result Process::create_user_process(const String& path, uid_t uid, gid_t gid, TT
 {
     auto process = new Process(move(path), PM.get_next_pid(), uid, gid, false, tty);
 
-    SyscallRegisters regs = {};
-    regs.frame.eip = reinterpret_cast<u32>(prepare_new_user_process);
-    regs.frame.eflags = 0x0202;
-    regs.segment.ds = CPU::SegmentSelector(CPU::Ring0, 2);
-    regs.segment.es = CPU::SegmentSelector(CPU::Ring0, 2);
-    regs.segment.fs = CPU::SegmentSelector(CPU::Ring0, 2);
-    regs.segment.gs = CPU::SegmentSelector(CPU::Ring0, 2);
-
-    ENSURE(process->initialize_kernel_stack(regs));
+    ENSURE(process->load_elf());
     ENSURE(process->initialize_user_stack());
+
+    SyscallRegisters regs = {};
+    regs.frame.ss = CPU::SegmentSelector(CPU::Ring3, 4);
+    regs.frame.user_esp = reinterpret_cast<u32>(reinterpret_cast<u32*>(process->m_user_stack->lower().ptr()) + ((kUserStackSize / sizeof(u32)) - 4));
+    regs.frame.eflags = 0x0202;
+    regs.frame.cs = CPU::SegmentSelector(CPU::Ring3, 3);
+    regs.frame.eip = (u32)process->m_entry_point;
+    regs.segment.ds = CPU::SegmentSelector(CPU::Ring3, 4);
+    regs.segment.es = CPU::SegmentSelector(CPU::Ring3, 4);
+    regs.segment.fs = CPU::SegmentSelector(CPU::Ring3, 4);
+    regs.segment.gs = CPU::SegmentSelector(CPU::Ring3, 4);
+    ENSURE(process->initialize_kernel_stack(regs));
 
     PM.add_process(*process);
 
@@ -134,20 +142,17 @@ ResultReturn<Process*> Process::fork_user_process(Process& parent, SyscallRegist
     auto child = new Process(parent);
 
     regs.general_purpose.eax = 0;
-
-    ENSURE(child->initialize_forked_kernel_stack(regs));
+    ENSURE(child->initialize_kernel_stack(regs));
 
     for (size_t i = 0; i < parent.m_regions.size(); i++) {
         ENSURE_TAKE(child->allocate_region_at(parent.m_regions[i]->lower(), parent.m_regions[i]->length(), parent.m_regions[i]->get_access()));
         parent.m_regions[i]->copy(*child->m_regions[i]);
     }
 
-    // For now the stack will always be the first region
+    // For now the user stack will always be the first region
     child->m_user_stack = child->m_regions[0];
 
     PM.add_process(*child);
-
-    // hang();
 
     dbgprintf("Process", "User Process '%s' (%u) forked to spawn %u\n", parent.m_name.str(), parent.m_pid, child->m_pid);
     return child;
@@ -193,8 +198,7 @@ void Process::context_switch(Process* next_process)
     m_ticks_left = 0;
     next_process->reset_timer_ticks();
     PM.tss()->esp0 = next_process->m_kernel_stack->upper();
-    // dbgprintf("Process", "Old stack pointer: %#08x, New stack pointer %#08x, TSS %#08x\n", m_previous_stack_pointer, next_process->m_previous_stack_pointer, PM.tss()->esp0);
-    do_context_switch(&m_previous_stack_pointer, next_process->m_previous_stack_pointer, next_process->cr3());
+    ::context_switch(&m_previous_stack_pointer, next_process->m_previous_stack_pointer, next_process->cr3());
 }
 
 Result Process::initialize_kernel_stack(const SyscallRegisters& regs)
@@ -206,82 +210,39 @@ Result Process::initialize_kernel_stack(const SyscallRegisters& regs)
         return Result::Failure;
     }
 
-    dbgprintf("Process", "EAX=%x EBX=%x ECX=%x EDX=%x\n", regs.general_purpose.eax, regs.general_purpose.ebx, regs.general_purpose.ecx, regs.general_purpose.edx);
-    dbgprintf("Process", "ESI=%x EDI=%x EBP=%x ESP=%x\n", regs.general_purpose.esi, regs.general_purpose.edi, regs.general_purpose.ebp, regs.general_purpose.esp);
-    dbgprintf("Process", "DS=%x CS=%x SS=%x\n", regs.segment.ds, regs.frame.cs, regs.frame.ss);
-    dbgprintf("Process", "EFLAGS=%x\n", regs.frame.eflags);
-    dbgprintf("Process", "EIP = %x\n", regs.frame.eip);
+#if DEBUG_PROCESS
+    dbgprintf("Process", "Initializing Kernel stack:\n");
+    dbgprintf("Process", "  EAX=%#x EBX=%#x ECX=%#x EDX=%#x\n", regs.general_purpose.eax, regs.general_purpose.ebx, regs.general_purpose.ecx, regs.general_purpose.edx);
+    dbgprintf("Process", "  ESI=%#x EDI=%#x EBP=%#x ESP=%#x\n", regs.general_purpose.esi, regs.general_purpose.edi, regs.general_purpose.ebp, regs.general_purpose.esp);
+    dbgprintf("Process", "  GS=%#x FS=%#x ES=%#x DS=%#x\n", regs.segment.gs, regs.segment.fs, regs.segment.es, regs.segment.ds);
+    dbgprintf("Process", "  EIP=%#x CS=%#x EFLAGS=%#x\n", regs.frame.eip, regs.frame.cs, regs.frame.eflags);
+#endif
 
     u32* stack = reinterpret_cast<u32*>(m_kernel_stack->lower().get());
+    stack[capacity - 1] = regs.frame.ss;              // SS
+    stack[capacity - 2] = regs.frame.user_esp;        // ESP
+    stack[capacity - 3] = regs.frame.eflags;          // EFLAGS
+    stack[capacity - 4] = regs.frame.cs;              // CS
+    stack[capacity - 5] = regs.frame.eip;             // EIP
+    stack[capacity - 6] = regs.general_purpose.eax;   // EAX
+    stack[capacity - 7] = regs.general_purpose.ebx;   // EBX
+    stack[capacity - 8] = regs.general_purpose.ecx;   // ECX
+    stack[capacity - 9] = regs.general_purpose.edx;   // EDX
+    stack[capacity - 10] = regs.general_purpose.ebp;  // EBP
+    stack[capacity - 11] = regs.general_purpose.edi;  // EDI
+    stack[capacity - 12] = regs.general_purpose.esi;  // ESI
+    stack[capacity - 13] = regs.segment.ds;           // DS
+    stack[capacity - 14] = regs.segment.es;           // ES
+    stack[capacity - 15] = regs.segment.fs;           // FS
+    stack[capacity - 16] = regs.segment.gs;           // GS
+    stack[capacity - 17] = (u32)first_context_switch; // Entry point
+    stack[capacity - 18] = 0x0202;                    // EFLAGS, always start the same
+    stack[capacity - 19] = regs.general_purpose.ebx;  // EBX
+    stack[capacity - 20] = regs.general_purpose.esi;  // EDI
+    stack[capacity - 21] = regs.general_purpose.edi;  // EDI
+    stack[capacity - 22] = 0;                         // EBP
 
-    stack[capacity - 1] = 0x0000DEAD;                          // Fallback return address
-    stack[capacity - 2] = CPU::SegmentSelector(CPU::Ring3, 4); // User mode SS
-    stack[capacity - 3] = 0;                                   // User mode ESP, setup later
-    stack[capacity - 4] = regs.frame.eflags;                   // User mode EFLAGS
-    stack[capacity - 5] = CPU::SegmentSelector(CPU::Ring3, 3); // CS for user mode
-    stack[capacity - 6] = 0;                                   // User mode EIP, setup later
-    stack[capacity - 7] = 0xDEADBEEF;                          // User mode entry point, bad address as a placeholder
-    stack[capacity - 8] = regs.frame.eip;                      // EIP
-    stack[capacity - 9] = regs.general_purpose.eax;            // EAX
-    stack[capacity - 10] = regs.general_purpose.ecx;           // ECX
-    stack[capacity - 11] = regs.general_purpose.edx;           // EDX
-    stack[capacity - 12] = regs.general_purpose.ebx;           // EBX
-    stack[capacity - 13] = regs.general_purpose.esp;           // ESP
-    stack[capacity - 14] = regs.general_purpose.ebp;           // EBP
-    stack[capacity - 15] = regs.general_purpose.esi;           // ESI
-    stack[capacity - 16] = regs.general_purpose.edi;           // EDI
-    stack[capacity - 17] = regs.frame.eflags;                  // EFLAGS
-    stack[capacity - 18] = regs.segment.gs;                    // GS
-    stack[capacity - 19] = regs.segment.fs;                    // FS
-    stack[capacity - 20] = regs.segment.es;                    // ES
-    stack[capacity - 21] = regs.segment.ds;                    // DS
-
-    //    CPU::SegmentSelector(CPU::Ring0, 2); // DS
-    //    CPU::SegmentSelector(CPU::Ring0, 2); // ES
-    //    CPU::SegmentSelector(CPU::Ring0, 2); // FS
-    //    CPU::SegmentSelector(CPU::Ring0, 2); // GS
-
-    m_previous_stack_pointer = stack + (capacity - 21);
-    for (size_t i = 0; i < m_kernel_stack->physical_pages().size(); i++) {
-        dbgprintf("Process", "paddr kernel stack %u: %#08x\n", i, m_kernel_stack->physical_pages()[i]);
-    }
-    dbgprintf("Process", "Kernel stack: %#08x\n", m_kernel_stack->upper());
-
-    return Result::OK;
-}
-
-Result Process::initialize_forked_kernel_stack(const SyscallRegisters& regs)
-{
-    m_kernel_stack = MM.allocate_kernel_region(kKernelStackSize);
-    const u32 capacity = kKernelStackSize / sizeof(u32);
-
-    if (m_kernel_stack.ptr() == nullptr) {
-        return Result::Failure;
-    }
-
-    u32* stack = reinterpret_cast<u32*>(m_kernel_stack->lower().get());
-    stack[capacity - 1] = 0x0000DEAD;                          // Fallback return address
-    stack[capacity - 2] = CPU::SegmentSelector(CPU::Ring3, 4); // User mode SS
-    stack[capacity - 3] = regs.general_purpose.esp;            // User mode ESP, setup later
-    stack[capacity - 4] = regs.frame.eflags;                   // User mode EFLAGS
-    stack[capacity - 5] = CPU::SegmentSelector(CPU::Ring3, 3); // CS for user mode
-    stack[capacity - 6] = regs.frame.eip;                      // EIP
-    stack[capacity - 7] = (u32)start_user_process;             // User mode entry point, bad address as a placeholder
-    stack[capacity - 8] = regs.general_purpose.eax;            // EAX
-    stack[capacity - 9] = regs.general_purpose.ecx;            // ECX
-    stack[capacity - 10] = regs.general_purpose.edx;           // EDX
-    stack[capacity - 11] = regs.general_purpose.ebx;           // EBX
-    stack[capacity - 12] = 0;                                  // ESP
-    stack[capacity - 13] = regs.general_purpose.ebp;           // EBP
-    stack[capacity - 14] = regs.general_purpose.esi;           // ESI
-    stack[capacity - 15] = regs.general_purpose.edi;           // EDI
-    stack[capacity - 16] = regs.frame.eflags;                  // EFLAGS
-    stack[capacity - 17] = regs.segment.gs;                    // GS
-    stack[capacity - 18] = regs.segment.fs;                    // FS
-    stack[capacity - 19] = regs.segment.es;                    // ES
-    stack[capacity - 20] = regs.segment.ds;                    // DS
-
-    m_previous_stack_pointer = stack + (capacity - 20);
+    m_previous_stack_pointer = stack + (capacity - 22);
 
     return Result::OK;
 }
@@ -289,43 +250,18 @@ Result Process::initialize_forked_kernel_stack(const SyscallRegisters& regs)
 Result Process::initialize_user_stack()
 {
     m_user_stack = ENSURE_TAKE(allocate_region(kUserStackSize, VirtualRegion::Read | VirtualRegion::Write));
+    auto temporary_mapping = ENSURE_TAKE(MM.temporary_map(m_user_stack->physical_pages()[m_user_stack->physical_pages().size() - 1]));
+
+    const u32 capacity = Memory::kPageSize / sizeof(u32);
+    u32* stack = reinterpret_cast<u32*>(temporary_mapping.ptr());
+    stack[capacity - 1] = 0xDEAD0000; // Fallback return address;
+    stack[capacity - 2] = 0;
+    stack[capacity - 3] = 0;
+    stack[capacity - 4] = 0;
+
+    MM.temporary_unmap();
+
     return Result::OK;
-}
-
-void Process::prepare_new_user_process()
-{
-    auto& process = PM.current_process();
-
-    constexpr u32 kernel_stack_capacity = kKernelStackSize / sizeof(u32);
-    constexpr u32 user_stack_capacity = kUserStackSize / sizeof(u32);
-
-    u32* user_stack = reinterpret_cast<u32*>(process.m_user_stack->lower().ptr());
-    u32* kernel_stack = reinterpret_cast<u32*>(process.m_kernel_stack->lower().ptr());
-
-    ASSERT(process.load_elf().is_ok());
-
-    // Setup the kernel stack to switch to user mode when this function returns. The start_user_process()
-    // function simply calls 'iret' which sets up the rest of the registers. See initialize_kernel_stack()
-    // for the stack layout at very beginning of a process.
-    kernel_stack[kernel_stack_capacity - 3] = reinterpret_cast<u32>(user_stack + (user_stack_capacity - 4));
-    kernel_stack[kernel_stack_capacity - 6] = reinterpret_cast<u32>(process.m_entry_point);
-    kernel_stack[kernel_stack_capacity - 7] = reinterpret_cast<u32>(start_user_process);
-
-    // Setup the user process stack
-    user_stack[user_stack_capacity - 1] = 0xDEAD0000; // Fallback return address
-    user_stack[user_stack_capacity - 2] = 0;
-    user_stack[user_stack_capacity - 3] = 0;
-    user_stack[user_stack_capacity - 4] = 0;
-
-    CPU::set_ds_register(CPU::SegmentSelector(CPU::Ring3, 4));
-    CPU::set_es_register(CPU::SegmentSelector(CPU::Ring3, 4));
-    CPU::set_fs_register(CPU::SegmentSelector(CPU::Ring3, 4));
-    CPU::set_gs_register(CPU::SegmentSelector(CPU::Ring3, 4));
-}
-
-void Process::prepare_forked_user_process()
-{
-    dbgprintf("Process", "Ye we're forked\n");
 }
 
 Result Process::load_elf()
@@ -341,8 +277,14 @@ Result Process::load_elf()
             size_t load_memory_size = Memory::page_round_up(program_header.p_memsz);
 
             auto region = ENSURE_TAKE(allocate_region_at(load_location, load_memory_size, ELF::program_flags_to_access(program_header.p_flags)));
+
+            // TODO: Find a faster way to do this
+            auto tmp_kernel_region = MM.allocate_kernel_region_at(region->physical_pages().first(), load_memory_size);
+
             fd->seek(program_header.p_offset, SEEK_SET);
-            fd->read(region->lower().ptr(), program_header.p_filesz);
+            fd->read(tmp_kernel_region->lower().ptr(), program_header.p_filesz);
+
+            MM.free_kernel_region(*tmp_kernel_region);
         }
     }
 
@@ -453,8 +395,11 @@ void Process::sys_exit(int status)
 pid_t Process::sys_fork(SyscallRegisters& regs)
 {
     auto fork_result = Process::fork_user_process(*this, regs);
-    auto child = ENSURE_TAKE(fork_result);
+    if (fork_result.is_error()) {
+        return -EFAULT;
+    }
 
+    auto child = fork_result.release_value();
     return child->pid();
 }
 
