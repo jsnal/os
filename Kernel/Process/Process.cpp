@@ -90,13 +90,12 @@ ResultReturn<Process*> Process::create_kernel_process(const String& name, void (
     auto process = new Process(move(name), pid, 0, 0, true);
     process->m_entry_point = entry_point;
 
-    SyscallRegisters regs = {};
+    TaskRegisters regs = {};
     regs.frame.ss = 0;
     regs.frame.user_esp = 0;
     regs.frame.eflags = 0x0202;
     regs.frame.cs = CPU::SegmentSelector(CPU::Ring0, 1);
     regs.frame.eip = (u32)entry_point;
-
     regs.segment.ds = CPU::SegmentSelector(CPU::Ring0, 2);
     regs.segment.es = CPU::SegmentSelector(CPU::Ring0, 2);
     regs.segment.fs = CPU::SegmentSelector(CPU::Ring0, 2);
@@ -119,7 +118,7 @@ Result Process::create_user_process(const String& path, uid_t uid, gid_t gid, TT
     ENSURE(process->load_elf());
     ENSURE(process->initialize_user_stack());
 
-    SyscallRegisters regs = {};
+    TaskRegisters regs = {};
     regs.frame.ss = CPU::SegmentSelector(CPU::Ring3, 4);
     regs.frame.user_esp = reinterpret_cast<u32>(reinterpret_cast<u32*>(process->m_user_stack->lower().ptr()) + ((kUserStackSize / sizeof(u32)) - 4));
     regs.frame.eflags = 0x0202;
@@ -137,7 +136,7 @@ Result Process::create_user_process(const String& path, uid_t uid, gid_t gid, TT
     return Result::OK;
 }
 
-ResultReturn<Process*> Process::fork_user_process(Process& parent, SyscallRegisters& regs)
+ResultReturn<Process*> Process::fork_user_process(Process& parent, TaskRegisters& regs)
 {
     auto child = new Process(parent);
 
@@ -201,7 +200,7 @@ void Process::context_switch(Process* next_process)
     ::context_switch(&m_previous_stack_pointer, next_process->m_previous_stack_pointer, next_process->cr3());
 }
 
-Result Process::initialize_kernel_stack(const SyscallRegisters& regs)
+Result Process::initialize_kernel_stack(const TaskRegisters& regs)
 {
     m_kernel_stack = MM.allocate_kernel_region(kKernelStackSize);
     const u32 capacity = kKernelStackSize / sizeof(u32);
@@ -392,7 +391,7 @@ void Process::sys_exit(int status)
     m_state = Process::Dead;
 }
 
-pid_t Process::sys_fork(SyscallRegisters& regs)
+pid_t Process::sys_fork(TaskRegisters& regs)
 {
     auto fork_result = Process::fork_user_process(*this, regs);
     if (fork_result.is_error()) {

@@ -49,7 +49,7 @@ public:
 
     static ResultReturn<Process*> create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list = true);
     static Result create_user_process(const String& path, uid_t, gid_t, TTYDevice*);
-    static ResultReturn<Process*> fork_user_process(Process& parent, SyscallRegisters& frame);
+    static ResultReturn<Process*> fork_user_process(Process& parent, TaskRegisters& frame);
 
     ResultReturn<VirtualRegion*> allocate_region(size_t size, u8 access);
     ResultReturn<VirtualRegion*> allocate_region_at(VirtualAddress, size_t size, u8 access);
@@ -81,7 +81,7 @@ public:
     void reap();
 
     void sys_exit(int status);
-    pid_t sys_fork(SyscallRegisters&);
+    pid_t sys_fork(TaskRegisters&);
     int sys_ioctl(int fd, uint32_t request, uint32_t* argp);
     ssize_t sys_write(int fd, const void* buf, size_t count);
     ssize_t sys_read(int fd, void* buf, size_t count);
@@ -98,7 +98,7 @@ private:
 
     Result load_elf();
 
-    Result initialize_kernel_stack(const SyscallRegisters&);
+    Result initialize_kernel_stack(const TaskRegisters&);
     Result initialize_user_stack();
 
     bool is_address_accessible(VirtualAddress);

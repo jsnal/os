@@ -45,7 +45,7 @@ struct InterruptFrame {
     u32 ss;
 };
 
-struct SyscallRegisters {
+struct TaskRegisters {
     SegmentRegisters segment;
     GeneralPurposeRegisters general_purpose;
     InterruptFrame frame;

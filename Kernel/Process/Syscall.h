@@ -10,6 +10,6 @@
 
 namespace Syscall {
 
-extern "C" void syscall_handler(SyscallRegisters&);
+extern "C" void syscall_handler(TaskRegisters&);
 
 }

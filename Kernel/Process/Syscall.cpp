@@ -12,7 +12,7 @@
 
 namespace Syscall {
 
-int handle(SyscallRegisters& regs, int call, int arg1, int arg2, int arg3)
+int handle(TaskRegisters& regs, int call, int arg1, int arg2, int arg3)
 {
     Process& p = PM.current_process();
 
@@ -43,7 +43,7 @@ int handle(SyscallRegisters& regs, int call, int arg1, int arg2, int arg3)
     return 0;
 }
 
-void syscall_handler(SyscallRegisters& regs)
+void syscall_handler(TaskRegisters& regs)
 {
     regs.general_purpose.eax = handle(regs, regs.general_purpose.eax, regs.general_purpose.ebx,
         regs.general_purpose.ecx, regs.general_purpose.edx);
