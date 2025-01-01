@@ -10,3 +10,7 @@ add_executable(TestString
     ../../Universal/String.cpp
     ../../Universal/PrintFormat.cpp
 )
+add_executable(TestBasicString
+    TestBasicString.cpp
+    ../../Universal/BasicString.cpp
+)

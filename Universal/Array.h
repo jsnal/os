@@ -87,6 +87,9 @@ public:
     const T& first() const { return data()[0]; }
     T& first() { return data()[0]; }
 
+    const T& last() const { return data()[size() - 1]; }
+    T& last() { return data()[size() - 1]; }
+
 private:
     void clear()
     {
@@ -107,7 +110,7 @@ private:
     const T* inline_data() const { return reinterpret_cast<const T*>(m_inline_data); }
 
     T* m_data { nullptr };
-    alignas(T) u8 m_inline_data[sizeof(T) * InlineCapacity];
+    alignas(T) u8 m_inline_data[sizeof(T) * InlineCapacity] {};
     size_t m_size { 0 };
 };
 

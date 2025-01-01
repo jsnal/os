@@ -133,6 +133,20 @@ TEST_CASE(copy_and_move_inlined_data)
     CHECK_EQUAL((u32)5, array_moved[9]);
 }
 
+TEST_CASE(first_and_last)
+{
+    auto array = Array<u32, 10>(10);
+    CHECK_EQUAL((size_t)10, array.size());
+
+    array[0] = 10;
+    array[1] = 9;
+    CHECK_EQUAL((u32)10, array.first());
+    CHECK_EQUAL((u32)0, array.last());
+
+    array[9] = 5;
+    CHECK_EQUAL((u32)5, array.last());
+}
+
 TEST_MAIN(TestArray, [&]() {
     ENUMERATE_TEST(create);
     ENUMERATE_TEST(add);
@@ -141,4 +155,5 @@ TEST_MAIN(TestArray, [&]() {
     ENUMERATE_TEST(inlined_data);
     ENUMERATE_TEST(copy_and_move);
     ENUMERATE_TEST(copy_and_move_inlined_data);
+    ENUMERATE_TEST(first_and_last);
 })
