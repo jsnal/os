@@ -42,7 +42,7 @@ int printf(const char* format, ...)
     int length = vsnprintf(buffer, 512, format, ap);
     va_end(ap);
 
-    write(STDOUT_FILENO, buffer, 512);
+    write(STDOUT_FILENO, buffer, length);
 
     return length;
 }

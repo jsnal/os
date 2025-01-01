@@ -44,7 +44,7 @@ public:
 
     void set_pixel(size_t row, size_t column, u32 character) override;
     void put_char(u8 character);
-    void put_string(const char*);
+    void put_string(const char*, size_t length);
 
     void clear_row(u8 row);
     void clear() override;

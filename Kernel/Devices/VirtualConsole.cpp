@@ -25,7 +25,7 @@ void VirtualConsole::set_focused(bool focus)
 size_t VirtualConsole::tty_write(const u8* buffer, size_t count)
 {
     if (m_graphics->is_text_mode()) {
-        m_graphics->put_string(reinterpret_cast<const char*>(buffer));
+        m_graphics->put_string(reinterpret_cast<const char*>(buffer), count);
     } else {
         dbgprintf("VirtualConsole", "Currently does not support non-text mode devices\n");
     }
