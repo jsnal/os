@@ -16,7 +16,7 @@
 #include <LibC/errno_defines.h>
 #include <Universal/Stdlib.h>
 
-Process::Process(const String& name, pid_t pid, uid_t uid, gid_t gid, bool is_kernel, TTYDevice* tty)
+Process::Process(const String& name, pid_t pid, bool is_kernel, TTYDevice* tty)
     : m_name(move(name))
     , m_pid(pid)
     , m_user(User::root())
@@ -87,7 +87,7 @@ Process::~Process()
 ResultReturn<Process*> Process::create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list)
 {
     pid_t pid = add_to_process_list ? PM.get_next_pid() : 0;
-    auto process = new Process(move(name), pid, 0, 0, true);
+    auto process = new Process(move(name), pid, true);
     process->m_entry_point = entry_point;
 
     TaskRegisters regs = {};
@@ -111,9 +111,12 @@ ResultReturn<Process*> Process::create_kernel_process(const String& name, void (
     return process;
 }
 
-Result Process::create_user_process(const String& path, uid_t uid, gid_t gid, TTYDevice* tty)
+ResultReturn<Process*> Process::create_user_process(const String& path, pid_t pid, TTYDevice* tty)
 {
-    auto process = new Process(move(path), PM.get_next_pid(), uid, gid, false, tty);
+    if (pid == 0) {
+        pid = PM.get_next_pid();
+    }
+    auto process = new Process(move(path), pid, false, tty);
 
     ENSURE(process->load_elf());
     ENSURE(process->initialize_user_stack());
@@ -133,7 +136,7 @@ Result Process::create_user_process(const String& path, uid_t uid, gid_t gid, TT
     PM.add_process(*process);
 
     dbgprintf("Process", "User Process '%s' (%u) spawned\n", process->m_name.str(), process->m_pid);
-    return Result::OK;
+    return process;
 }
 
 ResultReturn<Process*> Process::fork_user_process(Process& parent, TaskRegisters& regs)
@@ -336,6 +339,15 @@ ResultReturn<SharedPtr<FileDescriptor>> Process::find_file_descriptor(int fd)
     return m_fds[fd];
 }
 
+void Process::die()
+{
+    for (int i = 0; i < m_regions.size(); i++) {
+        deallocate_region(i);
+    }
+
+    m_state = Process::Dead;
+}
+
 ssize_t Process::sys_write(int fd, const void* buf, size_t count)
 {
     if (count < 0) {
@@ -383,12 +395,7 @@ ssize_t Process::sys_read(int fd, void* buf, size_t count)
 void Process::sys_exit(int status)
 {
     dbgprintf("Process", "'%s' (%u) exited with status %d\n", m_name.str(), m_pid, status);
-
-    for (int i = 0; i < m_regions.size(); i++) {
-        deallocate_region(i);
-    }
-
-    m_state = Process::Dead;
+    die();
 }
 
 pid_t Process::sys_fork(TaskRegisters& regs)
@@ -400,6 +407,22 @@ pid_t Process::sys_fork(TaskRegisters& regs)
 
     auto child = fork_result.release_value();
     return child->pid();
+}
+
+int Process::sys_execve(const char* pathname, char* const argv[], char* const envp[])
+{
+    {
+        auto execve_result = Process::create_user_process(pathname, m_pid, m_tty.ptr());
+        if (execve_result.is_error()) {
+            return -EFAULT;
+        }
+
+        auto new_process = execve_result.release_value();
+    }
+
+    die();
+    PM.yield();
+    return -1;
 }
 
 int Process::sys_ioctl(int fd, uint32_t request, uint32_t* argp)

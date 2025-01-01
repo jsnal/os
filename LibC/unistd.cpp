@@ -22,6 +22,12 @@ pid_t fork()
     RETURN_ERRNO(ret, ret, -1);
 }
 
+int execve(const char* pathname, char* const argv[], char* const envp[])
+{
+    int ret = syscall(syscall(SYS_EXECVE, (int)pathname, (int)argv, (int)envp));
+    RETURN_ERRNO(ret, ret, -1);
+}
+
 int isatty(int fd)
 {
     int ret = syscall(SYS_ISATTY, fd);

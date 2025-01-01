@@ -48,7 +48,7 @@ public:
     ~Process();
 
     static ResultReturn<Process*> create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list = true);
-    static Result create_user_process(const String& path, uid_t, gid_t, TTYDevice*);
+    static ResultReturn<Process*> create_user_process(const String& path, pid_t, TTYDevice*);
     static ResultReturn<Process*> fork_user_process(Process& parent, TaskRegisters& frame);
 
     ResultReturn<VirtualRegion*> allocate_region(size_t size, u8 access);
@@ -82,6 +82,7 @@ public:
 
     void sys_exit(int status);
     pid_t sys_fork(TaskRegisters&);
+    int sys_execve(const char* pathname, char* const argv[], char* const envp[]);
     int sys_ioctl(int fd, uint32_t request, uint32_t* argp);
     ssize_t sys_write(int fd, const void* buf, size_t count);
     ssize_t sys_read(int fd, void* buf, size_t count);
@@ -93,7 +94,7 @@ private:
     static constexpr size_t kKernelStackSize = 16 * KB;
     static constexpr size_t kUserStackSize = 16 * KB;
 
-    Process(const String& name, pid_t, uid_t, gid_t, bool is_kernel, TTYDevice* = nullptr);
+    Process(const String& name, pid_t, bool is_kernel, TTYDevice* = nullptr);
     Process(const Process& parent);
 
     Result load_elf();
@@ -103,6 +104,8 @@ private:
 
     bool is_address_accessible(VirtualAddress);
     ResultReturn<SharedPtr<FileDescriptor>> find_file_descriptor(int fd);
+
+    void die();
 
     u8 m_ticks_left { 0 };
 
