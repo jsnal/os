@@ -14,7 +14,7 @@ int ioctl(int fd, unsigned long request, ...)
     va_list ap;
     va_start(ap, request);
     unsigned arg = va_arg(ap, unsigned);
-    int ret = syscall(SYS_IOCTL, fd, (int)request, (int)arg);
+    int ret = syscall(SYS_ioctl, fd, (int)request, (int)arg);
     va_end(ap);
     RETURN_ERRNO(ret, ret, -1);
 }

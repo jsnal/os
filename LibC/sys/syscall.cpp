@@ -30,27 +30,27 @@ static inline int __attribute((always_inline)) __invoke_syscall(int call, int ar
     return ret;
 }
 
-int syscall(int call)
+int syscall(SyscallOpcode call)
 {
     return __invoke_syscall(call, 0, 0, 0);
 }
 
-int syscall(int call, int arg1)
+int syscall(SyscallOpcode call, int arg1)
 {
     return __invoke_syscall(call, arg1, 0, 0);
 }
 
-int syscall(int call, int arg1, int arg2)
+int syscall(SyscallOpcode call, int arg1, int arg2)
 {
     return __invoke_syscall(call, arg1, arg2, 0);
 }
 
-int syscall(int call, int arg1, int arg2, int arg3)
+int syscall(SyscallOpcode call, int arg1, int arg2, int arg3)
 {
     return __invoke_syscall(call, arg1, arg2, arg3);
 }
 
-int syscall_no_errno(int call)
+int syscall_no_errno(SyscallOpcode call)
 {
     return __invoke_syscall(call, 0, 0, 0, false);
 }

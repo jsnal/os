@@ -13,47 +13,47 @@ __BEGIN_DECLS
 
 void _exit(int status)
 {
-    syscall(SYS_EXIT, status);
+    syscall(SYS_exit, status);
 }
 
 pid_t fork()
 {
-    pid_t ret = syscall(SYS_FORK);
+    pid_t ret = syscall(SYS_fork);
     RETURN_ERRNO(ret, ret, -1);
 }
 
 int execve(const char* pathname, char* const argv[], char* const envp[])
 {
-    int ret = syscall(syscall(SYS_EXECVE, (int)pathname, (int)argv, (int)envp));
+    int ret = syscall(SYS_execve, (int)pathname, (int)argv, (int)envp);
     RETURN_ERRNO(ret, ret, -1);
 }
 
 int isatty(int fd)
 {
-    int ret = syscall(SYS_ISATTY, fd);
+    int ret = syscall(SYS_isatty, fd);
     RETURN_ERRNO(ret, ret, -1);
 }
 
 ssize_t write(int fd, const void* buf, size_t count)
 {
-    int ret = syscall(SYS_WRITE, fd, (int)buf, count);
+    int ret = syscall(SYS_write, fd, (int)buf, count);
     RETURN_ERRNO(ret, ret, -1);
 }
 
 ssize_t read(int fd, void* buf, size_t count)
 {
-    int ret = syscall(SYS_READ, fd, (int)buf, count);
+    int ret = syscall(SYS_read, fd, (int)buf, count);
     RETURN_ERRNO(ret, ret, -1);
 }
 
 pid_t getpid()
 {
-    return syscall_no_errno(SYS_GETPID);
+    return syscall_no_errno(SYS_getpid);
 }
 
 uid_t getuid()
 {
-    return syscall_no_errno(SYS_GETUID);
+    return syscall_no_errno(SYS_getuid);
 }
 
 __END_DECLS

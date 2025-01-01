@@ -97,7 +97,7 @@ private:
     Process(const String& name, pid_t, bool is_kernel, TTYDevice* = nullptr);
     Process(const Process& parent);
 
-    Result load_elf();
+    ResultReturn<u32> load_elf();
 
     Result initialize_kernel_stack(const TaskRegisters&);
     Result initialize_user_stack();
@@ -127,7 +127,7 @@ private:
     UniquePtr<VirtualRegion> m_user_stack { nullptr };
     u32* m_previous_stack_pointer { nullptr };
 
-    void (*m_entry_point)() { nullptr };
+    // void (*m_entry_point)() { nullptr };
 
     State m_state;
 

@@ -10,35 +10,39 @@
 #include <Kernel/Process/Syscall.h>
 #include <LibC/sys/syscall_defines.h>
 
+#define TRACE_SYSCALLS 0
+
 namespace Syscall {
 
-int handle(TaskRegisters& regs, int call, int arg1, int arg2, int arg3)
+int handle(TaskRegisters& regs, SyscallOpcode call, int arg1, int arg2, int arg3)
 {
     Process& p = PM.current_process();
 
+    dbgprintf_if(TRACE_SYSCALLS, "Syscall", "%s called %s()\n", p.name().str(), syscall_opcode_to_string(call));
+
     switch (call) {
-        case SYS_EXIT:
+        case SYS_exit:
             p.sys_exit(arg1);
             PM.yield();
             return 0;
-        case SYS_FORK:
+        case SYS_fork:
             return p.sys_fork(regs);
-        case SYS_EXECVE:
+        case SYS_execve:
             return p.sys_execve((const char*)arg1, (char* const*)arg2, (char* const*)arg3);
-        case SYS_WRITE:
+        case SYS_write:
             return p.sys_write(arg1, (const void*)arg2, arg3);
-        case SYS_READ:
+        case SYS_read:
             return p.sys_read(arg1, (void*)arg2, arg3);
-        case SYS_GETPID:
+        case SYS_getpid:
             return p.sys_getpid();
-        case SYS_GETUID:
+        case SYS_getuid:
             return p.sys_getuid();
-        case SYS_IOCTL:
+        case SYS_ioctl:
             return p.sys_ioctl(arg1, arg2, (uint32_t*)arg3);
-        case SYS_ISATTY:
+        case SYS_isatty:
             return p.sys_isatty(arg1);
         default:
-            dbgprintf_if(DEBUG_PROCESS, "Syscall", "Unknown syscall %u\n", call);
+            dbgprintf_if(TRACE_SYSCALLS, "Syscall", "Unknown syscall %u\n", call);
             break;
     }
 
@@ -47,8 +51,8 @@ int handle(TaskRegisters& regs, int call, int arg1, int arg2, int arg3)
 
 void syscall_handler(TaskRegisters& regs)
 {
-    regs.general_purpose.eax = handle(regs, regs.general_purpose.eax, regs.general_purpose.ebx,
-        regs.general_purpose.ecx, regs.general_purpose.edx);
+    regs.general_purpose.eax = handle(regs, static_cast<SyscallOpcode>(regs.general_purpose.eax),
+        regs.general_purpose.ebx, regs.general_purpose.ecx, regs.general_purpose.edx);
 }
 
 }

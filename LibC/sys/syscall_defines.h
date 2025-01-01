@@ -6,12 +6,34 @@
 
 #pragma once
 
-#define SYS_EXIT 1
-#define SYS_FORK 2
-#define SYS_EXECVE 3
-#define SYS_WRITE 4
-#define SYS_READ 5
-#define SYS_GETPID 6
-#define SYS_GETUID 7
-#define SYS_IOCTL 8
-#define SYS_ISATTY 9
+#define SYSCALL_OPCODE_LIST \
+    SYSCALL_OPCODE(exit)    \
+    SYSCALL_OPCODE(fork)    \
+    SYSCALL_OPCODE(execve)  \
+    SYSCALL_OPCODE(write)   \
+    SYSCALL_OPCODE(read)    \
+    SYSCALL_OPCODE(getpid)  \
+    SYSCALL_OPCODE(getuid)  \
+    SYSCALL_OPCODE(ioctl)   \
+    SYSCALL_OPCODE(isatty)
+
+#define SYSCALL_OPCODE(x) SYS_##x,
+enum SyscallOpcode {
+    SYSCALL_OPCODE_LIST
+};
+#undef SYSCALL_OPCODE
+
+#define SYSCALL_OPCODE(x) \
+    case SYS_##x:         \
+        return #x;
+inline constexpr const char* syscall_opcode_to_string(SyscallOpcode call)
+{
+    switch (call) {
+        SYSCALL_OPCODE_LIST
+        default:
+            break;
+    }
+
+    return "Unknown ";
+}
+#undef SYSCALL_OPCODE

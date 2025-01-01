@@ -88,7 +88,6 @@ ResultReturn<Process*> Process::create_kernel_process(const String& name, void (
 {
     pid_t pid = add_to_process_list ? PM.get_next_pid() : 0;
     auto process = new Process(move(name), pid, true);
-    process->m_entry_point = entry_point;
 
     TaskRegisters regs = {};
     regs.frame.ss = 0;
@@ -118,7 +117,7 @@ ResultReturn<Process*> Process::create_user_process(const String& path, pid_t pi
     }
     auto process = new Process(move(path), pid, false, tty);
 
-    ENSURE(process->load_elf());
+    u32 entry_point = ENSURE_TAKE(process->load_elf());
     ENSURE(process->initialize_user_stack());
 
     TaskRegisters regs = {};
@@ -126,7 +125,7 @@ ResultReturn<Process*> Process::create_user_process(const String& path, pid_t pi
     regs.frame.user_esp = reinterpret_cast<u32>(reinterpret_cast<u32*>(process->m_user_stack->lower().ptr()) + ((kUserStackSize / sizeof(u32)) - 4));
     regs.frame.eflags = 0x0202;
     regs.frame.cs = CPU::SegmentSelector(CPU::Ring3, 3);
-    regs.frame.eip = (u32)process->m_entry_point;
+    regs.frame.eip = (u32)entry_point;
     regs.segment.ds = CPU::SegmentSelector(CPU::Ring3, 4);
     regs.segment.es = CPU::SegmentSelector(CPU::Ring3, 4);
     regs.segment.fs = CPU::SegmentSelector(CPU::Ring3, 4);
@@ -266,7 +265,7 @@ Result Process::initialize_user_stack()
     return Result::OK;
 }
 
-Result Process::load_elf()
+ResultReturn<u32> Process::load_elf()
 {
     auto fd = ENSURE_TAKE(VFS::the().open(m_name, 0, 0));
     auto elf_result = ENSURE_TAKE(ELF::create(fd));
@@ -290,8 +289,7 @@ Result Process::load_elf()
         }
     }
 
-    m_entry_point = (void (*)())elf_result->header().e_entry;
-    return Result::OK;
+    return elf_result->header().e_entry;
 }
 
 void Process::set_ready()
