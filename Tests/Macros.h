@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <cstring>
 #include <iostream>
 
@@ -14,74 +15,74 @@
 #define FORMAT_BOLD "\x1b[1m"
 #define FORMAT_RESET "\x1b[0m"
 
-#define CHECK_TRUE(actual)                       \
-    do {                                         \
-        check_equal(name, passed, true, actual); \
+#define CHECK_TRUE(actual)                                 \
+    do {                                                   \
+        check_equal(name, __LINE__, passed, true, actual); \
     } while (0)
 
-#define CHECK_FALSE(actual)                       \
-    do {                                          \
-        check_equal(name, passed, false, actual); \
+#define CHECK_FALSE(actual)                                 \
+    do {                                                    \
+        check_equal(name, __LINE__, passed, false, actual); \
     } while (0)
 
-#define CHECK_NULL(actual)                          \
-    do {                                            \
-        check_equal(name, passed, nullptr, actual); \
+#define CHECK_NULL(actual)                                    \
+    do {                                                      \
+        check_equal(name, __LINE__, passed, nullptr, actual); \
     } while (0)
 
-#define CHECK_NONNULL(actual)                           \
-    do {                                                \
-        check_not_equal(name, passed, nullptr, actual); \
+#define CHECK_NONNULL(actual)                                     \
+    do {                                                          \
+        check_not_equal(name, __LINE__, passed, nullptr, actual); \
     } while (0)
 
-#define CHECK_STR_EQUAL(expected, actual)                \
-    do {                                                 \
-        check_str_equal(name, passed, expected, actual); \
+#define CHECK_STR_EQUAL(expected, actual)                          \
+    do {                                                           \
+        check_str_equal(name, __LINE__, passed, expected, actual); \
     } while (0)
 
-#define CHECK_EQUAL(expected, actual)                \
-    do {                                             \
-        check_equal(name, passed, expected, actual); \
+#define CHECK_EQUAL(expected, actual)                          \
+    do {                                                       \
+        check_equal(name, __LINE__, passed, expected, actual); \
     } while (0)
 
-#define CHECK_NOT_EQUAL(expected, actual)                \
-    do {                                                 \
-        check_not_equal(name, passed, expected, actual); \
+#define CHECK_NOT_EQUAL(expected, actual)                          \
+    do {                                                           \
+        check_not_equal(name, __LINE__, passed, expected, actual); \
     } while (0)
 
-template<typename T>
-static void check_equal(const char* name, bool* passed, T expected, T actual)
+template<typename A, typename B>
+inline void check_equal(const char* name, int line, bool* passed, A expected, B actual)
 {
     bool local_passed = expected == actual;
     if (!local_passed) {
-        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << " Expected: '" << expected << "' Actual: '" << actual << "'\n";
+        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << ":" << line << " Expected: '" << expected << "' Actual: '" << actual << "'\n";
         *passed = false;
     }
 }
 
 template<typename T>
-static void check_equal(const char* name, bool* passed, std::nullptr_t, T actual)
+inline void check_equal(const char* name, int line, bool* passed, std::nullptr_t, T actual)
 {
-    check_equal(name, passed, (T) nullptr, actual);
+    check_equal(name, line, passed, (T) nullptr, actual);
 }
 
-template<typename T>
-static void check_not_equal(const char* name, bool* passed, T expected, T actual)
+template<typename A, typename B>
+inline void check_not_equal(const char* name, int line, bool* passed, A expected, B actual)
 {
     bool local_passed = expected != actual;
     if (!local_passed) {
-        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << " Expected: '" << expected << "' Actual: '" << actual << "'\n";
+        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << ":" << line << " Expected: '" << expected << "' Actual: '" << actual << "'\n";
         *passed = false;
     }
 }
 
 template<typename T>
-static void check_not_equal(const char* name, bool* passed, std::nullptr_t, T actual)
+inline void check_not_equal(const char* name, int line, bool* passed, std::nullptr_t, T actual)
 {
-    check_not_equal(name, passed, (T) nullptr, actual);
+    check_not_equal(name, line, passed, (T) nullptr, actual);
 }
 
-static void check_str_equal(const char* name, bool* passed, const char* expected, const char* actual)
+inline void check_str_equal(const char* name, int line, bool* passed, const char* expected, const char* actual)
 {
     bool local_passed = true;
     size_t expected_length = strlen(expected);
@@ -99,7 +100,7 @@ static void check_str_equal(const char* name, bool* passed, const char* expected
     }
 
     if (!local_passed) {
-        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << " Expected: '" << expected << "' Actual: '" << actual << "'\n";
+        std::cout << FORMAT_FAIL << "FAIL " << FORMAT_RESET << name << ":" << line << " Expected: '" << expected << "' Actual: '" << actual << "'\n";
         *passed = false;
     }
 }
