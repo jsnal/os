@@ -6,9 +6,9 @@
 
 #pragma once
 
-#ifdef KERNEL
-#    include <Kernel/Stdlib.h>
-#else
+#include <Universal/Types.h>
+
+#ifndef KERNEL
 #    include <stdlib.h>
 #    include <string.h>
 #endif
@@ -59,3 +59,19 @@ inline constexpr T exchange(T& slot, U&& value)
     slot = forward<T>(value);
     return old;
 }
+
+namespace Universal {
+
+size_t strlen(const char* str);
+void* memset(void* dest, int val, size_t length);
+void* memcpy(void* dest, const void* src, size_t n);
+void* memmove(void* dest, const void* src, size_t n);
+
+}
+
+#ifdef KERNEL
+using Universal::memcpy;
+using Universal::memmove;
+using Universal::memset;
+using Universal::strlen;
+#endif

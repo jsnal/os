@@ -1,5 +1,6 @@
 SET(KERNEL_SOURCES
     ../Universal/PrintFormat.cpp
+    ../Universal/Stdlib.cpp
     ../Universal/String.cpp
     ../Universal/Time.cpp
     Bus/PCI.cpp
@@ -43,7 +44,6 @@ SET(KERNEL_SOURCES
     Process/WaitingStatus.cpp
     Process/context.S
     Runtime.cpp
-    Stdlib.cpp
     kmalloc.cpp
     kprintf.cpp
 )

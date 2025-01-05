@@ -12,8 +12,6 @@
 
 __BEGIN_DECLS
 
-#define MAX_ITOA_LEN 64
-
 size_t strlen(const char* str);
 
 void* memset(void* s, int c, size_t n);

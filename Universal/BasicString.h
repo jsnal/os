@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <Universal/Stdlib.h>
 #include <Universal/Types.h>
 
 namespace Universal {
@@ -63,6 +64,13 @@ public:
         }
     }
 
+    BasicString& operator=(const BasicString& other)
+    {
+        if (this != &other) {
+        }
+        return *this;
+    }
+
     const char* str() const { return data(); }
 
     size_t length() const { return m_size; }
@@ -73,26 +81,7 @@ private:
 
     constexpr bool is_inlined() const { return m_size <= kInlineCapacity; }
 
-    void ensure_capacity(size_t capacity)
-    {
-        if (is_inlined()) {
-            if (capacity <= kInlineCapacity) {
-                return;
-            }
-
-            // Ran out of room in the inline buffer. Switch to the heap
-            m_capacity = m_capacity + (m_capacity / 2);
-            m_data = new CharT[m_capacity + 1];
-            memcpy(m_data, m_inline_data, m_size * sizeof(CharT));
-            m_data[m_size] = '\0';
-        } else if (capacity > m_capacity) {
-            m_capacity = m_capacity + (m_capacity / 2);
-            CharT* new_data = new CharT[m_capacity + 1];
-            memcpy(new_data, m_data, m_size * sizeof(CharT));
-            delete[] m_data;
-            m_data = new_data;
-        }
-    }
+    void ensure_capacity(size_t capacity);
 
     static constexpr u8 kInlineCapacity = 15 / sizeof(CharT);
 
@@ -110,5 +99,7 @@ private:
 using string = BasicString<char>;
 
 }
+
+template class Universal::BasicString<char>;
 
 using Universal::BasicString;

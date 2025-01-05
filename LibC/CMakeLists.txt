@@ -1,5 +1,6 @@
 SET(LIBC_SOURCES
     ../Universal/PrintFormat.cpp
+    ../Universal/Stdlib.cpp
     crt0.cpp
     stdio.cpp
     stdlib.cpp

@@ -1,15 +1,19 @@
-#include <Kernel/Stdlib.h>
+/*
+ * Copyright (c) 2024, Jason Long <jasonlongball@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 
-extern "C" {
+#include <Universal/Stdlib.h>
+
+namespace Universal {
 
 void* memset(void* dest, int val, size_t length)
 {
-    u8* ptr = static_cast<u8*>(dest);
-
+    unsigned char* ptr = (unsigned char*)dest;
     while (length-- > 0) {
         *ptr++ = val;
     }
-
     return dest;
 }
 
@@ -30,8 +34,8 @@ void* memcpy(void* dest, const void* src, size_t n)
 
 void* memmove(void* dest, const void* src, size_t n)
 {
-    const uint8_t* from = (const uint8_t*)src;
-    uint8_t* to = (uint8_t*)dest;
+    const u8* from = (const u8*)src;
+    u8* to = (u8*)dest;
 
     if (from == to || n == 0) {
         return dest;
@@ -61,38 +65,7 @@ size_t strlen(const char* str)
     while (str[length]) {
         length++;
     }
-
     return length;
 }
 
-char* itoa(char* dest, size_t size, int a, int base)
-{
-    char buffer[sizeof(a) * 8 + 1 + 1];
-    static const u8 digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    if (base < 2 || base > 36) {
-        return nullptr;
-    }
-
-    char* p = &buffer[sizeof(buffer) - 1];
-    *p = '\0';
-
-    int an = a < 0 ? a : -a;
-
-    do {
-        *(--p) = digits[-(an % base)];
-        an /= base;
-    } while (an);
-
-    if (a < 0) {
-        *(--p) = '-';
-    }
-
-    size_t str_size = &buffer[sizeof(buffer)] - p;
-    if (str_size > size) {
-        return nullptr;
-    }
-
-    return static_cast<char*>(memcpy(dest, p, str_size));
-}
 }
