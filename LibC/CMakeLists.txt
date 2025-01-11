@@ -1,6 +1,4 @@
-SET(LIBC_SOURCES
-    ../Universal/PrintFormat.cpp
-    ../Universal/Stdlib.cpp
+set(LIBC_SOURCES
     crt0.cpp
     stdio.cpp
     stdlib.cpp
@@ -11,9 +9,5 @@ SET(LIBC_SOURCES
     unistd.cpp
 )
 
-set(SOURCES
-    ${LIBC_SOURCES}
-)
-
-add_library(c STATIC ${SOURCES})
+add_library(c STATIC ${LIBC_SOURCES} ${UNIVERSAL_SOURCES})
 install(TARGETS c DESTINATION LibC)

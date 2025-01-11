@@ -131,18 +131,18 @@ TEST_CASE(first_and_last)
 
 TEST_CASE(pointers)
 {
-    auto array_list = ArrayList<char*>();
+    auto array_list = ArrayList<const char*>();
     CHECK_TRUE(array_list.empty());
 
-    array_list.add(0, (char*)"string1");
-    array_list.add(1, (char*)"string2");
-    array_list.add(2, (char*)"string3");
-    array_list.add(3, (char*)"string4");
+    array_list.add(0, "string1");
+    array_list.add(1, "string2");
+    array_list.add(2, "string3");
+    array_list.add(3, "string4");
 
-    CHECK_EQUAL((char*)"string1", array_list[0]);
-    CHECK_EQUAL((char*)"string2", array_list[1]);
-    CHECK_EQUAL((char*)"string3", array_list[2]);
-    CHECK_EQUAL((char*)"string4", array_list[3]);
+    CHECK_EQUAL("string1", array_list[0]);
+    CHECK_EQUAL("string2", array_list[1]);
+    CHECK_EQUAL("string3", array_list[2]);
+    CHECK_EQUAL("string4", array_list[3]);
 }
 
 TEST_CASE(shared_pointers)

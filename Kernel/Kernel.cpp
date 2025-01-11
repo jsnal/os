@@ -19,6 +19,7 @@
 #include <Kernel/Network/E1000NetworkCard.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/panic.h>
+#include <Universal/StringView.h>
 #include <Universal/Types.h>
 
 #if !defined(__os__)
@@ -77,6 +78,9 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
     if (multiboot->flags & MULTIBOOT_FLAGS_BOOTLOADER_NAME) {
         dbgprintf("Kernel", "Loaded by: %s\n", multiboot->bootloader_name);
     }
+
+    auto s = "Test string"sv;
+    dbgprintf("Kernel", "Printing StringView: %s\n", s.str());
 
     kmalloc_init();
 

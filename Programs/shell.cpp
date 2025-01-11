@@ -68,22 +68,21 @@ int main(int argc, char** argv)
 {
     char line_buffer[LINE_LENGTH];
     printf("Starting shell 0x%x\n", 0x1337);
-
     pid_t pid = fork();
 
     if (pid < 0) {
         return 1;
     } else if (pid == 0) {
-        const char* execve_program = "/bin/id";
-        char* const execve_argv[] = { nullptr };
-        char* const execve_envp[] = { nullptr };
+        //        const char* execve_program = "/bin/id";
+        //        char* const execve_argv[] = { nullptr };
+        //        char* const execve_envp[] = { nullptr };
 
-        if (execve(execve_program, execve_argv, execve_envp) == -1) {
-            return -1;
-        }
+        //        if (execve(execve_program, execve_argv, execve_envp) == -1) {
+        //            return -1;
+        //        }
 
-        // printf("Hello from the child process! PID: %d\n", getpid());
-        // return 0;
+        printf("Hello from the child process! PID: %d\n", getpid());
+        return 0;
     } else {
         printf("Hello from the parent process! PID: %d, Child PID: %d\n", getpid(), pid);
     }

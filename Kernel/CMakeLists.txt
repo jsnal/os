@@ -1,8 +1,4 @@
 SET(KERNEL_SOURCES
-    ../Universal/PrintFormat.cpp
-    ../Universal/Stdlib.cpp
-    ../Universal/String.cpp
-    ../Universal/Time.cpp
     Bus/PCI.cpp
     CPU/GDT.cpp
     CPU/IDT.cpp
@@ -55,12 +51,14 @@ SET(BOOT_SOURCES
 )
 
 set(SOURCES
+    ../Universal/String.cpp
+    ${UNIVERSAL_SOURCES}
     ${KERNEL_SOURCES}
     ${BOOT_SOURCES}
 )
 
+include(../Meta/os.cmake)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DKERNEL -ggdb3 -Os")
-
 add_link_options(-T ${CMAKE_SOURCE_DIR}/Kernel/linker.ld -nostdlib --build-id=none -Map=Kernel.map)
 
 add_executable(Kernel ${SOURCES})
