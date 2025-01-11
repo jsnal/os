@@ -28,3 +28,8 @@ size_t strlen(const char* str)
 {
     return Universal::strlen(str);
 }
+
+int strncmp(const char* s1, const char* s2, size_t n)
+{
+    return Universal::strncmp(s1, s2, n);
+}

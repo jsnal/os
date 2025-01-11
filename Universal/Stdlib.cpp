@@ -68,4 +68,21 @@ size_t strlen(const char* str)
     return length;
 }
 
+int strncmp(const char* s1, const char* s2, size_t n)
+{
+    if (n-- == 0) {
+        return 0;
+    }
+
+    const unsigned char* l = (const unsigned char*)s1;
+    const unsigned char* r = (const unsigned char*)s2;
+    for (; n != 0; l++, r++, n--) {
+        if (*l == '\0' || *r == '\0' || *l != *r) {
+            break;
+        }
+    }
+
+    return *l - *r;
+}
+
 }
