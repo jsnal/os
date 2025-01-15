@@ -21,4 +21,40 @@ inline void free(void* ptr)
 
 #else
 #    include <stdlib.h>
+
+inline void* malloc(size_t size)
+{
+    return nullptr;
+}
+
+inline void free(void* ptr)
+{
+    free(ptr);
+}
+
+void* operator new(size_t, void* ptr)
+{
+    return ptr;
+}
+
+void* operator new(size_t size)
+{
+    return malloc(size);
+}
+
+void* operator new[](size_t size)
+{
+    return malloc(size);
+}
+
+void operator delete(void* ptr)
+{
+    free(ptr);
+}
+
+void operator delete[](void* ptr)
+{
+    free(ptr);
+}
+
 #endif

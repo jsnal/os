@@ -16,7 +16,7 @@
 #include <Universal/Result.h>
 #include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
-#include <Universal/String.h>
+#include <Universal/StringView.h>
 #include <Universal/Types.h>
 
 // TODO: Each process should have a priority where some processes get more time
@@ -47,8 +47,8 @@ public:
 
     ~Process();
 
-    static ResultReturn<Process*> create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list = true);
-    static ResultReturn<Process*> create_user_process(const String& path, pid_t, TTYDevice*);
+    static ResultReturn<Process*> create_kernel_process(const StringView& name, void (*entry_point)(), bool add_to_process_list = true);
+    static ResultReturn<Process*> create_user_process(const StringView& path, pid_t, TTYDevice*);
     static ResultReturn<Process*> fork_user_process(Process& parent, TaskRegisters& frame);
 
     ResultReturn<VirtualRegion*> allocate_region(size_t size, u8 access);
@@ -61,7 +61,7 @@ public:
 
     void dump_stack(bool kernel) const;
 
-    const String& name() const { return m_name; }
+    const StringView& name() const { return m_name; }
     pid_t pid() const { return m_pid; }
 
     bool is_kernel() const { return m_is_kernel; }
@@ -94,7 +94,7 @@ private:
     static constexpr size_t kKernelStackSize = 16 * KB;
     static constexpr size_t kUserStackSize = 16 * KB;
 
-    Process(const String& name, pid_t, bool is_kernel, TTYDevice* = nullptr);
+    Process(const StringView& name, pid_t, bool is_kernel, TTYDevice* = nullptr);
     Process(const Process& parent);
 
     ResultReturn<u32> load_elf();
@@ -109,7 +109,7 @@ private:
 
     u8 m_ticks_left { 0 };
 
-    String m_name;
+    StringView m_name;
     pid_t m_pid { 0 };
     User m_user;
 

@@ -8,6 +8,7 @@ set(UNIVERSAL_SOURCES
     ${CMAKE_SOURCE_DIR}/Universal/BasicString.cpp
     ${CMAKE_SOURCE_DIR}/Universal/PrintFormat.cpp
     ${CMAKE_SOURCE_DIR}/Universal/Stdlib.cpp
+    ${CMAKE_SOURCE_DIR}/Universal/StringView.cpp
     ${CMAKE_SOURCE_DIR}/Universal/Time.cpp
 )
 

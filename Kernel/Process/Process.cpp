@@ -16,8 +16,8 @@
 #include <LibC/errno_defines.h>
 #include <Universal/Stdlib.h>
 
-Process::Process(const String& name, pid_t pid, bool is_kernel, TTYDevice* tty)
-    : m_name(move(name))
+Process::Process(const StringView& name, pid_t pid, bool is_kernel, TTYDevice* tty)
+    : m_name(name)
     , m_pid(pid)
     , m_user(User::root())
     , m_is_kernel(is_kernel)
@@ -84,7 +84,7 @@ Process::~Process()
     }
 }
 
-ResultReturn<Process*> Process::create_kernel_process(const String& name, void (*entry_point)(), bool add_to_process_list)
+ResultReturn<Process*> Process::create_kernel_process(const StringView& name, void (*entry_point)(), bool add_to_process_list)
 {
     pid_t pid = add_to_process_list ? PM.get_next_pid() : 0;
     auto process = new Process(move(name), pid, true);
@@ -110,7 +110,7 @@ ResultReturn<Process*> Process::create_kernel_process(const String& name, void (
     return process;
 }
 
-ResultReturn<Process*> Process::create_user_process(const String& path, pid_t pid, TTYDevice* tty)
+ResultReturn<Process*> Process::create_user_process(const StringView& path, pid_t pid, TTYDevice* tty)
 {
     if (pid == 0) {
         pid = PM.get_next_pid();
@@ -267,7 +267,7 @@ Result Process::initialize_user_stack()
 
 ResultReturn<u32> Process::load_elf()
 {
-    auto fd = ENSURE_TAKE(VFS::the().open(m_name, 0, 0));
+    auto fd = ENSURE_TAKE(VFS::the().open(m_name.str(), 0, 0));
     auto elf_result = ENSURE_TAKE(ELF::create(fd));
     auto elf_program_headers = ENSURE_TAKE(elf_result->read_program_headers());
 

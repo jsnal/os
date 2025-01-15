@@ -57,7 +57,6 @@ set(SOURCES
     ${BOOT_SOURCES}
 )
 
-include(../Meta/os.cmake)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DKERNEL -ggdb3 -Os")
 add_link_options(-T ${CMAKE_SOURCE_DIR}/Kernel/linker.ld -nostdlib --build-id=none -Map=Kernel.map)
 

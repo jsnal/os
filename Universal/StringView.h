@@ -5,8 +5,12 @@
  */
 
 #include <Universal/Assert.h>
+#include <Universal/Malloc.h>
+#include <Universal/Optional.h>
 #include <Universal/Stdlib.h>
 #include <Universal/Types.h>
+
+#pragma once
 
 namespace Universal {
 
@@ -58,10 +62,18 @@ public:
 
     constexpr char get(size_t index) const
     {
-        ASSERT(index >= 0 || index < m_length);
+        ASSERT(!is_null() && index >= 0 && index < m_length);
         return m_str[index];
     }
     constexpr char operator[](size_t index) const { return get(index); }
+
+    constexpr char front() const { return get(0); }
+    constexpr char back() const { return get(m_length - 1); }
+
+    bool contains(const StringView&) const;
+
+    Optional<size_t> find(char sh) const;
+    Optional<size_t> find_last(char ch) const;
 
     bool operator==(const StringView& other) const
     {

@@ -79,9 +79,6 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
         dbgprintf("Kernel", "Loaded by: %s\n", multiboot->bootloader_name);
     }
 
-    auto s = "Test string"sv;
-    dbgprintf("Kernel", "Printing StringView: %s\n", s.str());
-
     kmalloc_init();
 
     GDT::init();

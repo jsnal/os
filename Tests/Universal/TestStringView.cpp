@@ -92,9 +92,57 @@ TEST_CASE(copy_and_move)
     CHECK_STR_EQUAL("Test", sv_move_assignment.str());
 }
 
+TEST_CASE(front_and_back)
+{
+    auto sv = "Test"sv;
+    CHECK_EQUAL(4, sv.length());
+    CHECK_EQUAL('T', sv.front());
+    CHECK_EQUAL('t', sv.back());
+}
+
+TEST_CASE(contains)
+{
+    auto sv = "apple banana orange"sv;
+    CHECK_FALSE(sv.contains("grape"sv));
+    CHECK_TRUE(sv.contains("apple"sv));
+    CHECK_TRUE(sv.contains("apple "sv));
+    CHECK_FALSE(sv.contains("orange "sv));
+    CHECK_TRUE(sv.contains("banana orange"sv));
+
+    StringView sv_null(nullptr);
+    CHECK_FALSE(sv_null.contains("grape"sv));
+    CHECK_FALSE(sv.contains(sv_null));
+
+    StringView sv_empty("");
+    CHECK_TRUE(sv.contains(sv_empty));
+    CHECK_FALSE(sv_empty.contains("anything"));
+}
+
+TEST_CASE(find)
+{
+    auto sv = "apple banana orange"sv;
+    CHECK_EQUAL(6, sv.find('b').value());
+    CHECK_EQUAL(4, sv.find('e').value());
+    CHECK_EQUAL(18, sv.find_last('e').value());
+    CHECK_EQUAL(6, sv.find_last('b').value());
+    CHECK_FALSE(sv.find('z').has_value());
+    CHECK_FALSE(sv.find_last('z').has_value());
+
+    StringView sv_null(nullptr);
+    CHECK_FALSE(sv_null.find('a').has_value());
+    CHECK_FALSE(sv_null.find_last('a').has_value());
+
+    StringView sv_empty("");
+    CHECK_FALSE(sv_empty.find('a').has_value());
+    CHECK_FALSE(sv_empty.find_last('a').has_value());
+}
+
 TEST_MAIN(TestString, [&]() {
     ENUMERATE_TEST(create);
     ENUMERATE_TEST(equals);
     ENUMERATE_TEST(index);
     ENUMERATE_TEST(copy_and_move);
+    ENUMERATE_TEST(front_and_back);
+    ENUMERATE_TEST(contains);
+    ENUMERATE_TEST(find);
 })
