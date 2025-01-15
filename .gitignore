@@ -8,3 +8,4 @@ CMakeLists.txt.user
 .idea/
 Build/
 Programs/bin/
+Tests/bin/
