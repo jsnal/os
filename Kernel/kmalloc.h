@@ -29,13 +29,6 @@ private:
     Heap<KMALLOC_HEAP_CHUNK_SIZE> m_heap;
 };
 
-void* operator new(size_t, void*);
-void* operator new(size_t);
-void* operator new[](size_t);
-
-void operator delete(void*);
-void operator delete[](void*);
-
 void* kmalloc(size_t);
 void* kcalloc(size_t);
 

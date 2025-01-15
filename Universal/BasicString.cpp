@@ -5,6 +5,7 @@
  */
 
 #include <Universal/BasicString.h>
+#include <Universal/Malloc.h>
 
 template<typename CharT>
 void BasicString<CharT>::ensure_capacity(size_t capacity)

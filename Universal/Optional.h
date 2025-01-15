@@ -7,15 +7,8 @@
 #pragma once
 
 #include <Universal/Assert.h>
+#include <Universal/Malloc.h>
 #include <Universal/Stdlib.h>
-
-#ifdef KERNEL
-#    include <Kernel/kmalloc.h>
-#endif
-
-#ifdef TESTING
-#    include <new>
-#endif
 
 template<typename T>
 class Optional {
