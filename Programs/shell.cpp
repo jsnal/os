@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <Universal/StringView.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
@@ -20,17 +21,17 @@ static bool enable_raw_mode()
     // no start/stop output control.
     original_termios.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
 
-    // Output modes - disable post processing
+    // Output modes: disable post processing
     original_termios.c_oflag &= ~(OPOST);
 
     // Control modes - set 8 bit chars
     original_termios.c_cflag |= (CS8);
 
-    // Local modes - choing off, canonical off, no extended functions,
+    // Local modes: echoing off, canonical off, no extended functions,
     // no signal chars (^Z,^C)
     original_termios.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
 
-    // Control chars - set return condition: min number of bytes and timer.
+    // Control chars: set return condition: min number of bytes and timer.
     // We want read to return every single byte, without timeout.
     original_termios.c_cc[VMIN] = 1;
 
@@ -44,22 +45,51 @@ static bool enable_raw_mode()
     return true;
 }
 
-static bool readline(const char* prompt, char* line, size_t length)
+static bool handle_read_raw(const StringView& prompt)
+{
+    if (!enable_raw_mode()) {
+        return false;
+    }
+
+    if (!write(STDOUT_FILENO, prompt.str(), prompt.length())) {
+        return false;
+    }
+
+    while (true) {
+        char c;
+
+        ssize_t nread = read(STDIN_FILENO, &c, 1);
+        if (nread <= 0) {
+            return false;
+        }
+
+        switch (c) {
+            case '\n':
+                return true;
+            default:
+                write(STDOUT_FILENO, &c, 1);
+        }
+    }
+
+    return false;
+    //    while (true) {
+    //        read(STDIN_FILENO, &c, 1);
+    //        write(STDOUT_FILENO, &c, 1);
+    //        c = '\0';
+    //    }
+}
+
+static bool readline(const StringView& prompt, char* line, size_t length)
 {
     char c;
 
     if (!isatty(STDIN_FILENO)) {
         printf("Not a TTY\n");
     } else {
-        if (!enable_raw_mode()) {
-            return false;
-        }
+        handle_read_raw(prompt);
 
-        while (true) {
-            read(STDIN_FILENO, &c, 1);
-            write(STDOUT_FILENO, &c, 1);
-            c = '\0';
-        }
+        char c = '\n';
+        write(STDOUT_FILENO, &c, 1);
     }
     return true;
 }
@@ -68,25 +98,31 @@ int main(int argc, char** argv)
 {
     char line_buffer[LINE_LENGTH];
     printf("Starting shell 0x%x\n", 0x1337);
-    pid_t pid = fork();
 
-    if (pid < 0) {
-        return 1;
-    } else if (pid == 0) {
-        //        const char* execve_program = "/bin/id";
-        //        char* const execve_argv[] = { nullptr };
-        //        char* const execve_envp[] = { nullptr };
+    read(STDIN_FILENO, line_buffer, LINE_LENGTH);
+    printf("buf: %s\n", line_buffer);
 
-        //        if (execve(execve_program, execve_argv, execve_envp) == -1) {
-        //            return -1;
-        //        }
+    // pid_t pid = fork();
+    //    if (pid < 0) {
+    //        return 1;
+    //    } else if (pid == 0) {
+    //        //        const char* execve_program = "/bin/id";
+    //        //        char* const execve_argv[] = { nullptr };
+    //        //        char* const execve_envp[] = { nullptr };
 
-        printf("Hello from the child process! PID: %d\n", getpid());
-        return 0;
-    } else {
-        printf("Hello from the parent process! PID: %d, Child PID: %d\n", getpid(), pid);
+    //        //        if (execve(execve_program, execve_argv, execve_envp) == -1) {
+    //        //            return -1;
+    //        //        }
+
+    //        printf("Hello from the child process! PID: %d\n", getpid());
+    //        return 0;
+    //    } else {
+    //        printf("Hello from the parent process! PID: %d, Child PID: %d\n", getpid(), pid);
+    //    }
+
+    while (true) {
+        readline("$ ", line_buffer, LINE_LENGTH);
     }
 
-    readline("$ ", line_buffer, LINE_LENGTH);
     return 0;
 }

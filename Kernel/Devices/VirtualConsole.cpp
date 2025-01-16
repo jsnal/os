@@ -33,6 +33,11 @@ size_t VirtualConsole::tty_write(const u8* buffer, size_t count)
     return 0;
 }
 
+void VirtualConsole::tty_echo(char c)
+{
+    tty_write(reinterpret_cast<const u8*>(&c), 1);
+}
+
 void VirtualConsole::handle_key_event(KeyEvent event)
 {
     dbgprintf("VirtualConsole", "Keyboard event received: %c\n", event.character);

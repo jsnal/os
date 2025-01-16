@@ -5,6 +5,8 @@
  */
 
 #include <Kernel/Devices/TTYDevice.h>
+#include <Kernel/Process/ProcessManager.h>
+#include <LibC/errno_defines.h>
 #include <LibC/sys/ioctl_defines.h>
 
 TTYDevice::TTYDevice(u32 major, u32 minor)
@@ -30,16 +32,45 @@ TTYDevice::TTYDevice(u32 major, u32 minor)
 
 ssize_t TTYDevice::read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count)
 {
+    while (!m_input_ready) {
+        PM.yield();
+    }
+
     if (count > m_input.size()) {
         count = m_input.size();
     }
 
-    // TODO: Handle canonical mode
+    ssize_t nread = 0;
+    if (is_canonical()) {
+        dbgprintf("TTYDevice", "in here\n");
+        for (; nread < count; nread++) {
+            auto maybe_c = m_input.dequeue();
+            if (maybe_c.is_error()) {
+                return -EFAULT;
+            }
 
-    for (int i = 0; i < count; i++) {
-        buffer[i] = m_input.dequeue().value();
+            u8 c = maybe_c.release_value();
+            if (c == '\n' || is_eol(c)) {
+                buffer[nread++] = c;
+                break;
+            } else if (c == '\0') {
+                break;
+            }
+
+            buffer[nread] = c;
+        }
+    } else {
+        for (; nread < count; nread++) {
+            auto maybe_c = m_input.dequeue();
+            if (maybe_c.is_error()) {
+                return -EFAULT;
+            }
+            buffer[nread] = maybe_c.release_value();
+        }
     }
-    return count;
+
+    m_input_ready = false;
+    return nread;
 }
 
 ssize_t TTYDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
@@ -69,7 +100,26 @@ int TTYDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
 
 void TTYDevice::handle_input(char c)
 {
+    if (is_canonical()) {
+        if (is_eof(c)) {
+            m_input.enqueue('\0');
+            m_input_ready = true;
+            return;
+        }
+        if (c == '\n' || is_eol(c)) {
+            m_input_ready = true;
+        }
+    }
+
     m_input.enqueue(c);
+
+    if (!is_canonical()) {
+        m_input_ready = true;
+    }
+
+    if (is_echo()) {
+        tty_echo(c);
+    }
 }
 
 #if DEBUG_TTY_DEVICE

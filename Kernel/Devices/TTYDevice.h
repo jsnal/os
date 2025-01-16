@@ -21,10 +21,14 @@ public:
     int ioctl(FileDescriptor&, uint32_t request, uint32_t* argp) override;
 
     virtual size_t tty_write(const u8* buffer, size_t count) = 0;
+    virtual void tty_echo(char) = 0;
 
-    [[nodiscard]] bool is_signal() const { return m_termios.c_lflag & ISIG; }
-    [[nodiscard]] bool is_echo() const { return m_termios.c_lflag & ECHO; }
-    [[nodiscard]] bool is_canonical() const { return m_termios.c_lflag & ICANON; }
+    constexpr bool is_signal() const { return m_termios.c_lflag & ISIG; }
+    constexpr bool is_echo() const { return m_termios.c_lflag & ECHO; }
+    constexpr bool is_canonical() const { return m_termios.c_lflag & ICANON; }
+
+    constexpr bool is_eol(u8 c) const { return c == m_termios.c_cc[VEOL]; }
+    constexpr bool is_eof(u8 c) const { return c == m_termios.c_cc[VEOF]; }
 
     void handle_input(char);
 
@@ -34,5 +38,6 @@ private:
 #endif
 
     CircularQueue<u8> m_input;
+    bool m_input_ready { false };
     termios m_termios;
 };

@@ -25,6 +25,7 @@ public:
     void set_focused(bool);
 
     size_t tty_write(const u8* buffer, size_t count) override;
+    void tty_echo(char) override;
 
     void handle_key_event(KeyEvent) override;
 
