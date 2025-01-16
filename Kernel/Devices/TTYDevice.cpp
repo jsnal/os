@@ -42,14 +42,8 @@ ssize_t TTYDevice::read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count
 
     ssize_t nread = 0;
     if (is_canonical()) {
-        dbgprintf("TTYDevice", "in here\n");
         for (; nread < count; nread++) {
-            auto maybe_c = m_input.dequeue();
-            if (maybe_c.is_error()) {
-                return -EFAULT;
-            }
-
-            u8 c = maybe_c.release_value();
+            u8 c = m_input.dequeue();
             if (c == '\n' || is_eol(c)) {
                 buffer[nread++] = c;
                 break;
@@ -61,11 +55,7 @@ ssize_t TTYDevice::read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count
         }
     } else {
         for (; nread < count; nread++) {
-            auto maybe_c = m_input.dequeue();
-            if (maybe_c.is_error()) {
-                return -EFAULT;
-            }
-            buffer[nread] = maybe_c.release_value();
+            buffer[nread] = m_input.dequeue();
         }
     }
 

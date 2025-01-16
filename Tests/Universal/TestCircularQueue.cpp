@@ -20,29 +20,27 @@ TEST_CASE(enqueue_dequeue)
     CHECK_EQUAL((size_t)0, queue.size());
     CHECK_EQUAL((size_t)4, queue.capacity());
 
-    CHECK_TRUE(queue.enqueue(1).is_ok());
-    CHECK_TRUE(queue.enqueue(2).is_ok());
-    CHECK_TRUE(queue.enqueue(3).is_ok());
-    CHECK_TRUE(queue.enqueue(4).is_ok());
-    CHECK_FALSE(queue.enqueue(5).is_ok());
+    queue.enqueue(1);
+    queue.enqueue(2);
+    queue.enqueue(3);
+    queue.enqueue(4);
 
-    CHECK_EQUAL((u32)1, queue.dequeue().value());
-    CHECK_EQUAL((u32)2, queue.dequeue().value());
-    CHECK_EQUAL((u32)3, queue.dequeue().value());
-    CHECK_EQUAL((u32)4, queue.dequeue().value());
-    CHECK_TRUE(queue.dequeue().is_error());
+    CHECK_EQUAL((u32)1, queue.dequeue());
+    CHECK_EQUAL((u32)2, queue.dequeue());
+    CHECK_EQUAL((u32)3, queue.dequeue());
+    CHECK_EQUAL((u32)4, queue.dequeue());
 
-    CHECK_TRUE(queue.enqueue(1).is_ok());
-    CHECK_TRUE(queue.enqueue(2).is_ok());
-    CHECK_TRUE(queue.enqueue(3).is_ok());
+    queue.enqueue(1);
+    queue.enqueue(2);
+    queue.enqueue(3);
 
-    CHECK_EQUAL((u32)1, queue.dequeue().value());
-    CHECK_EQUAL((u32)2, queue.dequeue().value());
+    CHECK_EQUAL((u32)1, queue.dequeue());
+    CHECK_EQUAL((u32)2, queue.dequeue());
 
-    CHECK_TRUE(queue.enqueue(4).is_ok());
+    queue.enqueue(4);
 
-    CHECK_EQUAL((u32)3, queue.dequeue().value());
-    CHECK_EQUAL((u32)4, queue.dequeue().value());
+    CHECK_EQUAL((u32)3, queue.dequeue());
+    CHECK_EQUAL((u32)4, queue.dequeue());
 }
 
 TEST_CASE(front_back)
@@ -51,28 +49,28 @@ TEST_CASE(front_back)
     CHECK_EQUAL((size_t)0, queue.size());
     CHECK_EQUAL((size_t)4, queue.capacity());
 
-    CHECK_TRUE(queue.enqueue(1).is_ok());
-    CHECK_TRUE(queue.enqueue(2).is_ok());
-    CHECK_TRUE(queue.enqueue(3).is_ok());
-    CHECK_TRUE(queue.enqueue(4).is_ok());
+    queue.enqueue(1);
+    queue.enqueue(2);
+    queue.enqueue(3);
+    queue.enqueue(4);
 
     CHECK_EQUAL((u32)1, queue.front());
     CHECK_EQUAL((u32)4, queue.back());
 
-    CHECK_EQUAL((u32)1, queue.dequeue().value());
+    CHECK_EQUAL((u32)1, queue.dequeue());
     CHECK_EQUAL((u32)2, queue.front());
     CHECK_EQUAL((u32)4, queue.back());
 
-    CHECK_EQUAL((u32)2, queue.dequeue().value());
+    CHECK_EQUAL((u32)2, queue.dequeue());
     CHECK_EQUAL((u32)3, queue.front());
     CHECK_EQUAL((u32)4, queue.back());
 
-    CHECK_EQUAL((u32)3, queue.dequeue().value());
+    CHECK_EQUAL((u32)3, queue.dequeue());
     CHECK_EQUAL((u32)4, queue.front());
     CHECK_EQUAL((u32)4, queue.back());
 
-    CHECK_EQUAL((u32)4, queue.dequeue().value());
-    CHECK_TRUE(queue.empty());
+    CHECK_EQUAL((u32)4, queue.dequeue());
+    CHECK_TRUE(queue.is_empty());
 }
 
 TEST_CASE(move)
@@ -81,14 +79,14 @@ TEST_CASE(move)
     CHECK_EQUAL((size_t)0, queue.size());
     CHECK_EQUAL((size_t)4, queue.capacity());
 
-    CHECK_TRUE(queue.enqueue(1).is_ok());
-    CHECK_TRUE(queue.enqueue(2).is_ok());
-    CHECK_TRUE(queue.enqueue(3).is_ok());
-    CHECK_TRUE(queue.enqueue(4).is_ok());
+    queue.enqueue(1);
+    queue.enqueue(2);
+    queue.enqueue(3);
+    queue.enqueue(4);
 
     auto queue_construct = CircularQueue<u32>(move(queue));
-    CHECK_FALSE(queue_construct.empty());
-    CHECK_TRUE(queue.empty());
+    CHECK_FALSE(queue_construct.is_empty());
+    CHECK_TRUE(queue.is_empty());
     CHECK_EQUAL((size_t)4, queue_construct.size());
     CHECK_EQUAL((size_t)4, queue_construct.capacity());
 
@@ -96,13 +94,13 @@ TEST_CASE(move)
     CHECK_EQUAL((u32)4, queue_construct.back());
 
     auto queue_equals = CircularQueue<u32>(queue_construct.size());
-    CHECK_TRUE(queue_equals.empty());
+    CHECK_TRUE(queue_equals.is_empty());
     CHECK_EQUAL((size_t)4, queue_equals.capacity());
 
     queue_equals = move(queue_construct);
 
-    CHECK_TRUE(queue.empty());
-    CHECK_TRUE(queue_construct.empty());
+    CHECK_TRUE(queue.is_empty());
+    CHECK_TRUE(queue_construct.is_empty());
     CHECK_EQUAL((u32)1, queue_equals.front());
     CHECK_EQUAL((u32)4, queue_equals.back());
 }

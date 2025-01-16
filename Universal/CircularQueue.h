@@ -4,12 +4,9 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <Universal/Malloc.h>
 #include <Universal/Result.h>
 #include <Universal/Types.h>
-
-#ifdef KERNEL
-#    include <Kernel/kmalloc.h>
-#endif
 
 template<typename T>
 class CircularQueue {
@@ -64,15 +61,11 @@ public:
     size_t size() const { return m_size; }
 
     bool is_full() { return m_size == m_capacity; }
-    bool empty() { return m_size == 0; }
+    bool is_empty() { return m_size == 0; }
 
-    Result enqueue(const T& element)
+    void enqueue(const T& element)
     {
-        if (is_full()) {
-            return Result::Failure;
-        }
-
-        if (empty()) {
+        if (is_empty()) {
             m_front = 0;
             m_back = 0;
         } else {
@@ -81,20 +74,16 @@ public:
 
         m_queue[m_back] = element;
         m_size++;
-
-        return Result::OK;
     }
 
-    ResultReturn<T> dequeue()
+    T dequeue()
     {
-        if (empty()) {
-            return Result(Result::Failure);
-        }
+        ASSERT(!is_empty());
 
         T element = m_queue[m_front];
         m_size--;
 
-        if (empty()) {
+        if (is_empty()) {
             m_front = 0;
             m_back = 0;
         } else {
@@ -104,8 +93,11 @@ public:
         return element;
     }
 
-    T& front() const { return m_queue[m_front]; }
-    T& back() const { return m_queue[m_back]; }
+    T& front() { return m_queue[m_front]; }
+    const T& front() const { return m_queue[m_front]; }
+
+    T& back() { return m_queue[m_back]; }
+    const T& back() const { return m_queue[m_back]; }
 
 private:
     T* m_queue { nullptr };
