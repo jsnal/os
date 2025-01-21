@@ -40,6 +40,10 @@ void VirtualConsole::tty_echo(char c)
 
 void VirtualConsole::handle_key_event(KeyEvent event)
 {
-    dbgprintf("VirtualConsole", "Keyboard event received: %c\n", event.character);
+    dbgprintf("VirtualConsole", "Keyboard event received: %c - %#x, %c - %#x\n", event.character, event.character, event.scan_code, event.scan_code);
+
+    if (event.is_control_pressed() && event.character >= 'a' && event.character <= 'z') {
+        handle_input(event.character - 'a' + 1);
+    }
     handle_input(event.character);
 }

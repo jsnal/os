@@ -10,11 +10,21 @@
 #include <Kernel/Devices/CharacterDevice.h>
 #include <Universal/Types.h>
 
+#define KEYBOARD_MODIFIER_SHIFT 0x01
+#define KEYBOARD_MODIFIER_CTRL 0x02
+#define KEYBOARD_MODIFIER_ALT 0x04
+#define KEYBOARD_MODIFIER_CAPS_LOCK 0x08
+
 struct KeyEvent {
     u16 scan_code;
     u8 key;
     u8 character;
     u8 modifiers;
+
+    bool is_shift_pressed() const { return modifiers & KEYBOARD_MODIFIER_SHIFT; }
+    bool is_control_pressed() const { return modifiers & KEYBOARD_MODIFIER_CTRL; }
+    bool is_alt_pressed() const { return modifiers & KEYBOARD_MODIFIER_ALT; }
+    bool is_caps_lock_pressed() const { return modifiers & KEYBOARD_MODIFIER_CAPS_LOCK; }
 };
 
 class KeyboardListener {

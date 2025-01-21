@@ -19,11 +19,6 @@
 #define KEY_INSERT 0xE8
 #define KEY_DELETE 0xE9
 
-#define KEYBOARD_MODIFIER_SHIFT 0x01
-#define KEYBOARD_MODIFIER_CTRL 0x02
-#define KEYBOARD_MODIFIER_ALT 0x04
-#define KEYBOARD_MODIFIER_CAPS_LOCK 0x08
-
 static const u8 keyboard_map_1[] = {
     KEY_NULL,
     KEY_ESCAPE,
