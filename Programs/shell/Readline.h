@@ -13,13 +13,14 @@
 
 class Readline {
 public:
-    Readline(int fd_in, int fd_out)
+    Readline(int fd_in, int fd_out, StringView prompt)
         : m_fd_in(fd_in)
         , m_fd_out(fd_out)
+        , m_prompt(prompt)
     {
     }
 
-    ResultReturn<const StringView> read(const StringView& prompt);
+    ResultReturn<const StringView> read();
 
 private:
     enum KeyAction {
@@ -35,7 +36,9 @@ private:
     Result do_insert(char);
 
     bool enable_raw_mode();
-    ResultReturn<const StringView> raw_read(const StringView& prompt);
+    ResultReturn<const StringView> raw_read();
+
+    StringView m_prompt;
 
     Array<char, kLineLength> m_buffer;
     size_t m_length { 0 };

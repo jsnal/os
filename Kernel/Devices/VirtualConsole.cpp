@@ -79,10 +79,52 @@ void VirtualConsole::set_cell(size_t row, size_t column, u32 character)
     m_buffer[row * m_width + column] = character | (attribute << 8);
 }
 
-void VirtualConsole::put_char(u8 character)
+void VirtualConsole::handle_escape_sequence(char command)
 {
-    switch (character) {
+    if (command == 'K') {
+        u16 attribute = (Color::Black << 4) | (Color::White & 0x0F);
+        for (u8 x = m_cursor_column; x < m_width; x++) {
+            m_buffer[x + m_cursor_row * m_width] = ' ' | (attribute << 8);
+        }
+    } else {
+        dbgprintf("VirtualConsole", "Unhandled escape sequence: %c\n", command);
+    }
+}
+
+void VirtualConsole::put_escape_sequence(char c)
+{
+    switch (m_escape_sequence_state) {
+        case Escape:
+            if (c == '[') {
+                m_escape_sequence_state = ControlSequenceIntroducer;
+            } else {
+                m_escape_sequence_state = Text;
+            }
+            break;
+        case ControlSequenceIntroducer:
+            if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                handle_escape_sequence(c);
+                m_escape_sequence_state = Text;
+            }
+            break;
+        case Text:
+        default:
+            break;
+    }
+}
+
+void VirtualConsole::put_char(char c)
+{
+    if (m_escape_sequence_state != Text) {
+        put_escape_sequence(c);
+        return;
+    }
+
+    switch (c) {
         case '\0':
+            return;
+        case '\033':
+            m_escape_sequence_state = Escape;
             return;
         case '\r':
             m_cursor_column = 0;
@@ -94,7 +136,7 @@ void VirtualConsole::put_char(u8 character)
             return;
     }
 
-    set_cell(m_cursor_row, m_cursor_column, character);
+    set_cell(m_cursor_row, m_cursor_column, c);
     m_cursor_column++;
     if (m_cursor_column > m_width) {
         scroll(1);
@@ -105,17 +147,6 @@ void VirtualConsole::put_char(u8 character)
 size_t VirtualConsole::put_string(const char* string, size_t length)
 {
     for (size_t i = 0; i < length; i++) {
-        // Skip past ANSI color codes
-        if (string[i] == '\x1b') {
-            for (size_t j = i; j < length; j++) {
-                if (string[j] == 'm') {
-                    i = j;
-                    break;
-                }
-            }
-            continue;
-        }
-
         put_char(string[i]);
     }
 

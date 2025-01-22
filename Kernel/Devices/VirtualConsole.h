@@ -9,6 +9,7 @@
 #include <Kernel/Devices/KeyboardDevice.h>
 #include <Kernel/Devices/TTYDevice.h>
 #include <Kernel/Graphics/GraphicsManager.h>
+#include <Universal/Array.h>
 
 class VirtualConsole final : public TTYDevice
     , public KeyboardListener {
@@ -44,11 +45,21 @@ private:
         White = 15,
     };
 
+    enum EscapeSequenceState {
+        Text,
+        Escape,
+        ControlSequenceIntroducer,
+        Parameter,
+    };
+
     void scroll(size_t rows);
     void set_color(Color foreground_color, Color background_color);
     void set_cell(size_t row, size_t column, u32 character);
 
-    void put_char(u8 character);
+    void handle_escape_sequence(char command);
+
+    void put_escape_sequence(char);
+    void put_char(char);
     size_t put_string(const char* string, size_t length);
 
     void clear_row(u8 row);
@@ -61,6 +72,8 @@ private:
 
     Color m_foreground_color { White };
     Color m_background_color { Black };
+
+    EscapeSequenceState m_escape_sequence_state { Text };
 
     bool m_focused { false };
 

@@ -11,9 +11,20 @@
 Result Readline::redraw()
 {
     Array<char, kLineLength + 64> redrawn_buffer;
-    redrawn_buffer[0] = '\r';
 
-    if (write(m_fd_out, redrawn_buffer.ptr(), 32) == -1) {
+    size_t length = 0;
+    redrawn_buffer[length++] = '\r';
+
+    memcpy(redrawn_buffer.ptr() + length, m_prompt.str(), m_prompt.length());
+    length += m_prompt.length();
+
+    memcpy(redrawn_buffer.ptr() + length, m_buffer.ptr(), m_length);
+    length += m_length;
+
+    memcpy(redrawn_buffer.ptr() + length, "\033[K", 5);
+    length += 5;
+
+    if (write(m_fd_out, redrawn_buffer.ptr(), length) == -1) {
         return Result::Failure;
     }
 
@@ -47,7 +58,7 @@ Result Readline::do_insert(char c)
     if (m_length == m_position) {
         write(m_fd_out, &c, 1);
     } else {
-        // Redraw
+        redraw();
     }
 
     return Result::OK;
@@ -85,13 +96,13 @@ bool Readline::enable_raw_mode()
     return true;
 }
 
-ResultReturn<const StringView> Readline::raw_read(const StringView& prompt)
+ResultReturn<const StringView> Readline::raw_read()
 {
     if (!enable_raw_mode()) {
         return Result(Result::Failure);
     }
 
-    if (!write(STDOUT_FILENO, prompt.str(), prompt.length())) {
+    if (!write(STDOUT_FILENO, m_prompt.str(), m_prompt.length())) {
         return Result(Result::Failure);
     }
 
@@ -117,11 +128,11 @@ ResultReturn<const StringView> Readline::raw_read(const StringView& prompt)
     return Result(Result::Failure);
 }
 
-ResultReturn<const StringView> Readline::read(const StringView& prompt)
+ResultReturn<const StringView> Readline::read()
 {
     ASSERT(isatty(m_fd_in));
 
-    auto raw_read_result = raw_read(prompt);
+    auto raw_read_result = raw_read();
     char c = '\n';
     write(m_fd_out, &c, 1);
 
