@@ -19,14 +19,10 @@ public:
 
     Result init();
 
-    [[nodiscard]] SharedPtr<GraphicsCard> text_mode_graphics() const { return m_text_mode_graphics; }
-
     [[nodiscard]] SharedPtr<GraphicsCard> graphics_card() const { return m_graphics_card; }
 
 private:
     Result init_graphics_device(Bus::PCI::Address const&, Bus::PCI::ID const&);
-
-    SharedPtr<GraphicsCard> m_text_mode_graphics;
 
     SharedPtr<GraphicsCard> m_graphics_card;
 

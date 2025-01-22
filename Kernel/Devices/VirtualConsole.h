@@ -9,16 +9,11 @@
 #include <Kernel/Devices/KeyboardDevice.h>
 #include <Kernel/Devices/TTYDevice.h>
 #include <Kernel/Graphics/GraphicsManager.h>
-#include <Kernel/Graphics/VGATextModeGraphicsCard.h>
 
 class VirtualConsole final : public TTYDevice
     , public KeyboardListener {
 public:
-    explicit VirtualConsole(u32 const minor)
-        : TTYDevice(4, minor)
-    {
-        m_graphics = GraphicsManager::the().text_mode_graphics();
-    }
+    VirtualConsole(u32 const minor);
 
     virtual ~VirtualConsole() override;
 
@@ -30,6 +25,49 @@ public:
     void handle_key_event(KeyEvent) override;
 
 private:
+    enum Color {
+        Black = 0,
+        Blue = 1,
+        Green = 2,
+        Cyan = 3,
+        Red = 4,
+        Magenta = 5,
+        Brown = 6,
+        LightGrey = 7,
+        DarkGrey = 8,
+        LightBlue = 9,
+        LightGreen = 10,
+        LightCyan = 11,
+        LightRed = 12,
+        LightMagenta = 13,
+        LightBrown = 14,
+        White = 15,
+    };
+
+    void scroll(size_t rows);
+    void set_color(Color foreground_color, Color background_color);
+    void set_cell(size_t row, size_t column, u32 character);
+
+    void put_char(u8 character);
+    size_t put_string(const char* string, size_t length);
+
+    void clear_row(u8 row);
+    void clear();
+
+    void enable_cursor();
+    void disable_cursor();
+    void set_cursor(u8 row, u8 column);
+    void flush_cursor();
+
+    Color m_foreground_color { White };
+    Color m_background_color { Black };
+
     bool m_focused { false };
-    SharedPtr<VGATextModeGraphicsCard> m_graphics;
+
+    u8 m_cursor_row { 0 };
+    u8 m_cursor_column { 0 };
+
+    u16* m_buffer { reinterpret_cast<u16*>(0x000B8000) };
+    u8 m_width { 80 };
+    u8 m_height { 25 };
 };

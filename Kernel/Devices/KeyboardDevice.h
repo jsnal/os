@@ -17,7 +17,6 @@
 
 struct KeyEvent {
     u16 scan_code;
-    u8 key;
     u8 character;
     u8 modifiers;
 

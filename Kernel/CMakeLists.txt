@@ -25,7 +25,6 @@ SET(KERNEL_SOURCES
     Filesystem/VFS.cpp
     Graphics/EmulatorVGAGraphicsCard.cpp
     Graphics/GraphicsManager.cpp
-    Graphics/VGATextModeGraphicsCard.cpp
     Kernel.cpp
     Memory/AddressAllocator.cpp
     Memory/MemoryManager.cpp

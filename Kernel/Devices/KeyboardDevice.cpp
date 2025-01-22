@@ -179,7 +179,6 @@ void KeyboardDevice::handle_irq(const InterruptRegisters&)
                 if (m_keyboard_listener != nullptr) {
                     KeyEvent event = {
                         .scan_code = static_cast<u16>(scan_code),
-                        .key = 0,
                         .character = static_cast<u8>(converted_character),
                         .modifiers = m_modifier
                     };

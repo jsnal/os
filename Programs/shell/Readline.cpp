@@ -8,6 +8,51 @@
 #include <stdio.h>
 #include <unistd.h>
 
+Result Readline::redraw()
+{
+    Array<char, kLineLength + 64> redrawn_buffer;
+    redrawn_buffer[0] = '\r';
+
+    if (write(m_fd_out, redrawn_buffer.ptr(), 32) == -1) {
+        return Result::Failure;
+    }
+
+    return Result::OK;
+}
+
+Result Readline::do_backspace()
+{
+    if (m_position > 0 && m_length > 0) {
+        memmove(m_buffer.ptr() + m_position - 1, m_buffer.ptr() + m_position, m_length - m_position);
+        m_position--;
+        m_buffer[--m_length] = '\0';
+    }
+
+    return redraw();
+}
+
+Result Readline::do_insert(char c)
+{
+    if (m_length >= m_buffer.size()) {
+        return Result::Failure;
+    }
+
+    if (m_length != m_position) {
+        memmove(m_buffer.ptr() + m_position + 1, m_buffer.ptr() + m_position, m_length - m_position);
+    }
+
+    m_buffer[m_position++] = c;
+    m_buffer[++m_length] = '\0';
+
+    if (m_length == m_position) {
+        write(m_fd_out, &c, 1);
+    } else {
+        // Redraw
+    }
+
+    return Result::OK;
+}
+
 bool Readline::enable_raw_mode()
 {
     tcgetattr(STDIN_FILENO, &m_original_termios);
@@ -61,11 +106,11 @@ ResultReturn<const StringView> Readline::raw_read(const StringView& prompt)
             case KeyAction::Enter:
                 return StringView(m_buffer.data());
             case KeyAction::Backspace:
-                printf("Backspace!\n");
+                do_backspace();
                 break;
             default:
-                m_buffer[m_position++] = c;
-                write(STDOUT_FILENO, &c, 1);
+                do_insert(c);
+                break;
         }
     }
 

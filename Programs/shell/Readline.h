@@ -23,17 +23,22 @@ public:
 
 private:
     enum KeyAction {
-        Escape = 27,
-        Backspace = 127,
-        Enter = 13,
+        Escape = 0x1B,
+        Backspace = 0x08,
+        Enter = 0x0A,
     };
 
     static constexpr size_t kLineLength = 256;
+
+    Result redraw();
+    Result do_backspace();
+    Result do_insert(char);
 
     bool enable_raw_mode();
     ResultReturn<const StringView> raw_read(const StringView& prompt);
 
     Array<char, kLineLength> m_buffer;
+    size_t m_length { 0 };
     size_t m_position { 0 };
 
     struct termios m_original_termios;

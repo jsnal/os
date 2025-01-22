@@ -46,10 +46,10 @@ VirtualConsole* tty0;
     // TODO: Only text-mode is supported currently
     // GraphicsManager::the().init();
 
+    KeyboardDevice::the();
+
     tty0 = new VirtualConsole(0);
     tty0->set_focused(true);
-
-    KeyboardDevice::the();
 
     VFS::the().init();
 

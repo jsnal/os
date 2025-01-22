@@ -6,7 +6,6 @@
 
 #include <Kernel/Graphics/EmulatorVGAGraphicsCard.h>
 #include <Kernel/Graphics/GraphicsManager.h>
-#include <Kernel/Graphics/VGATextModeGraphicsCard.h>
 #include <Kernel/Logger.h>
 
 GraphicsManager& GraphicsManager::the()
@@ -17,7 +16,6 @@ GraphicsManager& GraphicsManager::the()
 
 GraphicsManager::GraphicsManager()
 {
-    m_text_mode_graphics = VGATextModeGraphicsCard::create();
 }
 
 Result GraphicsManager::init()

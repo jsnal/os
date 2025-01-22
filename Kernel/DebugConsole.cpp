@@ -63,10 +63,6 @@ void DebugConsole::put_char(char c)
 
 void DebugConsole::write(const char* string, size_t length)
 {
-    if (!m_boot_console.is_null()) {
-        m_boot_console->put_string(string, length);
-    }
-
     for (size_t i = 0; i < length; i++) {
         put_char(string[i]);
     }
