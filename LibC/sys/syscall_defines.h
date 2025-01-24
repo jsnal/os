@@ -6,16 +6,19 @@
 
 #pragma once
 
+#include <Universal/Types.h>
+
 #define SYSCALL_OPCODE_LIST \
+    SYSCALL_OPCODE(execve)  \
     SYSCALL_OPCODE(exit)    \
     SYSCALL_OPCODE(fork)    \
-    SYSCALL_OPCODE(execve)  \
-    SYSCALL_OPCODE(write)   \
-    SYSCALL_OPCODE(read)    \
     SYSCALL_OPCODE(getpid)  \
     SYSCALL_OPCODE(getuid)  \
     SYSCALL_OPCODE(ioctl)   \
-    SYSCALL_OPCODE(isatty)
+    SYSCALL_OPCODE(isatty)  \
+    SYSCALL_OPCODE(mmap)    \
+    SYSCALL_OPCODE(read)    \
+    SYSCALL_OPCODE(write)
 
 #define SYSCALL_OPCODE(x) SYS_##x,
 enum SyscallOpcode {
@@ -37,3 +40,12 @@ inline constexpr const char* syscall_opcode_to_string(SyscallOpcode call)
     return "Unknown ";
 }
 #undef SYSCALL_OPCODE
+
+struct mmap_args {
+    void* addr;
+    size_t length;
+    int prot;
+    int flags;
+    int fd;
+    off_t offset;
+};

@@ -4,6 +4,7 @@ set(LIBC_SOURCES
     stdlib.cpp
     string.cpp
     sys/ioctl.cpp
+    sys/mman.cpp
     sys/syscall.cpp
     termios.cpp
     unistd.cpp

@@ -12,6 +12,7 @@
 #include <Kernel/Memory/VirtualRegion.h>
 #include <Kernel/Process/WaitingStatus.h>
 #include <Kernel/User.h>
+#include <LibC/sys/syscall_defines.h>
 #include <Universal/LinkedList.h>
 #include <Universal/Result.h>
 #include <Universal/ShareCounted.h>
@@ -89,6 +90,7 @@ public:
     pid_t sys_getpid();
     uid_t sys_getuid();
     int sys_isatty(int fd);
+    void* sys_mmap(const mmap_args*);
 
 private:
     static constexpr size_t kKernelStackSize = 16 * KB;

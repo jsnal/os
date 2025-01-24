@@ -22,12 +22,7 @@ static int __attribute__((noinline)) __invoke_syscall_trap(int call, int arg1, i
 
 static inline int __attribute((always_inline)) __invoke_syscall(int call, int arg1, int arg2, int arg3, bool set_errno = true)
 {
-    int ret = __invoke_syscall_trap(call, arg1, arg2, arg3);
-    if (set_errno && ret < 0) {
-        errno = -ret;
-        return -1;
-    }
-    return ret;
+    return __invoke_syscall_trap(call, arg1, arg2, arg3);
 }
 
 int syscall(SyscallOpcode call)
@@ -48,9 +43,4 @@ int syscall(SyscallOpcode call, int arg1, int arg2)
 int syscall(SyscallOpcode call, int arg1, int arg2, int arg3)
 {
     return __invoke_syscall(call, arg1, arg2, arg3);
-}
-
-int syscall_no_errno(SyscallOpcode call)
-{
-    return __invoke_syscall(call, 0, 0, 0, false);
 }

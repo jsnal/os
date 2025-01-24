@@ -13,6 +13,5 @@ int syscall(SyscallOpcode call);
 int syscall(SyscallOpcode call, int arg1);
 int syscall(SyscallOpcode call, int arg1, int arg2);
 int syscall(SyscallOpcode call, int arg1, int arg2, int arg3);
-int syscall_no_errno(SyscallOpcode call);
 
 #endif

@@ -425,7 +425,7 @@ int Process::sys_execve(const char* pathname, char* const argv[], char* const en
 
 int Process::sys_ioctl(int fd, uint32_t request, uint32_t* argp)
 {
-    if (!is_address_accessible((u32)argp)) {
+    if (!is_address_accessible(reinterpret_cast<u32>(argp))) {
         return -EFAULT;
     }
 
@@ -454,6 +454,25 @@ int Process::sys_isatty(int fd)
         return -EBADF;
     }
     return fd_result.release_value()->file()->is_tty_device();
+}
+
+void* Process::sys_mmap(const mmap_args* args)
+{
+    if (!is_address_accessible(reinterpret_cast<u32>(args))) {
+        return (void*)-EFAULT;
+    }
+
+    auto& [addr, length, prot, flags, fd, offset] = *args;
+
+    if ((flags & MAP_SHARED && flags & MAP_PRIVATE) || (!(flags & MAP_SHARED) && !(flags & MAP_PRIVATE)) || length == 0) {
+        return (void*)-EINVAL;
+    }
+
+    if (reinterpret_cast<u32>(addr) % Memory::kPageSize != 0) {
+        return (void*)-EINVAL;
+    }
+
+    return nullptr;
 }
 
 void Process::dump_stack(bool kernel) const

@@ -48,12 +48,12 @@ ssize_t read(int fd, void* buf, size_t count)
 
 pid_t getpid()
 {
-    return syscall_no_errno(SYS_getpid);
+    return syscall(SYS_getpid);
 }
 
 uid_t getuid()
 {
-    return syscall_no_errno(SYS_getuid);
+    return syscall(SYS_getuid);
 }
 
 __END_DECLS
