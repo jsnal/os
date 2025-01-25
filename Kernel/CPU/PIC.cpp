@@ -1,7 +1,7 @@
 #include <Kernel/CPU/IDT.h>
 #include <Kernel/CPU/PIC.h>
 #include <Kernel/IO.h>
-#include <Kernel/Logger.h>
+#include <Universal/Logger.h>
 
 #define PIC1_COMMAND 0x0020
 #define PIC1_DATA 0x0021

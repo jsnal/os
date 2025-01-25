@@ -9,6 +9,7 @@
 #include <Kernel/Devices/BlockDevice.h>
 #include <Kernel/Filesystem/Ext2.h>
 #include <Kernel/Filesystem/Filesystem.h>
+#include <Universal/Logger.h>
 #include <Universal/Result.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/Stdlib.h>

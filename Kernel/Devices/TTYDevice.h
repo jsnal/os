@@ -10,6 +10,8 @@
 #include <Kernel/POSIX.h>
 #include <Universal/CircularQueue.h>
 
+#define DEBUG_TTY_DEVICE 0
+
 class TTYDevice : public CharacterDevice {
 public:
     TTYDevice(u32 major, u32 minor);

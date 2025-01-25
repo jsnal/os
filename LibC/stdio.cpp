@@ -7,6 +7,7 @@
 #include <Universal/PrintFormat.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 
 __BEGIN_DECLS
@@ -50,6 +51,19 @@ int printf(const char* format, ...)
 int vsnprintf(char* str, size_t size, const char* format, va_list ap)
 {
     return print_format_buffer(str, size, format, ap);
+}
+
+int udbgprintf(const char* format, ...)
+{
+    char buffer[512];
+
+    va_list ap;
+    va_start(ap, format);
+    int length = vsnprintf(buffer, 512, format, ap);
+    va_end(ap);
+
+    (void)syscall(SYS_dbgwrite, (int)buffer, length);
+    return length;
 }
 
 __END_DECLS

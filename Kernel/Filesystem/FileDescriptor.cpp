@@ -6,7 +6,7 @@
 
 #include <Kernel/Filesystem/FileDescriptor.h>
 #include <Kernel/Filesystem/InodeFile.h>
-#include <Kernel/Logger.h>
+#include <Universal/Logger.h>
 #include <Kernel/POSIX.h>
 #include <LibC/errno_defines.h>
 

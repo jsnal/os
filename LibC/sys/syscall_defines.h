@@ -19,7 +19,8 @@
     SYSCALL_OPCODE(mmap)    \
     SYSCALL_OPCODE(munmap)  \
     SYSCALL_OPCODE(read)    \
-    SYSCALL_OPCODE(write)
+    SYSCALL_OPCODE(write)   \
+    SYSCALL_OPCODE(dbgwrite)
 
 #define SYSCALL_OPCODE(x) SYS_##x,
 enum SyscallOpcode {

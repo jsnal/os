@@ -8,8 +8,10 @@
 #include <Kernel/Devices/ATA.h>
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/IO.h>
-#include <Kernel/Logger.h>
 #include <Kernel/Process/ProcessManager.h>
+#include <Universal/Logger.h>
+
+#define DEBUG_PATA_DISK 0
 
 Spinlock PATADisk::s_lock {};
 WaitingStatus PATADisk::s_waiting_status {};

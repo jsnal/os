@@ -6,7 +6,7 @@
 
 #include <Kernel/CPU/IRQHandler.h>
 #include <Kernel/CPU/PIC.h>
-#include <Kernel/Logger.h>
+#include <Universal/Logger.h>
 
 IRQHandler* s_handlers[IRQHandler::handler_count];
 

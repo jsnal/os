@@ -12,6 +12,8 @@
 #include <Universal/Number.h>
 #include <Universal/Stdlib.h>
 
+#define DEBUG_INODE 0
+
 Ext2Inode::Ext2Inode(Ext2Filesystem& fs, ino_t id)
     : Inode(fs, id)
 {

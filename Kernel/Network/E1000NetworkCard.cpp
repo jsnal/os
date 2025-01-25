@@ -321,7 +321,7 @@ void E1000NetworkCard::handle_irq(const InterruptRegisters&)
     }
 
     if (status & INT_RXO) {
-        errprintf("RX buffer overflowed!\n");
+        dbgprintf("E1000NetworkCard", "RX buffer overflowed!\n");
     }
 
     if (status & INT_RXT0) {

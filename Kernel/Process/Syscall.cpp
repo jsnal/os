@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Kernel/Logger.h>
 #include <Kernel/Process/Process.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/Process/Syscall.h>
 #include <LibC/sys/syscall_defines.h>
+#include <Universal/Logger.h>
 
 #define TRACE_SYSCALLS 0
 
@@ -45,6 +45,8 @@ int handle(TaskRegisters& regs, SyscallOpcode call, int arg1, int arg2, int arg3
             return (int)p.sys_mmap((const mmap_args*)arg1);
         case SYS_munmap:
             return p.sys_munmap((void*)arg1, arg2);
+        case SYS_dbgwrite:
+            return p.sys_dbgwrite((const char*)arg1, arg2);
         default:
             dbgprintf_if(TRACE_SYSCALLS, "Syscall", "Unknown syscall %u\n", call);
             break;

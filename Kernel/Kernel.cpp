@@ -14,11 +14,11 @@
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/Devices/VirtualConsole.h>
 #include <Kernel/Filesystem/VFS.h>
-#include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Network/E1000NetworkCard.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/panic.h>
+#include <Universal/Logger.h>
 #include <Universal/StringView.h>
 #include <Universal/Types.h>
 

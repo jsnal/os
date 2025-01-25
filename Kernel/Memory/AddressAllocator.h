@@ -6,11 +6,13 @@
 
 #pragma once
 
-#include <Kernel/Logger.h>
 #include <Kernel/Memory/Address.h>
 #include <Universal/ArrayList.h>
+#include <Universal/Logger.h>
 #include <Universal/Result.h>
 #include <Universal/Types.h>
+
+#define DEBUG_ADDRESS_ALLOCATOR 0
 
 class AddressRange {
 public:

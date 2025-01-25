@@ -1,5 +1,5 @@
 #include <Kernel/CPU/GDT.h>
-#include <Kernel/Logger.h>
+#include <Universal/Logger.h>
 #include <Universal/Stdlib.h>
 
 static GDTEntry s_gdt_entries[GDT_ENTRY_LIMIT];

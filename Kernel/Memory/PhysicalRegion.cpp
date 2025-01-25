@@ -4,10 +4,12 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Kernel/Logger.h>
 #include <Kernel/Memory/PagingTypes.h>
 #include <Kernel/Memory/PhysicalRegion.h>
 #include <Kernel/kmalloc.h>
+#include <Universal/Logger.h>
+
+#define DEBUG_PHYSICAL_REGION 0
 
 using namespace Memory;
 

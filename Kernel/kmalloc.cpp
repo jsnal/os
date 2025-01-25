@@ -1,8 +1,9 @@
-#include <Kernel/Logger.h>
 #include <Kernel/kmalloc.h>
 #include <Universal/Assert.h>
+#include <Universal/Logger.h>
 #include <Universal/Stdlib.h>
 
+#define DEBUG_KMALLOC 0
 #define KMALLOC_FOREVER_SIZE (KB * 512)
 
 __attribute__((section(".heap"))) static u8 kmalloc_initial_heap[KMALLOC_INITIAL_HEAP_SIZE];

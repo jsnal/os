@@ -1,12 +1,20 @@
+/*
+ * Copyright (c) 2025, Jason Long <jasonlongball@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #include <Kernel/CPU/CPU.h>
 #include <Kernel/CPU/GDT.h>
 #include <Kernel/CPU/IDT.h>
 #include <Kernel/CPU/PIC.h>
 #include <Kernel/Devices/PIT.h>
-#include <Kernel/Logger.h>
 #include <Kernel/Memory/Paging.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Kernel/kmalloc.h>
+#include <Universal/Logger.h>
+
+#define DEBUG_PROCESS_MANAGER 0
 
 bool ProcessManager::s_started = false;
 

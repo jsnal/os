@@ -6,7 +6,7 @@
 
 #include <Kernel/Graphics/EmulatorVGAGraphicsCard.h>
 #include <Kernel/Graphics/GraphicsManager.h>
-#include <Kernel/Logger.h>
+#include <Universal/Logger.h>
 
 GraphicsManager& GraphicsManager::the()
 {

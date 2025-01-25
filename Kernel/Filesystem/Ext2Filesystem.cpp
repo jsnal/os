@@ -9,6 +9,8 @@
 #include <Kernel/Filesystem/InodeId.h>
 #include <Universal/Number.h>
 
+#define DEBUG_EXT2_FILESYSTEM 0
+
 Result Ext2Filesystem::init()
 {
     auto& super_block = this->super_block();

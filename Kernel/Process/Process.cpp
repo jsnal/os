@@ -6,16 +6,19 @@
 
 #include <Kernel/Assert.h>
 #include <Kernel/CPU/CPU.h>
+#include <Kernel/DebugConsole.h>
 #include <Kernel/Filesystem/VFS.h>
-#include <Kernel/Logger.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/POSIX.h>
 #include <Kernel/Process/ELF.h>
 #include <Kernel/Process/Process.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <LibC/errno_defines.h>
+#include <Universal/Logger.h>
 #include <Universal/Number.h>
 #include <Universal/Stdlib.h>
+
+#define DEBUG_PROCESS 0
 
 Process::Process(const StringView& name, pid_t pid, bool is_kernel, TTYDevice* tty)
     : m_name(name)
@@ -531,6 +534,12 @@ int Process::sys_munmap(void* addr, size_t length)
     if (length_before_address > 0) {
         ASSERT(allocate_region_at(old_lower_address, length_before_address, old_access).is_ok());
     }
+    return 0;
+}
+
+int Process::sys_dbgwrite(const char* buf, size_t length)
+{
+    DebugConsole::the().write(buf, length);
     return 0;
 }
 

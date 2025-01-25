@@ -7,7 +7,7 @@
 #include <Kernel/CPU/IDT.h>
 #include <Kernel/Devices/PIT.h>
 #include <Kernel/IO.h>
-#include <Kernel/Logger.h>
+#include <Universal/Logger.h>
 #include <Kernel/Process/ProcessManager.h>
 
 #define PIT_BASE_FREQUENCY 1193182

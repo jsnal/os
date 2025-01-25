@@ -92,6 +92,7 @@ public:
     int sys_isatty(int fd);
     void* sys_mmap(const mmap_args*);
     int sys_munmap(void* addr, size_t length);
+    int sys_dbgwrite(const char*, size_t);
 
 private:
     static constexpr size_t kKernelStackSize = 16 * KB;

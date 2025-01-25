@@ -1,6 +1,8 @@
 #include <Kernel/Devices/KeyboardDevice.h>
 #include <Kernel/IO.h>
-#include <Kernel/Logger.h>
+#include <Universal/Logger.h>
+
+#define DEBUG_KEYBOARD 0
 
 #define KEYBOARD_PORT 0x60
 #define KEYBOARD_ACK 0x61

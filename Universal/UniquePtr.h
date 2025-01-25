@@ -8,8 +8,6 @@
 
 #include <Universal/Stdlib.h>
 
-#include <Kernel/Logger.h>
-
 namespace Universal {
 
 template<typename T>
