@@ -94,7 +94,7 @@ public:
             return Result::Failure;
         }
 
-        for (int i = index; i < static_cast<int>(m_size); i++) {
+        for (int i = index; i < static_cast<int>(m_size) - 1; i++) {
             m_data[i] = m_data[i + 1];
         }
 

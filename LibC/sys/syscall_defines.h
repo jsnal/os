@@ -17,6 +17,7 @@
     SYSCALL_OPCODE(ioctl)   \
     SYSCALL_OPCODE(isatty)  \
     SYSCALL_OPCODE(mmap)    \
+    SYSCALL_OPCODE(munmap)  \
     SYSCALL_OPCODE(read)    \
     SYSCALL_OPCODE(write)
 

@@ -35,13 +35,14 @@ public:
     void map(PageDirectory&);
     Result unmap(PageDirectory&);
     Result free();
-    Result contains(VirtualAddress);
+    bool contains(VirtualAddress);
+    bool is_accessible(VirtualAddress, size_t);
 
     Result copy(const VirtualRegion&);
 
     inline size_t page_count() { return ceiling_divide(m_address_range.length(), Memory::kPageSize); }
 
-    inline u8 get_access() const { return m_access; }
+    inline u8 access() const { return m_access; }
     inline bool is_readable() const { return m_access & Read; }
     inline bool is_writable() const { return m_access & Write; }
     inline bool is_executable() const { return m_access & Execute; }

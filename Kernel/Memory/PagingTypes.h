@@ -38,6 +38,11 @@ static constexpr inline u32 page_round_down(u32 address)
     return (address / kPageSize) * kPageSize;
 }
 
+static constexpr inline u32 is_page_aligned(u32 address)
+{
+    return address % kPageSize == 0;
+}
+
 static constexpr inline u32 physical_to_virtual(u32 physical_address)
 {
     return physical_address + kKernelVirtualBase;

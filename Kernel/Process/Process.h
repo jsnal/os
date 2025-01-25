@@ -91,6 +91,7 @@ public:
     uid_t sys_getuid();
     int sys_isatty(int fd);
     void* sys_mmap(const mmap_args*);
+    int sys_munmap(void* addr, size_t length);
 
 private:
     static constexpr size_t kKernelStackSize = 16 * KB;
@@ -104,7 +105,7 @@ private:
     Result initialize_kernel_stack(const TaskRegisters&);
     Result initialize_user_stack();
 
-    bool is_address_accessible(VirtualAddress);
+    bool is_address_accessible(VirtualAddress, size_t);
     ResultReturn<SharedPtr<FileDescriptor>> find_file_descriptor(int fd);
 
     void die();

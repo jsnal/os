@@ -61,6 +61,7 @@ ResultReturn<AddressRange> AddressAllocator::allocate_at(VirtualAddress address,
     }
 
     if (i >= m_ranges.size()) {
+        dbgprintf("AddressAllocator", "Not good!\n");
         return Result(Result::Failure);
     }
 
@@ -105,7 +106,6 @@ merge:
     });
 
     ArrayList<AddressRange> merged_ranges(m_ranges.size());
-
     for (int i = 0; i < m_ranges.size(); i++) {
         if (merged_ranges.empty()) {
             merged_ranges.add_last(m_ranges[i]);

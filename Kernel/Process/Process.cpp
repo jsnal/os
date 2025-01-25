@@ -14,6 +14,7 @@
 #include <Kernel/Process/Process.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <LibC/errno_defines.h>
+#include <Universal/Number.h>
 #include <Universal/Stdlib.h>
 
 Process::Process(const StringView& name, pid_t pid, bool is_kernel, TTYDevice* tty)
@@ -146,7 +147,7 @@ ResultReturn<Process*> Process::fork_user_process(Process& parent, TaskRegisters
     ENSURE(child->initialize_kernel_stack(regs));
 
     for (size_t i = 0; i < parent.m_regions.size(); i++) {
-        ENSURE_TAKE(child->allocate_region_at(parent.m_regions[i]->lower(), parent.m_regions[i]->length(), parent.m_regions[i]->get_access()));
+        ENSURE_TAKE(child->allocate_region_at(parent.m_regions[i]->lower(), parent.m_regions[i]->length(), parent.m_regions[i]->access()));
         parent.m_regions[i]->copy(*child->m_regions[i]);
     }
 
@@ -189,8 +190,9 @@ Result Process::deallocate_region(size_t index)
 
     dbgprintf_if(DEBUG_PROCESS, "Process", "Deallocating virtual region 0x%x - 0x%x for Process '%s'\n", m_regions[index]->lower(), m_regions[index]->upper(), name().str());
 
-    m_regions[index]->unmap(page_directory());
-    m_regions[index]->free();
+    ENSURE(m_regions[index]->unmap(page_directory()));
+    ENSURE(page_directory().address_allocator().free(m_regions[index]->address_range()));
+    ENSURE(m_regions[index]->free());
     return Result::OK;
 }
 
@@ -319,10 +321,10 @@ void Process::reap()
     PM.remove_process(*this);
 }
 
-bool Process::is_address_accessible(VirtualAddress address)
+bool Process::is_address_accessible(VirtualAddress address, size_t length)
 {
     for (int i = 0; i < m_regions.size(); i++) {
-        if (m_regions[i]->contains(address)) {
+        if (m_regions[i]->is_accessible(address, length)) {
             return true;
         }
     }
@@ -356,7 +358,7 @@ ssize_t Process::sys_write(int fd, const void* buf, size_t count)
         return 0;
     }
 
-    if (!is_address_accessible((u32)buf)) {
+    if (!is_address_accessible((u32)buf, count)) {
         return -EFAULT;
     }
 
@@ -378,7 +380,7 @@ ssize_t Process::sys_read(int fd, void* buf, size_t count)
         return 0;
     }
 
-    if (!is_address_accessible((u32)buf)) {
+    if (!is_address_accessible((u32)buf, count)) {
         return -EFAULT;
     }
 
@@ -425,7 +427,7 @@ int Process::sys_execve(const char* pathname, char* const argv[], char* const en
 
 int Process::sys_ioctl(int fd, uint32_t request, uint32_t* argp)
 {
-    if (!is_address_accessible(reinterpret_cast<u32>(argp))) {
+    if (!is_address_accessible(reinterpret_cast<u32>(argp), sizeof(uint32_t))) {
         return -EFAULT;
     }
 
@@ -458,7 +460,7 @@ int Process::sys_isatty(int fd)
 
 void* Process::sys_mmap(const mmap_args* args)
 {
-    if (!is_address_accessible(reinterpret_cast<u32>(args))) {
+    if (!is_address_accessible(reinterpret_cast<u32>(args), sizeof(mmap_args))) {
         return (void*)-EFAULT;
     }
 
@@ -468,11 +470,68 @@ void* Process::sys_mmap(const mmap_args* args)
         return (void*)-EINVAL;
     }
 
-    if (reinterpret_cast<u32>(addr) % Memory::kPageSize != 0) {
+    if (flags & MAP_FIXED && (!Memory::is_page_aligned(reinterpret_cast<u32>(addr)) || !Memory::is_page_aligned(offset))) {
         return (void*)-EINVAL;
     }
 
-    return nullptr;
+    if (flags & MAP_FIXED && !is_address_accessible(reinterpret_cast<u32>(addr), length)) {
+        return (void*)-ENOMEM;
+    }
+
+    auto allocate_result = allocate_region(length, prot);
+    if (allocate_result.is_error()) {
+        return (void*)-ENOMEM;
+    }
+
+    return allocate_result.value()->lower().ptr();
+}
+
+int Process::sys_munmap(void* addr, size_t length)
+{
+    VirtualAddress unmap_address(reinterpret_cast<u32>(addr));
+    if (!is_address_accessible(unmap_address, length) || length == 0 || !Memory::is_page_aligned(unmap_address)) {
+        return -EINVAL;
+    }
+
+    size_t i = 0;
+    for (; i < m_regions.size(); i++) {
+        if (m_regions[i]->contains(unmap_address)) {
+            break;
+        }
+    }
+
+    if (i >= m_regions.size()) {
+        return -EINVAL;
+    }
+
+    VirtualAddress unmap_lower = Memory::page_round_down(unmap_address);
+    VirtualAddress unmap_upper = Memory::page_round_up(unmap_address.offset(length));
+    size_t unmap_page_count = ceiling_divide((unmap_address.offset(length)) - unmap_address, Memory::kPageSize);
+
+    VirtualAddress old_lower_address = m_regions[i]->lower();
+    VirtualAddress old_upper_address = m_regions[i]->upper();
+    size_t old_page_count = m_regions[i]->page_count();
+    u8 old_access = m_regions[i]->access();
+
+    ASSERT(deallocate_region(i).is_ok());
+
+    // TODO: Probably should do this in deallocate_region but causes issues when freeing in loops
+    ASSERT(m_regions.remove(i).is_ok());
+
+    // All pages are being freed so no need to reallocate
+    if (old_page_count == unmap_page_count) {
+        return 0;
+    }
+
+    size_t length_before_address = unmap_lower - old_lower_address;
+    size_t length_after_address = old_upper_address - unmap_upper;
+    if (length_after_address > 0) {
+        ASSERT(allocate_region_at(unmap_upper, length_after_address, old_access).is_ok());
+    }
+    if (length_before_address > 0) {
+        ASSERT(allocate_region_at(old_lower_address, length_before_address, old_access).is_ok());
+    }
+    return 0;
 }
 
 void Process::dump_stack(bool kernel) const

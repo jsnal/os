@@ -112,9 +112,14 @@ Result VirtualRegion::free()
     return Result::OK;
 }
 
-Result VirtualRegion::contains(VirtualAddress address)
+bool VirtualRegion::contains(VirtualAddress address)
 {
-    return address >= m_address_range.lower() && address <= m_address_range.upper();
+    return address >= m_address_range.lower() && address < m_address_range.upper();
+}
+
+bool VirtualRegion::is_accessible(VirtualAddress address, size_t length)
+{
+    return contains(address) && contains(address + length);
 }
 
 Result VirtualRegion::copy(const VirtualRegion& dest)

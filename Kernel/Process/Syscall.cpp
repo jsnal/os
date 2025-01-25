@@ -43,6 +43,8 @@ int handle(TaskRegisters& regs, SyscallOpcode call, int arg1, int arg2, int arg3
             return p.sys_isatty(arg1);
         case SYS_mmap:
             return (int)p.sys_mmap((const mmap_args*)arg1);
+        case SYS_munmap:
+            return p.sys_munmap((void*)arg1, arg2);
         default:
             dbgprintf_if(TRACE_SYSCALLS, "Syscall", "Unknown syscall %u\n", call);
             break;
