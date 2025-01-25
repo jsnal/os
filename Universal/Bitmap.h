@@ -66,6 +66,16 @@ private:
     size_t m_size_in_bits;
 };
 
+inline constexpr size_t calculate_minimum_bytes(size_t data_size)
+{
+    size_t bytes = 1;
+    while (bytes * 8 < data_size) {
+        bytes++;
+    }
+    return bytes;
+}
+
 }
 
 using Universal::Bitmap;
+using Universal::calculate_minimum_bytes;

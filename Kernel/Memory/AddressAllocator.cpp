@@ -5,6 +5,7 @@
  */
 
 #include <Kernel/Memory/AddressAllocator.h>
+#include <Kernel/Memory/PagingTypes.h>
 
 AddressAllocator::AddressAllocator(VirtualAddress base, size_t length)
 {

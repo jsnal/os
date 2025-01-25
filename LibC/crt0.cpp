@@ -20,4 +20,14 @@ int _start(int argc, char* argv[], char* env[])
     // Should never reach this line
     return 0xdead;
 }
+
+void* __dso_handle __attribute__((visibility("hidden")));
+
+void __cxa_pure_virtual()
+{
+}
+
+void __cxa_atexit()
+{
+}
 }

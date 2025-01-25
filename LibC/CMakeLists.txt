@@ -1,4 +1,5 @@
 set(LIBC_SOURCES
+    MallocManager.cpp
     crt0.cpp
     stdio.cpp
     stdlib.cpp

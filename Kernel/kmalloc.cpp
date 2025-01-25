@@ -52,7 +52,7 @@ void kfree(void* ptr)
 void kmalloc_init()
 {
     s_kmalloc_tracker = new (s_kmalloc_tracker_heap) KmallocTracker(kmalloc_initial_heap, KMALLOC_INITIAL_HEAP_SIZE);
-    dbgprintf("kmalloc", "Initialzed kmalloc: 0x%x, total_chunks=%d\n", s_kmalloc_tracker, s_kmalloc_tracker->heap().total_chunks());
+    dbgprintf("kmalloc", "Initialized kmalloc: 0x%x, total_chunks=%d\n", s_kmalloc_tracker, s_kmalloc_tracker->heap().total_chunks());
 }
 
 void kmalloc_dump_statistics()

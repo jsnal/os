@@ -18,6 +18,10 @@ int abs(int j);
 
 char* itoa(char* dest, size_t size, int a, int base);
 
+void* malloc(size_t size);
+void* calloc(size_t element_count, size_t size);
+void free(void* ptr);
+
 __END_DECLS
 
 #endif

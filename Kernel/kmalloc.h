@@ -7,7 +7,7 @@
 #pragma once
 
 #include <Kernel/Memory/Address.h>
-#include <Kernel/Memory/Heap.h>
+#include <Universal/Heap.h>
 #include <Universal/Types.h>
 
 #define KMALLOC_INITIAL_HEAP_SIZE (MB * 1)

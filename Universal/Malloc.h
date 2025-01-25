@@ -20,16 +20,6 @@ inline void free(void* ptr)
 }
 #else
 #    include <stdlib.h>
-
-inline void* malloc(size_t size)
-{
-    return nullptr;
-}
-
-inline void free(void* ptr)
-{
-    free(ptr);
-}
 #endif
 
 #ifdef TESTING
