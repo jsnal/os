@@ -56,6 +56,9 @@ private:
     void set_color(Color foreground_color, Color background_color);
     void set_cell(size_t row, size_t column, u32 character);
 
+    void handle_escape_k(int);
+    void handle_escape_j(int);
+    void handle_escape_h(int row, int column);
     void handle_escape_sequence(char command);
 
     void put_escape_sequence(char);
@@ -74,6 +77,8 @@ private:
     Color m_background_color { Black };
 
     EscapeSequenceState m_escape_sequence_state { Text };
+    Array<int, 2> m_escape_sequence_parameters;
+    u8 m_escape_sequence_parameter_index { 0 };
 
     bool m_focused { false };
 

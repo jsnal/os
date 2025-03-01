@@ -5,6 +5,7 @@
  */
 
 #include <Readline.h>
+#include <Universal/Logger.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -21,8 +22,8 @@ Result Readline::redraw()
     memcpy(redrawn_buffer.ptr() + length, m_buffer.ptr(), m_length);
     length += m_length;
 
-    memcpy(redrawn_buffer.ptr() + length, "\033[K", 5);
-    length += 5;
+    memcpy(redrawn_buffer.ptr() + length, "\033[K", 3);
+    length += 3;
 
     if (write(m_fd_out, redrawn_buffer.ptr(), length) == -1) {
         return Result::Failure;
@@ -62,6 +63,17 @@ Result Readline::do_insert(char c)
     }
 
     return Result::OK;
+}
+
+Result Readline::do_clear()
+{
+    const char* escape_sequence = "\033[H\033[2J";
+
+    if (write(m_fd_out, escape_sequence, strlen(escape_sequence)) == -1) {
+        return Result::Failure;
+    }
+
+    return redraw();
 }
 
 bool Readline::enable_raw_mode()
@@ -119,13 +131,16 @@ ResultReturn<const StringView> Readline::raw_read()
             case KeyAction::Backspace:
                 do_backspace();
                 break;
+            case KeyAction::ControlL:
+                do_clear();
+                break;
             default:
                 do_insert(c);
                 break;
         }
     }
 
-    return Result(Result::Failure);
+    return Result(Result::OK);
 }
 
 ResultReturn<const StringView> Readline::read()

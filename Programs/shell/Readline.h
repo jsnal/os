@@ -27,6 +27,7 @@ private:
         Escape = 0x1B,
         Backspace = 0x08,
         Enter = 0x0A,
+        ControlL = 0x0C,
     };
 
     static constexpr size_t kLineLength = 256;
@@ -34,6 +35,7 @@ private:
     Result redraw();
     Result do_backspace();
     Result do_insert(char);
+    Result do_clear();
 
     bool enable_raw_mode();
     ResultReturn<const StringView> raw_read();

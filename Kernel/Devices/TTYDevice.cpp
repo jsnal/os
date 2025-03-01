@@ -53,13 +53,14 @@ ssize_t TTYDevice::read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count
 
             buffer[nread] = c;
         }
+
     } else {
         for (; nread < count; nread++) {
             buffer[nread] = m_input.dequeue();
         }
     }
 
-    m_input_ready = false;
+    m_input_ready = !m_input.is_empty();
     return nread;
 }
 

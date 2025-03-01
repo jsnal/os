@@ -45,6 +45,7 @@ void VirtualConsole::handle_key_event(KeyEvent event)
 
     if (event.is_control_pressed() && event.character >= 'a' && event.character <= 'z') {
         handle_input(event.character - 'a' + 1);
+        return;
     }
     handle_input(event.character);
 }
@@ -79,16 +80,73 @@ void VirtualConsole::set_cell(size_t row, size_t column, u32 character)
     m_buffer[row * m_width + column] = character | (attribute << 8);
 }
 
+void VirtualConsole::handle_escape_k(int mode)
+{
+    u16 attribute = (Color::Black << 4) | (Color::White & 0x0F);
+
+    switch (mode) {
+        case 0:
+            for (u8 x = m_cursor_column; x < m_width; x++) {
+                m_buffer[x + m_cursor_row * m_width] = ' ' | (attribute << 8);
+            }
+            break;
+        case 1:
+            for (u8 x = 0; x < m_cursor_column; x++) {
+                m_buffer[x + m_cursor_row * m_width] = ' ' | (attribute << 8);
+            }
+            break;
+        case 2:
+            clear_row(m_cursor_row);
+            break;
+    }
+}
+
+void VirtualConsole::handle_escape_j(int mode)
+{
+    switch (mode) {
+        case 0:
+        case 1:
+            dbgprintln("VirtualConsole", "Unsupported Escape J mode: %d", mode);
+            break;
+        case 2:
+        case 3:
+            clear();
+            break;
+    }
+}
+
+void VirtualConsole::handle_escape_h(int row, int column)
+{
+    if (row == 0) {
+        row++;
+    }
+    if (column == 0) {
+        column++;
+    }
+
+    set_cursor(row - 1, column - 1);
+}
+
 void VirtualConsole::handle_escape_sequence(char command)
 {
-    if (command == 'K') {
-        u16 attribute = (Color::Black << 4) | (Color::White & 0x0F);
-        for (u8 x = m_cursor_column; x < m_width; x++) {
-            m_buffer[x + m_cursor_row * m_width] = ' ' | (attribute << 8);
-        }
-    } else {
-        dbgprintf("VirtualConsole", "Unhandled escape sequence: %c\n", command);
+    switch (command) {
+        case 'K':
+            handle_escape_k(m_escape_sequence_parameters[0]);
+            break;
+        case 'J':
+            handle_escape_j(m_escape_sequence_parameters[0]);
+            break;
+        case 'H':
+            handle_escape_h(m_escape_sequence_parameters[0], m_escape_sequence_parameters[1]);
+            break;
+        default:
+            dbgprintf("VirtualConsole", "Unhandled escape sequence: %c\n", command);
+            break;
     }
+
+    m_escape_sequence_parameters[0] = 0;
+    m_escape_sequence_parameters[1] = 0;
+    m_escape_sequence_parameter_index = 0;
 }
 
 void VirtualConsole::put_escape_sequence(char c)
@@ -102,7 +160,12 @@ void VirtualConsole::put_escape_sequence(char c)
             }
             break;
         case ControlSequenceIntroducer:
-            if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+            if (c >= '0' && c <= '9') {
+                m_escape_sequence_parameters[m_escape_sequence_parameter_index] = m_escape_sequence_parameters[m_escape_sequence_parameter_index] * 10 + (c - '0');
+            } else if (c == ';') {
+                m_escape_sequence_parameter_index++;
+                ASSERT(m_escape_sequence_parameter_index <= 2);
+            } else if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
                 handle_escape_sequence(c);
                 m_escape_sequence_state = Text;
             }
