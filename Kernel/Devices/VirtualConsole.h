@@ -26,6 +26,7 @@ public:
     void handle_key_event(KeyEvent) override;
 
 private:
+    static constexpr u8 kEscapeSequenceMaxParameters = 2;
     enum Color {
         Black = 0,
         Blue = 1,
@@ -56,9 +57,9 @@ private:
     void set_color(Color foreground_color, Color background_color);
     void set_cell(size_t row, size_t column, u32 character);
 
-    void handle_escape_k(int);
-    void handle_escape_j(int);
-    void handle_escape_h(int row, int column);
+    void handle_escape_k(const ArrayList<int, kEscapeSequenceMaxParameters>&);
+    void handle_escape_j(const ArrayList<int, kEscapeSequenceMaxParameters>&);
+    void handle_escape_h(const ArrayList<int, kEscapeSequenceMaxParameters>&);
     void handle_escape_sequence(char command);
 
     void put_escape_sequence(char);
@@ -77,8 +78,8 @@ private:
     Color m_background_color { Black };
 
     EscapeSequenceState m_escape_sequence_state { Text };
-    Array<int, 2> m_escape_sequence_parameters;
-    u8 m_escape_sequence_parameter_index { 0 };
+    ArrayList<int, kEscapeSequenceMaxParameters> m_escape_sequence_parameters;
+    bool m_escape_sequence_in_parameter { false };
 
     bool m_focused { false };
 

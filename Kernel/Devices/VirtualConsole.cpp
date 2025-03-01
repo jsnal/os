@@ -80,9 +80,13 @@ void VirtualConsole::set_cell(size_t row, size_t column, u32 character)
     m_buffer[row * m_width + column] = character | (attribute << 8);
 }
 
-void VirtualConsole::handle_escape_k(int mode)
+void VirtualConsole::handle_escape_k(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
 {
     u16 attribute = (Color::Black << 4) | (Color::White & 0x0F);
+    u32 mode = 0;
+    if (parameters.size() >= 1) {
+        mode = parameters[0];
+    }
 
     switch (mode) {
         case 0:
@@ -101,8 +105,13 @@ void VirtualConsole::handle_escape_k(int mode)
     }
 }
 
-void VirtualConsole::handle_escape_j(int mode)
+void VirtualConsole::handle_escape_j(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
 {
+    u32 mode = 0;
+    if (parameters.size() >= 1) {
+        mode = parameters[0];
+    }
+
     switch (mode) {
         case 0:
         case 1:
@@ -115,13 +124,15 @@ void VirtualConsole::handle_escape_j(int mode)
     }
 }
 
-void VirtualConsole::handle_escape_h(int row, int column)
+void VirtualConsole::handle_escape_h(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
 {
-    if (row == 0) {
-        row++;
+    u8 row = 1;
+    u8 column = 1;
+    if (parameters.size() >= 1) {
+        row = parameters[0];
     }
-    if (column == 0) {
-        column++;
+    if (parameters.size() >= 2) {
+        column = parameters[1];
     }
 
     set_cursor(row - 1, column - 1);
@@ -131,22 +142,21 @@ void VirtualConsole::handle_escape_sequence(char command)
 {
     switch (command) {
         case 'K':
-            handle_escape_k(m_escape_sequence_parameters[0]);
+            handle_escape_k(m_escape_sequence_parameters);
             break;
         case 'J':
-            handle_escape_j(m_escape_sequence_parameters[0]);
+            handle_escape_j(m_escape_sequence_parameters);
             break;
         case 'H':
-            handle_escape_h(m_escape_sequence_parameters[0], m_escape_sequence_parameters[1]);
+            handle_escape_h(m_escape_sequence_parameters);
             break;
         default:
             dbgprintf("VirtualConsole", "Unhandled escape sequence: %c\n", command);
             break;
     }
 
-    m_escape_sequence_parameters[0] = 0;
-    m_escape_sequence_parameters[1] = 0;
-    m_escape_sequence_parameter_index = 0;
+    m_escape_sequence_parameters.clear();
+    m_escape_sequence_in_parameter = false;
 }
 
 void VirtualConsole::put_escape_sequence(char c)
@@ -161,10 +171,16 @@ void VirtualConsole::put_escape_sequence(char c)
             break;
         case ControlSequenceIntroducer:
             if (c >= '0' && c <= '9') {
-                m_escape_sequence_parameters[m_escape_sequence_parameter_index] = m_escape_sequence_parameters[m_escape_sequence_parameter_index] * 10 + (c - '0');
+                if (m_escape_sequence_in_parameter) {
+                    m_escape_sequence_parameters.last() = m_escape_sequence_parameters.last() * 10 + (c - '0');
+                } else {
+                    m_escape_sequence_parameters.add_last(c - '0');
+                }
             } else if (c == ';') {
-                m_escape_sequence_parameter_index++;
-                ASSERT(m_escape_sequence_parameter_index <= 2);
+                if (!m_escape_sequence_in_parameter) {
+                    m_escape_sequence_parameters.add_last(0);
+                }
+                m_escape_sequence_in_parameter = false;
             } else if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
                 handle_escape_sequence(c);
                 m_escape_sequence_state = Text;
@@ -234,7 +250,7 @@ void VirtualConsole::clear()
 void VirtualConsole::enable_cursor()
 {
     IO::outb(0x3D4, 0x0A);
-    IO::outb(0x3D5, (IO::inb(0x3D5) & 0xC0) | 0);
+    IO::outb(0x3D5, (IO::inb(0x3D5) & 0xC0) | 14);
     IO::outb(0x3D4, 0x0B);
     IO::outb(0x3D5, (IO::inb(0x3D5) & 0xE0) | 15);
     set_cursor(0, 0);

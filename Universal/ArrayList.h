@@ -112,26 +112,26 @@ public:
             return Result::Failure;
         }
 
-        m_data[index] = element;
+        data()[index] = element;
         return Result::OK;
     }
 
     const T& get(u32 index) const
     {
-        ASSERT(check_index(index));
-        return m_data[index];
+        // ASSERT(check_index(index));
+        return data()[index];
     }
 
     T& get(u32 index)
     {
-        ASSERT(check_index(index));
-        return m_data[index];
+        // ASSERT(check_index(index));
+        return data()[index];
     }
 
     ResultReturn<size_t> find(Function<bool(T&)> predicate)
     {
         for (int i = 0; i < m_size; i++) {
-            if (predicate(m_data[i])) {
+            if (predicate(data()[i])) {
                 return i;
             }
         }
@@ -145,8 +145,8 @@ public:
         for (int i = 0; i < m_size - 1; i++) {
             swapped = false;
             for (int j = 0; j < m_size - i - 1; j++) {
-                if (compare(m_data[j], m_data[j + 1])) {
-                    swap(m_data[j], m_data[j + 1]);
+                if (compare(data()[j], data()[j + 1])) {
+                    swap(data()[j], data()[j + 1]);
                     swapped = true;
                 }
             }
@@ -157,16 +157,18 @@ public:
         }
     }
 
-    const T& operator[](u32 index) const { return m_data[index]; }
-    T& operator[](u32 index) { return m_data[index]; }
+    const T& operator[](u32 index) const { return data()[index]; }
+    T& operator[](u32 index) { return data()[index]; }
 
     const T* data() const { return is_inlined() ? inline_data() : m_data; }
     T* data() { return is_inlined() ? inline_data() : m_data; }
 
     T* raw_data() { return m_data; }
 
-    T& first() const { return m_data[0]; }
-    T& last() const { return m_data[m_size - 1]; }
+    const T& first() const { return data()[0]; }
+    T& first() { return data()[0]; }
+    const T& last() const { return data()[m_size - 1]; }
+    T& last() { return data()[m_size - 1]; }
 
     bool is_empty() const { return m_size == 0; }
 
