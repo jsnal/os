@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Universal/Stdlib.h>
 #include <Universal/Types.h>
 
 namespace Universal {

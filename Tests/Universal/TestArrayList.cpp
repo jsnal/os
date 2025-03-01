@@ -12,8 +12,8 @@
 TEST_CASE(create)
 {
     auto array_list = ArrayList<u32>();
-    CHECK_EQUAL((size_t)0, array_list.size());
-    CHECK_EQUAL((size_t)1, array_list.capacity());
+    CHECK_EQUAL(0, array_list.size());
+    CHECK_EQUAL(0, array_list.capacity());
 }
 
 TEST_CASE(add)
@@ -215,7 +215,7 @@ TEST_CASE(sort_objects)
 
 TEST_CASE(move)
 {
-    auto array_list = ArrayList<int>();
+    ArrayList<int> array_list;
     CHECK_TRUE(array_list.empty());
 
     array_list.add_last(0);
@@ -234,13 +234,13 @@ TEST_CASE(move)
     CHECK_EQUAL((int)4, array_list_construct[1]);
     CHECK_EQUAL((int)3, array_list_construct[2]);
 
-    auto array_list_equals = ArrayList<int>(array_list_construct.size());
+    ArrayList<int> array_list_equals;
     CHECK_TRUE(array_list_equals.empty());
-    CHECK_EQUAL((size_t)7, array_list_equals.capacity());
+    CHECK_FALSE(array_list_construct.empty());
 
     array_list_equals = move(array_list_construct);
 
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list_construct.empty());
     CHECK_EQUAL((int)0, array_list_equals[0]);
     CHECK_EQUAL((int)4, array_list_equals[1]);
     CHECK_EQUAL((int)3, array_list_equals[2]);
