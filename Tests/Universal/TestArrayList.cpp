@@ -19,22 +19,22 @@ TEST_CASE(create)
 TEST_CASE(add)
 {
     auto array_list = ArrayList<u32>();
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list.is_empty());
 
     array_list.add(0, 5);
     CHECK_EQUAL((size_t)1, array_list.size());
-    CHECK_FALSE(array_list.empty());
+    CHECK_FALSE(array_list.is_empty());
     CHECK_EQUAL((u32)5, array_list[0]);
 
     array_list.add(1, 10);
     CHECK_EQUAL((size_t)2, array_list.size());
-    CHECK_FALSE(array_list.empty());
+    CHECK_FALSE(array_list.is_empty());
     CHECK_EQUAL((u32)5, array_list[0]);
     CHECK_EQUAL((u32)10, array_list[1]);
 
     array_list.add(0, 0);
     CHECK_EQUAL((size_t)3, array_list.size());
-    CHECK_FALSE(array_list.empty());
+    CHECK_FALSE(array_list.is_empty());
     CHECK_EQUAL((u32)0, array_list[0]);
     CHECK_EQUAL((u32)5, array_list[1]);
     CHECK_EQUAL((u32)10, array_list[2]);
@@ -43,38 +43,38 @@ TEST_CASE(add)
 TEST_CASE(remove)
 {
     auto array_list = ArrayList<u32>();
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list.is_empty());
 
     array_list.add(0, 5);
     array_list.add(1, 10);
     array_list.add(2, 15);
     array_list.add(3, 20);
     CHECK_EQUAL((size_t)4, array_list.size());
-    CHECK_FALSE(array_list.empty());
+    CHECK_FALSE(array_list.is_empty());
 
     CHECK_TRUE(array_list.remove(100).is_error());
 
     CHECK_TRUE(array_list.remove(1).is_ok());
     CHECK_EQUAL((size_t)3, array_list.size());
-    CHECK_FALSE(array_list.empty());
+    CHECK_FALSE(array_list.is_empty());
     CHECK_EQUAL((u32)5, array_list[0]);
     CHECK_EQUAL((u32)15, array_list[1]);
     CHECK_EQUAL((u32)20, array_list[2]);
 
     CHECK_TRUE(array_list.remove(1).is_ok());
     CHECK_EQUAL((size_t)2, array_list.size());
-    CHECK_FALSE(array_list.empty());
+    CHECK_FALSE(array_list.is_empty());
     CHECK_EQUAL((u32)5, array_list[0]);
     CHECK_EQUAL((u32)20, array_list[1]);
 
     CHECK_TRUE(array_list.remove(1).is_ok());
     CHECK_EQUAL((size_t)1, array_list.size());
-    CHECK_FALSE(array_list.empty());
+    CHECK_FALSE(array_list.is_empty());
     CHECK_EQUAL((u32)5, array_list[0]);
 
     CHECK_TRUE(array_list.remove(0).is_ok());
     CHECK_EQUAL((size_t)0, array_list.size());
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list.is_empty());
 
     CHECK_TRUE(array_list.remove(0).is_error());
 }
@@ -82,7 +82,7 @@ TEST_CASE(remove)
 TEST_CASE(set)
 {
     auto array_list = ArrayList<u32>();
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list.is_empty());
 
     array_list.add(0, 5);
     array_list.add(1, 10);
@@ -91,7 +91,7 @@ TEST_CASE(set)
 
     CHECK_TRUE(array_list.set(1, 25).is_ok());
     CHECK_EQUAL((size_t)4, array_list.size());
-    CHECK_FALSE(array_list.empty());
+    CHECK_FALSE(array_list.is_empty());
     CHECK_EQUAL((u32)5, array_list[0]);
     CHECK_EQUAL((u32)25, array_list[1]);
     CHECK_EQUAL((u32)15, array_list[2]);
@@ -103,7 +103,7 @@ TEST_CASE(set)
 TEST_CASE(get)
 {
     auto array_list = ArrayList<u32>();
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list.is_empty());
 
     array_list.add(0, 5);
     array_list.add(1, 10);
@@ -118,7 +118,7 @@ TEST_CASE(get)
 TEST_CASE(first_and_last)
 {
     auto array_list = ArrayList<u32>();
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list.is_empty());
 
     array_list.add(0, 5);
     array_list.add(1, 10);
@@ -132,7 +132,7 @@ TEST_CASE(first_and_last)
 TEST_CASE(pointers)
 {
     auto array_list = ArrayList<const char*>();
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list.is_empty());
 
     array_list.add(0, "string1");
     array_list.add(1, "string2");
@@ -153,7 +153,7 @@ TEST_CASE(shared_pointers)
     auto shared_point4 = adopt(*new IntSharedPointer(4));
 
     auto array_list = ArrayList<SharedPtr<IntSharedPointer>>();
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list.is_empty());
 
     array_list.add(0, shared_point1);
     array_list.add(1, shared_point2);
@@ -169,7 +169,7 @@ TEST_CASE(shared_pointers)
 TEST_CASE(sort)
 {
     auto array_list = ArrayList<int>();
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list.is_empty());
 
     array_list.add_last(0);
     array_list.add_last(4);
@@ -196,7 +196,7 @@ TEST_CASE(sort_objects)
     auto shared_point4 = adopt(*new IntSharedPointer(4));
 
     auto array_list = ArrayList<SharedPtr<IntSharedPointer>>();
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list.is_empty());
 
     array_list.add_last(shared_point2);
     array_list.add_last(shared_point4);
@@ -216,7 +216,7 @@ TEST_CASE(sort_objects)
 TEST_CASE(move)
 {
     ArrayList<int> array_list;
-    CHECK_TRUE(array_list.empty());
+    CHECK_TRUE(array_list.is_empty());
 
     array_list.add_last(0);
     array_list.add_last(4);
@@ -227,7 +227,7 @@ TEST_CASE(move)
     CHECK_EQUAL((int)3, array_list[2]);
 
     auto array_list_construct = ArrayList<int>(move(array_list));
-    CHECK_FALSE(array_list_construct.empty());
+    CHECK_FALSE(array_list_construct.is_empty());
     CHECK_EQUAL((size_t)7, array_list_construct.capacity());
 
     CHECK_EQUAL((int)0, array_list_construct[0]);
@@ -235,12 +235,12 @@ TEST_CASE(move)
     CHECK_EQUAL((int)3, array_list_construct[2]);
 
     ArrayList<int> array_list_equals;
-    CHECK_TRUE(array_list_equals.empty());
-    CHECK_FALSE(array_list_construct.empty());
+    CHECK_TRUE(array_list_equals.is_empty());
+    CHECK_FALSE(array_list_construct.is_empty());
 
     array_list_equals = move(array_list_construct);
 
-    CHECK_TRUE(array_list_construct.empty());
+    CHECK_TRUE(array_list_construct.is_empty());
     CHECK_EQUAL((int)0, array_list_equals[0]);
     CHECK_EQUAL((int)4, array_list_equals[1]);
     CHECK_EQUAL((int)3, array_list_equals[2]);

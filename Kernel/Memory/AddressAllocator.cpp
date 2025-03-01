@@ -106,9 +106,9 @@ merge:
         return a.lower() > b.lower();
     });
 
-    ArrayList<AddressRange> merged_ranges(m_ranges.size());
+    ArrayList<AddressRange> merged_ranges;
     for (int i = 0; i < m_ranges.size(); i++) {
-        if (merged_ranges.empty()) {
+        if (merged_ranges.is_empty()) {
             merged_ranges.add_last(m_ranges[i]);
             continue;
         }

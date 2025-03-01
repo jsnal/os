@@ -168,7 +168,7 @@ public:
     T& first() const { return m_data[0]; }
     T& last() const { return m_data[m_size - 1]; }
 
-    bool empty() const { return m_size == 0; }
+    bool is_empty() const { return m_size == 0; }
 
     size_t size() const { return m_size; }
     size_t capacity() const { return m_capacity; }
