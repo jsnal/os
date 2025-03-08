@@ -62,7 +62,7 @@ EmulatorVGAGraphicsCard::EmulatorVGAGraphicsCard(Bus::PCI::Address const& addres
 
 SharedPtr<EmulatorVGAGraphicsCard> EmulatorVGAGraphicsCard::create(Bus::PCI::Address const& address, Bus::PCI::ID const& id)
 {
-    return adopt(*new EmulatorVGAGraphicsCard(address, id));
+    return adopt_shared_ptr(*new EmulatorVGAGraphicsCard(address, id));
 }
 
 void EmulatorVGAGraphicsCard::scroll(size_t pixels) { }

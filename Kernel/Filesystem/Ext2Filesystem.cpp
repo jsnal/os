@@ -75,7 +75,7 @@ InodeId Ext2Filesystem::root_inode() const
 
 SharedPtr<Inode> Ext2Filesystem::inode(const InodeId& inode)
 {
-    return adopt(*new Ext2Inode(*this, inode.id()));
+    return make_shared_ptr<Ext2Inode>(*this, inode.id());
 }
 
 ResultReturn<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)

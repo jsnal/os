@@ -9,7 +9,6 @@
 #include <Kernel/Filesystem/Ext2.h>
 #include <Kernel/Filesystem/Inode.h>
 #include <Universal/ArrayList.h>
-#include <Universal/ShareCounted.h>
 #include <Universal/String.h>
 #include <Universal/Types.h>
 

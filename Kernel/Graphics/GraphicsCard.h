@@ -6,11 +6,10 @@
 
 #pragma once
 
-#include <Universal/ShareCounted.h>
+#include <Universal/RefCounted.h>
 #include <Universal/Types.h>
 
-class GraphicsCard : public ShareCounted<GraphicsCard>
-{
+class GraphicsCard : public RefCounted<GraphicsCard> {
 public:
     GraphicsCard() = default;
 

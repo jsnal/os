@@ -11,22 +11,22 @@
 
 namespace Universal {
 
-class ShareCountedImpl {
+class RefCountedImpl {
 public:
     [[gnu::always_inline]] inline void ref() { m_ref_count++; }
 
     [[gnu::always_inline]] inline u32 ref_count() const { return m_ref_count; }
 
 private:
-    ShareCountedImpl(const ShareCountedImpl&) = delete;
-    ShareCountedImpl& operator=(const ShareCountedImpl&) = delete;
+    RefCountedImpl(const RefCountedImpl&) = delete;
+    RefCountedImpl& operator=(const RefCountedImpl&) = delete;
 
-    ShareCountedImpl(ShareCountedImpl&&) = delete;
-    ShareCountedImpl& operator=(ShareCountedImpl&&) = delete;
+    RefCountedImpl(RefCountedImpl&&) = delete;
+    RefCountedImpl& operator=(RefCountedImpl&&) = delete;
 
 protected:
-    ShareCountedImpl() { }
-    [[gnu::always_inline]] inline ~ShareCountedImpl() { ASSERT(m_ref_count == 0); }
+    RefCountedImpl() { }
+    [[gnu::always_inline]] inline ~RefCountedImpl() { ASSERT(m_ref_count == 0); }
 
     [[gnu::always_inline]] inline u32 deref_base()
     {
@@ -39,7 +39,7 @@ protected:
 };
 
 template<typename T>
-class ShareCounted : public ShareCountedImpl {
+class RefCounted : public RefCountedImpl {
 public:
     void unref()
     {
@@ -52,4 +52,4 @@ public:
 
 }
 
-using Universal::ShareCounted;
+using Universal::RefCounted;

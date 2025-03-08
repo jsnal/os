@@ -9,7 +9,7 @@
 #include <Kernel/Memory/Address.h>
 #include <Kernel/Memory/AddressAllocator.h>
 #include <Kernel/Memory/PagingTypes.h>
-#include <Universal/ShareCounted.h>
+#include <Universal/RefCounted.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/Types.h>
 
@@ -111,16 +111,16 @@ private:
     VirtualAddress m_address;
 };
 
-class PageDirectory : public ShareCounted<PageDirectory> {
+class PageDirectory : public RefCounted<PageDirectory> {
 public:
     static SharedPtr<PageDirectory> create_kernel_page_directory(PhysicalAddress address)
     {
-        return adopt(*new PageDirectory(address));
+        return adopt_shared_ptr(*new PageDirectory(address));
     }
 
     static SharedPtr<PageDirectory> create_user_page_directory()
     {
-        return adopt(*new PageDirectory());
+        return adopt_shared_ptr(*new PageDirectory());
     }
 
     void set_base(PhysicalAddress base) { m_directory_page_base = base; }

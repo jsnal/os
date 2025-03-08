@@ -7,9 +7,9 @@
 #pragma once
 
 #include <Kernel/Filesystem/File.h>
-#include <Universal/ShareCounted.h>
+#include <Universal/RefCounted.h>
 
-class FileDescriptor : public ShareCounted<FileDescriptor> {
+class FileDescriptor : public RefCounted<FileDescriptor> {
 public:
     FileDescriptor(SharedPtr<File> file)
         : m_file(file)

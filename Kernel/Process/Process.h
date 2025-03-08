@@ -15,7 +15,6 @@
 #include <LibC/sys/syscall_defines.h>
 #include <Universal/LinkedList.h>
 #include <Universal/Result.h>
-#include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/StringView.h>
 #include <Universal/Types.h>

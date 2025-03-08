@@ -8,11 +8,11 @@
 
 #include <Kernel/Memory/Address.h>
 #include <Universal/Bitmap.h>
+#include <Universal/RefCounted.h>
 #include <Universal/Result.h>
-#include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
 
-class PhysicalRegion : public ShareCounted<PhysicalRegion> {
+class PhysicalRegion : public RefCounted<PhysicalRegion> {
 public:
     static SharedPtr<PhysicalRegion> create(PhysicalAddress lower, PhysicalAddress upper);
 

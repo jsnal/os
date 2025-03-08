@@ -9,10 +9,10 @@
 #include <Kernel/Memory/Address.h>
 #include <Universal/Array.h>
 #include <Universal/LinkedList.h>
-#include <Universal/ShareCounted.h>
+#include <Universal/RefCounted.h>
 #include <Universal/SharedPtr.h>
 
-class VMObject : public ShareCounted<VMObject>
+class VMObject : public RefCounted<VMObject>
     , public LinkedListNode<VMObject> {
 public:
     VMObject(size_t);

@@ -102,10 +102,10 @@ private:
     T* m_ptr { nullptr };
 };
 
-template<class T, class... Arguments>
-inline UniquePtr<T> make_unique_ptr(Arguments&&... arguments)
+template<class T, class... Args>
+inline UniquePtr<T> make_unique_ptr(Args&&... args)
 {
-    return UniquePtr<T>(new T(forward<Arguments>(arguments)...));
+    return UniquePtr<T>(new T(forward<Args>(args)...));
 }
 
 }

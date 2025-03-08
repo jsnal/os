@@ -6,13 +6,13 @@
 
 #pragma once
 
+#include <Universal/RefCounted.h>
 #include <Universal/Result.h>
-#include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
 
 class FileDescriptor;
 
-class File : public ShareCounted<File> {
+class File : public RefCounted<File> {
 public:
     File() = default;
     virtual ~File() = default;

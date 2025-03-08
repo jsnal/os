@@ -8,7 +8,7 @@
 
 #include <Kernel/Filesystem/Filesystem.h>
 #include <Universal/ArrayList.h>
-#include <Universal/ShareCounted.h>
+#include <Universal/RefCounted.h>
 #include <Universal/String.h>
 #include <Universal/Types.h>
 
@@ -19,7 +19,7 @@ class InodeId;
 #define MODE_DIRECTORY 0x4000
 #define MODE_BLOCK_DEVICE 0x6000
 
-class Inode : public ShareCounted<Inode> {
+class Inode : public RefCounted<Inode> {
 public:
     Inode(Filesystem& fs, ino_t id)
         : m_fs(fs)

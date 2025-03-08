@@ -10,7 +10,6 @@
 #include <Kernel/Graphics/GraphicsCard.h>
 #include <Kernel/Memory/Address.h>
 #include <Kernel/Memory/VirtualRegion.h>
-#include <Universal/ShareCounted.h>
 #include <Universal/SharedPtr.h>
 
 class EmulatorVGAGraphicsCard : public GraphicsCard {

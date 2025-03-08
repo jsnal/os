@@ -147,23 +147,20 @@ private:
     T* m_ptr { nullptr };
 };
 
-template<typename T>
-inline SharedPtr<T> adopt_if_nonnull(T* object)
+template<class T, class... Args>
+inline SharedPtr<T> make_shared_ptr(Args&&... args)
 {
-    if (object) {
-        return SharedPtr<T>(true, *object);
-    }
-    return {};
+    return SharedPtr<T>(true, *new T(forward<Args>(args)...));
 }
 
 template<typename T>
-inline SharedPtr<T> adopt(T& object)
+inline SharedPtr<T> adopt_shared_ptr(T& object)
 {
     return SharedPtr<T>(true, object);
 }
 
 }
 
-using Universal::adopt;
-using Universal::adopt_if_nonnull;
+using Universal::adopt_shared_ptr;
+using Universal::make_shared_ptr;
 using Universal::SharedPtr;

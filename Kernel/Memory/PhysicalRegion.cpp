@@ -15,7 +15,7 @@ using namespace Memory;
 
 SharedPtr<PhysicalRegion> PhysicalRegion::create(PhysicalAddress lower, PhysicalAddress upper)
 {
-    return adopt(*new PhysicalRegion(lower, upper));
+    return adopt_shared_ptr(*new PhysicalRegion(lower, upper));
 }
 
 PhysicalRegion::PhysicalRegion(PhysicalAddress lower, PhysicalAddress upper)

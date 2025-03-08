@@ -15,7 +15,7 @@ PTSFilesystem::PTSFilesystem()
 
 Result PTSFilesystem::init()
 {
-    m_root_inode = adopt(*new PTSInode(*this, 0));
+    m_root_inode = make_shared_ptr<PTSInode>(*this, 0);
     return Result::OK;
 }
 
@@ -32,7 +32,7 @@ SharedPtr<Inode> PTSFilesystem::inode(const InodeId& inode_id)
 
     auto* device = Device::get_device(136, inode_id.id() - 1);
 
-    auto inode = adopt(*new PTSInode(*this, inode_id.id()));
+    auto inode = make_shared_ptr<PTSInode>(*this, inode_id.id());
     m_root_inode->m_major_device_number = device->major();
     m_root_inode->m_minor_device_number = device->minor();
     m_root_inode->m_mode = 0020644;
