@@ -17,10 +17,11 @@
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Network/E1000NetworkCard.h>
 #include <Kernel/Process/ProcessManager.h>
-#include <Kernel/panic.h>
 #include <Universal/Logger.h>
 #include <Universal/StringView.h>
 #include <Universal/Types.h>
+
+#include <Kernel/CPU/CPU.h>
 
 #if !defined(__os__)
 #    error "Compiling with incorrect toolchain."
@@ -67,11 +68,11 @@ VirtualConsole* tty0;
         ;
 }
 
-extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multiboot_information_t* multiboot, const u32 magicNumber)
+extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multiboot_information_t* multiboot, const u32 magic_number)
 {
     DebugConsole::the().enable();
 
-    if (magicNumber != MULTIBOOT_BOOTLOADER_MAGIC) {
+    if (magic_number != MULTIBOOT_BOOTLOADER_MAGIC) {
         panic("Multiboot header is malformed");
     }
 

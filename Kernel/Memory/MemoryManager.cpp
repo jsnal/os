@@ -7,7 +7,6 @@
 #include <Kernel/CPU/IDT.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Memory/PagingTypes.h>
-#include <Kernel/panic.h>
 #include <Universal/Assert.h>
 #include <Universal/Logger.h>
 #include <Universal/Number.h>

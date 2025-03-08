@@ -92,7 +92,7 @@ public:
 
     Result remove(u32 index)
     {
-        if (check_index(index)) {
+        if (!is_index_valid(index)) {
             return Result::Failure;
         }
 
@@ -108,7 +108,7 @@ public:
 
     Result set(u32 index, T element)
     {
-        if (check_index(index)) {
+        if (!is_index_valid(index)) {
             return Result::Failure;
         }
 
@@ -118,13 +118,13 @@ public:
 
     const T& get(u32 index) const
     {
-        // ASSERT(check_index(index));
+        ASSERT(is_index_valid(index));
         return data()[index];
     }
 
     T& get(u32 index)
     {
-        // ASSERT(check_index(index));
+        ASSERT(is_index_valid(index));
         return data()[index];
     }
 
@@ -176,7 +176,7 @@ public:
     size_t capacity() const { return m_capacity; }
 
 private:
-    bool check_index(u32 index) const { return index < 0 || index >= m_size; }
+    bool is_index_valid(u32 index) const { return index >= 0 && index < m_size; }
 
     constexpr bool is_inlined() const { return InlineCapacity > 0; }
 

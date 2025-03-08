@@ -4,9 +4,22 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#pragma once
+
+#include <Kernel/kprintf.h>
 #include <Universal/Types.h>
 
 namespace CPU {
+
+#define panic(format, ...)                                                             \
+    do {                                                                               \
+        kprintf("*** PANIC (%s:%d in %s) ***", __FUNCTION__, __LINE__, __FILE_NAME__); \
+        kprintf(format, ##__VA_ARGS__);                                                \
+        CPU::hang();                                                                   \
+    } while (0)
+
+[[noreturn]] void hang();
+void assertion_failed(const char* message, const char* file, const char* function, u32 line);
 
 enum RingLevel : u8 {
     Ring0 = 0,
@@ -40,44 +53,10 @@ private:
     u16 m_index : 13;
 };
 
-static inline void set_ds_register(const SegmentSelector& selector)
-{
-    asm volatile("mov %%ds, %0"
-                 :
-                 : "r"(static_cast<uint16_t>(selector)));
-}
-
-static inline void set_es_register(const SegmentSelector& selector)
-{
-    asm volatile("mov %%es, %0"
-                 :
-                 : "r"(static_cast<uint16_t>(selector)));
-}
-
-static inline void set_fs_register(const SegmentSelector& selector)
-{
-    asm volatile("mov %%fs, %0"
-                 :
-                 : "r"(static_cast<uint16_t>(selector)));
-}
-
-static inline void set_gs_register(const SegmentSelector& selector)
-{
-    asm volatile("mov %%gs, %0"
-                 :
-                 : "r"(static_cast<uint16_t>(selector)));
-}
-
-static inline u32 cpu_flags()
-{
-    u32 flags;
-    asm volatile(
-        "pushf\n"
-        "pop %0\n"
-        : "=rm"(flags)
-        :
-        : "memory");
-    return flags;
-}
+void set_ds_register(const SegmentSelector& selector);
+void set_es_register(const SegmentSelector& selector);
+void set_fs_register(const SegmentSelector& selector);
+void set_gs_register(const SegmentSelector& selector);
+u32 cpu_flags();
 
 };

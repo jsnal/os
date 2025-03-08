@@ -13,9 +13,9 @@
 #include <Kernel/Filesystem/InodeFile.h>
 #include <Kernel/Filesystem/InodeId.h>
 #include <Kernel/Filesystem/VFS.h>
-#include <Universal/Logger.h>
 #include <Kernel/POSIX.h>
 #include <LibC/errno_defines.h>
+#include <Universal/Logger.h>
 
 VFS& VFS::the()
 {

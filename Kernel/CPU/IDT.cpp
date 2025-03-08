@@ -2,7 +2,6 @@
 #include <Kernel/CPU/IRQHandler.h>
 #include <Kernel/CPU/PIC.h>
 #include <Universal/Logger.h>
-#include <Kernel/panic.h>
 #include <Universal/Number.h>
 #include <Universal/Stdlib.h>
 

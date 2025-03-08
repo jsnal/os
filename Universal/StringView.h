@@ -62,7 +62,7 @@ public:
 
     constexpr char get(size_t index) const
     {
-        ASSERT(!is_null() && index >= 0 && index < m_length);
+        ASSERT(!is_null() && is_index_valid(index));
         return m_str[index];
     }
     constexpr char operator[](size_t index) const { return get(index); }
@@ -93,7 +93,7 @@ public:
     bool operator!=(const StringView& other) const { return !(*this == other); }
 
 private:
-    constexpr bool check_index(u32 index) const { return index < 0 || index >= m_length; }
+    constexpr bool is_index_valid(u32 index) const { return index >= 0 && index < m_length; }
 
     const char* m_str { nullptr };
     size_t m_length { 0 };

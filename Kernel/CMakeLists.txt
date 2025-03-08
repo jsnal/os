@@ -1,5 +1,6 @@
 SET(KERNEL_SOURCES
     Bus/PCI.cpp
+    CPU/CPU.cpp
     CPU/GDT.cpp
     CPU/IDT.cpp
     CPU/IRQHandler.cpp
