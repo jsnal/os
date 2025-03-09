@@ -47,6 +47,30 @@ void VirtualConsole::handle_key_event(KeyEvent event)
         handle_input(event.character - 'a' + 1);
         return;
     }
+
+    auto generate_escape = [&](char c) {
+        handle_input('\033');
+        handle_input('[');
+        handle_input(c);
+    };
+
+    switch (event.character) {
+        case KEYBOARD_KEY_UP:
+            generate_escape('A');
+            return;
+        case KEYBOARD_KEY_DOWN:
+            generate_escape('B');
+            return;
+        case KEYBOARD_KEY_RIGHT:
+            generate_escape('C');
+            return;
+        case KEYBOARD_KEY_LEFT:
+            generate_escape('D');
+            return;
+        default:
+            break;
+    }
+
     handle_input(event.character);
 }
 
@@ -105,25 +129,6 @@ void VirtualConsole::handle_escape_k(const ArrayList<int, kEscapeSequenceMaxPara
     }
 }
 
-void VirtualConsole::handle_escape_j(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
-{
-    u32 mode = 0;
-    if (parameters.size() >= 1) {
-        mode = parameters[0];
-    }
-
-    switch (mode) {
-        case 0:
-        case 1:
-            dbgprintln("VirtualConsole", "Unsupported Escape J mode: %d", mode);
-            break;
-        case 2:
-        case 3:
-            clear();
-            break;
-    }
-}
-
 void VirtualConsole::handle_escape_h(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
 {
     u8 row = 1;
@@ -138,17 +143,51 @@ void VirtualConsole::handle_escape_h(const ArrayList<int, kEscapeSequenceMaxPara
     set_cursor(row - 1, column - 1);
 }
 
+void VirtualConsole::handle_escape_c(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
+{
+    u32 columns = 0;
+    if (parameters.size() >= 1) {
+        columns = parameters[0];
+    }
+
+    dbgprintln("VirtualConsole", "Moving %d columns");
+
+    set_cursor(m_cursor_row, m_cursor_column + columns);
+}
+
+void VirtualConsole::handle_escape_j(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
+{
+    u32 mode = 0;
+    if (parameters.size() >= 1) {
+        mode = parameters[0];
+    }
+
+    switch (mode) {
+        case 0:
+        case 1:
+            dbgprintln("VirtualConsole", "Unsupported escape J mode: %d", mode);
+            break;
+        case 2:
+        case 3:
+            clear();
+            break;
+    }
+}
+
 void VirtualConsole::handle_escape_sequence(char command)
 {
     switch (command) {
-        case 'K':
-            handle_escape_k(m_escape_sequence_parameters);
+        case 'C':
+            handle_escape_c(m_escape_sequence_parameters);
+            break;
+        case 'H':
+            handle_escape_h(m_escape_sequence_parameters);
             break;
         case 'J':
             handle_escape_j(m_escape_sequence_parameters);
             break;
-        case 'H':
-            handle_escape_h(m_escape_sequence_parameters);
+        case 'K':
+            handle_escape_k(m_escape_sequence_parameters);
             break;
         default:
             dbgprintf("VirtualConsole", "Unhandled escape sequence: %c\n", command);

@@ -33,6 +33,8 @@ private:
     static constexpr size_t kLineLength = 256;
 
     Result redraw();
+    Result do_move_right();
+    Result do_move_left();
     Result do_backspace();
     Result do_insert(char);
     Result do_clear();

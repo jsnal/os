@@ -5,31 +5,63 @@
  */
 
 #include <Readline.h>
+#include <Universal/ArrayList.h>
 #include <Universal/Logger.h>
+#include <Universal/String.h>
 #include <stdio.h>
 #include <unistd.h>
 
 Result Readline::redraw()
 {
-    Array<char, kLineLength + 64> redrawn_buffer;
+    ArrayList<char, kLineLength + 64> redraw_buffer;
 
-    size_t length = 0;
-    redrawn_buffer[length++] = '\r';
+    // Move the cursor to the left-edge of the screen
+    redraw_buffer.add_last('\r');
 
-    memcpy(redrawn_buffer.ptr() + length, m_prompt.str(), m_prompt.length());
-    length += m_prompt.length();
+    // Print the prompt
+    for (size_t i = 0; i < m_prompt.length(); i++) {
+        redraw_buffer.add_last(m_prompt[i]);
+    }
 
-    memcpy(redrawn_buffer.ptr() + length, m_buffer.ptr(), m_length);
-    length += m_length;
+    // Print the current buffer
+    for (size_t i = 0; i < m_length; i++) {
+        redraw_buffer.add_last(m_buffer[i]);
+    }
 
-    memcpy(redrawn_buffer.ptr() + length, "\033[K", 3);
-    length += 3;
+    // Erase to the right of the end of the buffer
+    redraw_buffer.add_last('\033');
+    redraw_buffer.add_last('[');
+    redraw_buffer.add_last('K');
 
-    if (write(m_fd_out, redrawn_buffer.ptr(), length) == -1) {
+    // Move the cursor to the correct location
+    //    String escape_sequence = String::format("\r\033[%uC", m_position + m_length);
+    //    for (size_t i = 0; i < escape_sequence.length(); i++) {
+    //        redraw_buffer.add_last(escape_sequence[i]);
+    //    }
+
+    if (write(m_fd_out, redraw_buffer.data(), redraw_buffer.size()) == -1) {
         return Result::Failure;
     }
 
     return Result::OK;
+}
+
+Result Readline::do_move_right()
+{
+    if (m_length > 0 && m_position != m_length) {
+        m_position++;
+        return redraw();
+    }
+    return true;
+}
+
+Result Readline::do_move_left()
+{
+    if (m_length > 0 && m_position > 0) {
+        m_position--;
+        return redraw();
+    }
+    return true;
 }
 
 Result Readline::do_backspace()
@@ -126,6 +158,30 @@ ResultReturn<const StringView> Readline::raw_read()
         }
 
         switch (c) {
+            case KeyAction::Escape: {
+                char escape_sequence[3];
+                if (::read(m_fd_in, escape_sequence, 2) <= 0) {
+                    break;
+                }
+
+                if (escape_sequence[0] == '[') {
+                    switch (escape_sequence[1]) {
+                        case 'A':
+                            dbgprintln("Shell", "Up arrow!");
+                            break;
+                        case 'B':
+                            dbgprintln("Shell", "Down arrow!");
+                            break;
+                        case 'C':
+                            do_move_right();
+                            break;
+                        case 'D':
+                            do_move_left();
+                            break;
+                    }
+                }
+                break;
+            }
             case KeyAction::Enter:
                 return StringView(m_buffer.data());
             case KeyAction::Backspace:

@@ -57,9 +57,10 @@ private:
     void set_color(Color foreground_color, Color background_color);
     void set_cell(size_t row, size_t column, u32 character);
 
-    void handle_escape_k(const ArrayList<int, kEscapeSequenceMaxParameters>&);
-    void handle_escape_j(const ArrayList<int, kEscapeSequenceMaxParameters>&);
+    void handle_escape_c(const ArrayList<int, kEscapeSequenceMaxParameters>&);
     void handle_escape_h(const ArrayList<int, kEscapeSequenceMaxParameters>&);
+    void handle_escape_j(const ArrayList<int, kEscapeSequenceMaxParameters>&);
+    void handle_escape_k(const ArrayList<int, kEscapeSequenceMaxParameters>&);
     void handle_escape_sequence(char command);
 
     void put_escape_sequence(char);
