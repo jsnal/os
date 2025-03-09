@@ -5,12 +5,12 @@
  */
 
 #include <Tests/Macros.h>
-#include <Tests/Universal/IntSharedPtr.h>
+#include <Tests/Universal/Int.h>
 #include <Universal/SharedPtr.h>
 
 TEST_CASE(create)
 {
-    SharedPtr<IntSharedPointer> shared_pointer = adopt(*new IntSharedPointer(1));
+    auto shared_pointer = make_shared_ptr<Int>(1);
 
     CHECK_EQUAL((int)1, shared_pointer->value());
     shared_pointer->value(2);
@@ -19,7 +19,7 @@ TEST_CASE(create)
 
 TEST_CASE(multiple_refs)
 {
-    SharedPtr<IntSharedPointer> shared_pointer = adopt(*new IntSharedPointer(1));
+    auto shared_pointer = make_shared_ptr<Int>(1);
     CHECK_NONNULL(shared_pointer.ptr());
     CHECK_EQUAL((u32)1, shared_pointer->ref_count());
     shared_pointer->ref();
@@ -37,7 +37,7 @@ TEST_CASE(multiple_refs)
 
 TEST_CASE(assign_ref)
 {
-    SharedPtr<IntSharedPointer> shared_pointer = adopt(*new IntSharedPointer(1));
+    auto shared_pointer = make_shared_ptr<Int>(1);
     CHECK_EQUAL((u32)1, shared_pointer->ref_count());
     shared_pointer = *shared_pointer;
     CHECK_EQUAL((u32)1, shared_pointer->ref_count());
@@ -45,7 +45,7 @@ TEST_CASE(assign_ref)
 
 TEST_CASE(assign_ptr)
 {
-    SharedPtr<IntSharedPointer> shared_pointer = adopt(*new IntSharedPointer(1));
+    auto shared_pointer = make_shared_ptr<Int>(1);
     CHECK_EQUAL((u32)1, shared_pointer->ref_count());
     shared_pointer = shared_pointer.ptr();
     CHECK_EQUAL((u32)1, shared_pointer->ref_count());
@@ -53,7 +53,7 @@ TEST_CASE(assign_ptr)
 
 TEST_CASE(copy_and_move_ref)
 {
-    SharedPtr<IntSharedPointer> shared_pointer = adopt(*new IntSharedPointer(1));
+    auto shared_pointer = make_shared_ptr<Int>(1);
     CHECK_EQUAL((u32)1, shared_pointer->ref_count());
 
     {
@@ -66,7 +66,7 @@ TEST_CASE(copy_and_move_ref)
         shared_pointer1 = std::move(shared_pointer2);
         CHECK_EQUAL((u32)2, shared_pointer->ref_count());
 
-        SharedPtr<IntSharedPointer> shared_pointer3(std::move(shared_pointer1));
+        SharedPtr<Int> shared_pointer3(std::move(shared_pointer1));
         CHECK_EQUAL((u32)2, shared_pointer->ref_count());
 
         shared_pointer1 = shared_pointer3;
@@ -78,8 +78,8 @@ TEST_CASE(copy_and_move_ref)
 
 TEST_CASE(swap)
 {
-    SharedPtr<IntSharedPointer> shared_pointer1 = adopt(*new IntSharedPointer(1));
-    SharedPtr<IntSharedPointer> shared_pointer2 = adopt(*new IntSharedPointer(2));
+    auto shared_pointer1 = make_shared_ptr<Int>(1);
+    auto shared_pointer2 = make_shared_ptr<Int>(2);
     auto* ptr1 = shared_pointer1.ptr();
     auto* ptr2 = shared_pointer2.ptr();
     swap(ptr1, ptr2);

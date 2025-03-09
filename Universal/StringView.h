@@ -72,8 +72,8 @@ public:
 
     bool contains(const StringView&) const;
 
-    Optional<size_t> find(char sh) const;
-    Optional<size_t> find_last(char ch) const;
+    Optional<size_t> find(char) const;
+    Optional<size_t> find_last(char) const;
 
     bool operator==(const StringView& other) const
     {

@@ -5,7 +5,7 @@
  */
 
 #include <Tests/Macros.h>
-#include <Tests/Universal/IntSharedPtr.h>
+#include <Tests/Universal/Int.h>
 #include <Universal/Array.h>
 #include <Universal/SharedPtr.h>
 
@@ -28,9 +28,9 @@ TEST_CASE(add)
 
 TEST_CASE(shared_pointers)
 {
-    auto shared_point1 = adopt(*new IntSharedPointer(1));
-    auto shared_point2 = adopt(*new IntSharedPointer(2));
-    auto array = Array<SharedPtr<IntSharedPointer>>(10);
+    auto shared_point1 = make_shared_ptr<Int>(1);
+    auto shared_point2 = make_shared_ptr<Int>(2);
+    auto array = Array<SharedPtr<Int>>(10);
     CHECK_EQUAL((size_t)10, array.size());
 
     array[0] = shared_point1;

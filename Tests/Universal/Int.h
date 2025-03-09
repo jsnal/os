@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <Universal/ShareCounted.h>
+#include <Universal/RefCounted.h>
 
-class IntSharedPointer : public ShareCounted<IntSharedPointer> {
+class Int : public RefCounted<Int> {
 public:
-    IntSharedPointer(int value)
+    Int(int value)
         : m_value(value)
     {
     }

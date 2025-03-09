@@ -5,7 +5,7 @@
  */
 
 #include <Tests/Macros.h>
-#include <Tests/Universal/IntSharedPtr.h>
+#include <Tests/Universal/Int.h>
 #include <Universal/ArrayList.h>
 #include <Universal/SharedPtr.h>
 
@@ -147,12 +147,12 @@ TEST_CASE(pointers)
 
 TEST_CASE(shared_pointers)
 {
-    auto shared_point1 = adopt(*new IntSharedPointer(1));
-    auto shared_point2 = adopt(*new IntSharedPointer(2));
-    auto shared_point3 = adopt(*new IntSharedPointer(3));
-    auto shared_point4 = adopt(*new IntSharedPointer(4));
+    auto shared_point1 = make_shared_ptr<Int>(1);
+    auto shared_point2 = make_shared_ptr<Int>(2);
+    auto shared_point3 = make_shared_ptr<Int>(3);
+    auto shared_point4 = make_shared_ptr<Int>(4);
 
-    auto array_list = ArrayList<SharedPtr<IntSharedPointer>>();
+    auto array_list = ArrayList<SharedPtr<Int>>();
     CHECK_TRUE(array_list.is_empty());
 
     array_list.add(0, shared_point1);
@@ -190,12 +190,12 @@ TEST_CASE(sort)
 
 TEST_CASE(sort_objects)
 {
-    auto shared_point1 = adopt(*new IntSharedPointer(1));
-    auto shared_point2 = adopt(*new IntSharedPointer(2));
-    auto shared_point3 = adopt(*new IntSharedPointer(3));
-    auto shared_point4 = adopt(*new IntSharedPointer(4));
+    auto shared_point1 = make_shared_ptr<Int>(1);
+    auto shared_point2 = make_shared_ptr<Int>(2);
+    auto shared_point3 = make_shared_ptr<Int>(3);
+    auto shared_point4 = make_shared_ptr<Int>(4);
 
-    auto array_list = ArrayList<SharedPtr<IntSharedPointer>>();
+    auto array_list = ArrayList<SharedPtr<Int>>();
     CHECK_TRUE(array_list.is_empty());
 
     array_list.add_last(shared_point2);
@@ -203,7 +203,7 @@ TEST_CASE(sort_objects)
     array_list.add_last(shared_point1);
     array_list.add_last(shared_point3);
 
-    array_list.sort([&](SharedPtr<IntSharedPointer> a, SharedPtr<IntSharedPointer> b) {
+    array_list.sort([&](SharedPtr<Int> a, SharedPtr<Int> b) {
         return b->value() < a->value();
     });
 
