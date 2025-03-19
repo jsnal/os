@@ -54,14 +54,14 @@ BasicString<CharT> BasicString<CharT>::substring(size_t start, size_t end) const
     }
 
     // TODO: Make this more memory effecient by trimming extra space
-    BasicString<CharT> other(*this);
-    other.m_length = end - start + 1;
-    for (size_t i = 0; i < other.m_length; i++) {
-        other.data()[i] = data()[start + i];
+    BasicString<CharT> ss(*this);
+    ss.m_length = end - start + 1;
+    for (size_t i = 0; i < ss.m_length; i++) {
+        ss.data()[i] = data()[start + i];
     }
-    other.data()[other.m_length] = '\0';
+    ss.data()[ss.m_length] = '\0';
 
-    return other;
+    return ss;
 }
 
 template<typename CharT>
@@ -116,6 +116,9 @@ void BasicString<CharT>::ensure_capacity(size_t capacity)
         m_data[m_length] = '\0';
     } else if (capacity > m_capacity) {
         m_capacity = m_capacity + (m_capacity / 2);
+        if (m_capacity < capacity) {
+            m_capacity = capacity;
+        }
         CharT* new_data = new CharT[m_capacity + 1];
         memcpy(new_data, m_data, m_length * sizeof(CharT));
         delete[] m_data;

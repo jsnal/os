@@ -151,6 +151,10 @@ TEST_CASE(concat)
     BasicString<char> concat_plus_chain("string1");
     concat_plus_chain = concat_plus_chain + string2 + cstring1 + sv1;
     CHECK_STR_EQUAL("string1 string2 string3 string4", concat_plus_chain.data());
+
+    BasicString<char> concat_plus_chain_huge("string1");
+    concat_plus_chain_huge = concat_plus_chain_huge + string2 + cstring1 + sv1 + " really long string that should reallocate";
+    CHECK_STR_EQUAL("string1 string2 string3 string4 really long string that should reallocate", concat_plus_chain_huge.data());
 }
 
 TEST_CASE(string_view)

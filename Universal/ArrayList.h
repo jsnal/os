@@ -23,11 +23,17 @@ public:
     }
 
     ArrayList(ArrayList&& other)
-        : m_data(other.m_data)
-        , m_size(other.m_size)
+        : m_size(other.m_size)
         , m_capacity(other.m_capacity)
 
     {
+        if (is_inlined()) {
+            memcpy(data(), other.data(), sizeof(m_inline_data));
+        } else {
+            m_data = other.m_data;
+        }
+
+        memset(other.m_inline_data, 0, sizeof(other.m_inline_data));
         other.m_data = nullptr;
         other.m_capacity = 0;
         other.m_size = 0;
@@ -38,10 +44,16 @@ public:
         if (this != &other) {
             clear();
 
-            m_data = other.m_data;
             m_size = other.m_size;
             m_capacity = other.m_capacity;
 
+            if (is_inlined()) {
+                memcpy(data(), other.data(), sizeof(m_inline_data));
+            } else {
+                m_data = other.m_data;
+            }
+
+            memset(other.m_inline_data, 0, sizeof(other.m_inline_data));
             other.m_data = nullptr;
             other.m_capacity = 0;
             other.m_size = 0;

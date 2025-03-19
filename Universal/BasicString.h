@@ -20,28 +20,25 @@ public:
         m_inline_data[0] = '\0';
     }
 
-    BasicString(const CharT* string)
+    BasicString(const CharT* str)
+        : m_capacity(str == nullptr ? 0 : strlen(str))
+        , m_length(m_capacity)
     {
-        if (string == nullptr) {
-            m_length = 0;
-        } else {
-            m_length = strlen(string);
-        }
-
+        m_length = m_capacity;
         if (!is_inlined()) {
-            m_capacity = m_length;
             m_data = new CharT[m_capacity + 1];
         }
 
-        memcpy(data(), string, m_length * sizeof(CharT));
+        memcpy(data(), str, m_length * sizeof(CharT));
         data()[m_length] = '\0';
     }
 
     BasicString(const StringView& sv)
-        : m_length(sv.length())
+        : m_capacity(sv.length())
+        , m_length(m_capacity)
     {
+        m_length = m_capacity;
         if (!is_inlined()) {
-            m_capacity = m_length;
             m_data = new CharT[m_capacity + 1];
         }
 
@@ -50,10 +47,10 @@ public:
     }
 
     BasicString(const BasicString& other)
-        : m_length(other.m_length)
+        : m_capacity(other.m_capacity)
+        , m_length(other.m_length)
     {
         if (!is_inlined()) {
-            m_capacity = other.m_capacity;
             m_data = new CharT[m_capacity + 1];
         }
 
@@ -61,27 +58,22 @@ public:
     }
 
     BasicString(BasicString&& other)
-        : m_length(other.m_length)
+        : m_capacity(other.m_capacity)
+        , m_length(other.m_length)
     {
         if (is_inlined()) {
             memcpy(data(), other.data(), m_length + 1);
         } else {
             m_data = other.m_data;
-            m_capacity = other.m_capacity;
             other.m_data = nullptr;
-            other.m_capacity = 0;
         }
 
         other.m_length = 0;
+        other.m_capacity = 0;
         memset(other.m_inline_data, 0, kInlineCapacity);
     }
 
-    ~BasicString()
-    {
-        if (!is_inlined()) {
-            delete[] m_data;
-        }
-    }
+    ~BasicString() { clear(); }
 
     static BasicString format(const char* format, ...);
 
@@ -89,8 +81,8 @@ public:
     {
         if (this != &other) {
             m_length = other.m_length;
+            m_capacity = other.m_capacity;
             if (!is_inlined()) {
-                m_capacity = other.m_capacity;
                 m_data = new CharT[m_capacity + 1];
             }
 
@@ -102,18 +94,20 @@ public:
     BasicString& operator=(BasicString&& other)
     {
         if (this != &other) {
+            clear();
+
             m_length = other.m_length;
+            m_capacity = other.m_capacity;
 
             if (is_inlined()) {
                 memcpy(data(), other.data(), m_length + 1);
             } else {
                 m_data = other.m_data;
-                m_capacity = other.m_capacity;
                 other.m_data = nullptr;
-                other.m_capacity = 0;
             }
 
             other.m_length = 0;
+            other.m_capacity = 0;
             memset(other.m_inline_data, 0, kInlineCapacity);
         }
         return *this;
@@ -194,10 +188,20 @@ public:
     size_t length() const { return m_length; }
 
 private:
-    constexpr bool is_inlined() const { return m_length <= kInlineCapacity; }
+    constexpr bool is_inlined() const { return m_capacity <= kInlineCapacity; }
 
     void concat(const CharT*, size_t);
     void ensure_capacity(size_t capacity);
+
+    void clear()
+    {
+        if (!is_inlined()) {
+            delete[] m_data;
+            m_data = nullptr;
+        }
+        m_length = 0;
+        m_capacity = 0;
+    }
 
     static constexpr u8 kInlineCapacity = 15 / sizeof(CharT);
 
