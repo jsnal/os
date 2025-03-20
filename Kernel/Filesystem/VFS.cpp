@@ -72,7 +72,7 @@ ResultReturn<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags,
 
     auto path_inode = path_traversal_result.value();
 
-    dbgprintf("VFS", "Found inode %u to open for '%s'\n", path_inode->id(), path.str());
+    dbgprintf("VFS", "Found inode %u to open for '%s'\n", path_inode->id(), path.data());
 
     if ((flags & O_DIRECTORY) && !path_inode->is_directory()) {
         return Result(ENOTDIR);
@@ -97,7 +97,7 @@ ResultReturn<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags,
 
 ResultReturn<SharedPtr<Inode>> VFS::traverse_path(const String& path, SharedPtr<Inode>& base)
 {
-    dbgprintf("VFS", "Starting to traverse the path for '%s'\n", path.str());
+    dbgprintf("VFS", "Starting to traverse the path for '%s'\n", path.data());
 
     InodeId current_inode_id;
     SharedPtr<Inode> current_inode = path[0] == '/' ? m_root_inode : base;

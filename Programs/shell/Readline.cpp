@@ -6,8 +6,8 @@
 
 #include <Readline.h>
 #include <Universal/ArrayList.h>
+#include <Universal/BasicString.h>
 #include <Universal/Logger.h>
-#include <Universal/String.h>
 #include <stdio.h>
 #include <unistd.h>
 

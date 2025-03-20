@@ -8,8 +8,8 @@
 
 #include <Kernel/Filesystem/Filesystem.h>
 #include <Universal/ArrayList.h>
+#include <Universal/BasicString.h>
 #include <Universal/RefCounted.h>
-#include <Universal/String.h>
 #include <Universal/Types.h>
 
 class FileDescriptor;

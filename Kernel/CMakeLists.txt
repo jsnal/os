@@ -51,7 +51,6 @@ SET(BOOT_SOURCES
 )
 
 set(SOURCES
-    ../Universal/String.cpp
     ${UNIVERSAL_SOURCES}
     ${KERNEL_SOURCES}
     ${BOOT_SOURCES}

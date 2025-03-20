@@ -7,8 +7,8 @@
 #pragma once
 
 #include <Universal/Array.h>
+#include <Universal/BasicString.h>
 #include <Universal/Stdlib.h>
-#include <Universal/String.h>
 #include <Universal/Types.h>
 
 namespace Network {

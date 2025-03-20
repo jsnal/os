@@ -198,7 +198,7 @@ void E1000NetworkCard::read_mac_address()
     }
 
     m_mac_address = MACAddress(mac_address);
-    dbgprintf("E1000NetworkCard", "MAC Address: %s\n", m_mac_address.to_string().str());
+    dbgprintf("E1000NetworkCard", "MAC Address: %s\n", m_mac_address.to_string().data());
 }
 
 void E1000NetworkCard::link_init()

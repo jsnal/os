@@ -7,9 +7,9 @@
 #pragma once
 
 #include <Kernel/Devices/RandomDevice.h>
+#include <Universal/BasicString.h>
 #include <Universal/Result.h>
 #include <Universal/SharedPtr.h>
-#include <Universal/String.h>
 #include <Universal/UniquePtr.h>
 
 class Inode;
