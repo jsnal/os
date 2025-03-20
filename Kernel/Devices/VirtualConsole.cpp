@@ -150,9 +150,11 @@ void VirtualConsole::handle_escape_c(const ArrayList<int, kEscapeSequenceMaxPara
         columns = parameters[0];
     }
 
-    dbgprintln("VirtualConsole", "Moving %d columns");
-
-    set_cursor(m_cursor_row, m_cursor_column + columns);
+    u8 new_column = m_cursor_column + columns;
+    if (new_column > m_width) {
+        new_column = m_width;
+    }
+    set_cursor(m_cursor_row, new_column);
 }
 
 void VirtualConsole::handle_escape_j(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
@@ -214,6 +216,7 @@ void VirtualConsole::put_escape_sequence(char c)
                     m_escape_sequence_parameters.last() = m_escape_sequence_parameters.last() * 10 + (c - '0');
                 } else {
                     m_escape_sequence_parameters.add_last(c - '0');
+                    m_escape_sequence_in_parameter = true;
                 }
             } else if (c == ';') {
                 if (!m_escape_sequence_in_parameter) {

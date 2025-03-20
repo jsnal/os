@@ -28,16 +28,12 @@ Result Readline::redraw()
         redraw_buffer.add_last(m_buffer[i]);
     }
 
-    // Erase to the right of the end of the buffer
-    redraw_buffer.add_last('\033');
-    redraw_buffer.add_last('[');
-    redraw_buffer.add_last('K');
-
-    // Move the cursor to the correct location
-    //    String escape_sequence = String::format("\r\033[%uC", m_position + m_length);
-    //    for (size_t i = 0; i < escape_sequence.length(); i++) {
-    //        redraw_buffer.add_last(escape_sequence[i]);
-    //    }
+    // Erase to the right of the end of the buffer and move the
+    // cursor to the correct location
+    String escape_sequence = String::format("\033[K\r\033[%uC", m_position + m_prompt.length());
+    for (size_t i = 0; i < escape_sequence.length(); i++) {
+        redraw_buffer.add_last(escape_sequence[i]);
+    }
 
     if (write(m_fd_out, redraw_buffer.data(), redraw_buffer.size()) == -1) {
         return Result::Failure;
