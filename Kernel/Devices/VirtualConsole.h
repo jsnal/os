@@ -26,7 +26,6 @@ public:
     void handle_key_event(KeyEvent) override;
 
 private:
-    static constexpr u8 kEscapeSequenceMaxParameters = 2;
     enum Color {
         Black = 0,
         Blue = 1,
@@ -53,14 +52,18 @@ private:
         Parameter,
     };
 
+    static constexpr u8 kEscapeSequenceMaxParameters = 2;
+    static constexpr u8 kDefaultTextColor = (Black << 4) | (LightGrey);
+
     void scroll(size_t rows);
     void set_color(Color foreground_color, Color background_color);
     void set_cell(size_t row, size_t column, u32 character);
 
-    void handle_escape_c(const ArrayList<int, kEscapeSequenceMaxParameters>&);
-    void handle_escape_h(const ArrayList<int, kEscapeSequenceMaxParameters>&);
-    void handle_escape_j(const ArrayList<int, kEscapeSequenceMaxParameters>&);
-    void handle_escape_k(const ArrayList<int, kEscapeSequenceMaxParameters>&);
+    void handle_escape_C(const ArrayList<int, kEscapeSequenceMaxParameters>&);
+    void handle_escape_H(const ArrayList<int, kEscapeSequenceMaxParameters>&);
+    void handle_escape_J(const ArrayList<int, kEscapeSequenceMaxParameters>&);
+    void handle_escape_K(const ArrayList<int, kEscapeSequenceMaxParameters>&);
+    void handle_escape_m(const ArrayList<int, kEscapeSequenceMaxParameters>&);
     void handle_escape_sequence(char command);
 
     void put_escape_sequence(char);
@@ -75,6 +78,7 @@ private:
     void set_cursor(u8 row, u8 column);
     void flush_cursor();
 
+    u8 m_attribute { kDefaultTextColor };
     Color m_foreground_color { White };
     Color m_background_color { Black };
 

@@ -100,50 +100,10 @@ void VirtualConsole::set_cell(size_t row, size_t column, u32 character)
         return;
     }
 
-    u16 attribute = (m_background_color << 4) | (m_foreground_color & 0x0F);
-    m_buffer[row * m_width + column] = character | (attribute << 8);
+    m_buffer[row * m_width + column] = character | (m_attribute << 8);
 }
 
-void VirtualConsole::handle_escape_k(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
-{
-    u16 attribute = (Color::Black << 4) | (Color::White & 0x0F);
-    u32 mode = 0;
-    if (parameters.size() >= 1) {
-        mode = parameters[0];
-    }
-
-    switch (mode) {
-        case 0:
-            for (u8 x = m_cursor_column; x < m_width; x++) {
-                m_buffer[x + m_cursor_row * m_width] = ' ' | (attribute << 8);
-            }
-            break;
-        case 1:
-            for (u8 x = 0; x < m_cursor_column; x++) {
-                m_buffer[x + m_cursor_row * m_width] = ' ' | (attribute << 8);
-            }
-            break;
-        case 2:
-            clear_row(m_cursor_row);
-            break;
-    }
-}
-
-void VirtualConsole::handle_escape_h(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
-{
-    u8 row = 1;
-    u8 column = 1;
-    if (parameters.size() >= 1) {
-        row = parameters[0];
-    }
-    if (parameters.size() >= 2) {
-        column = parameters[1];
-    }
-
-    set_cursor(row - 1, column - 1);
-}
-
-void VirtualConsole::handle_escape_c(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
+void VirtualConsole::handle_escape_C(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
 {
     u32 columns = 0;
     if (parameters.size() >= 1) {
@@ -157,7 +117,21 @@ void VirtualConsole::handle_escape_c(const ArrayList<int, kEscapeSequenceMaxPara
     set_cursor(m_cursor_row, new_column);
 }
 
-void VirtualConsole::handle_escape_j(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
+void VirtualConsole::handle_escape_H(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
+{
+    u8 row = 1;
+    u8 column = 1;
+    if (parameters.size() >= 1) {
+        row = parameters[0];
+    }
+    if (parameters.size() >= 2) {
+        column = parameters[1];
+    }
+
+    set_cursor(row - 1, column - 1);
+}
+
+void VirtualConsole::handle_escape_J(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
 {
     u32 mode = 0;
     if (parameters.size() >= 1) {
@@ -176,20 +150,66 @@ void VirtualConsole::handle_escape_j(const ArrayList<int, kEscapeSequenceMaxPara
     }
 }
 
+void VirtualConsole::handle_escape_K(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
+{
+    u32 mode = 0;
+    if (parameters.size() >= 1) {
+        mode = parameters[0];
+    }
+
+    switch (mode) {
+        case 0:
+            for (u8 x = m_cursor_column; x < m_width; x++) {
+                m_buffer[x + m_cursor_row * m_width] = ' ' | kDefaultTextColor;
+            }
+            break;
+        case 1:
+            for (u8 x = 0; x < m_cursor_column; x++) {
+                m_buffer[x + m_cursor_row * m_width] = ' ' | kDefaultTextColor;
+            }
+            break;
+        case 2:
+            clear_row(m_cursor_row);
+            break;
+    }
+}
+
+void VirtualConsole::handle_escape_m(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
+{
+    for (size_t i = 0; i < parameters.size(); i++) {
+        int code = parameters[i];
+
+        if (code == 0) {
+            m_attribute = kDefaultTextColor;
+        } else if (code == 1) {
+            m_attribute |= 0x80;
+        } else if (code >= 30 && code <= 37) {
+            // Foreground color
+            m_attribute = (m_attribute & 0xFF00) | (code - 30);
+        } else if (code >= 40 && code <= 47) {
+            // Background color
+            m_attribute = ((code - 40) << 4) | (m_attribute & 0xFF);
+        }
+    }
+}
+
 void VirtualConsole::handle_escape_sequence(char command)
 {
     switch (command) {
         case 'C':
-            handle_escape_c(m_escape_sequence_parameters);
+            handle_escape_C(m_escape_sequence_parameters);
             break;
         case 'H':
-            handle_escape_h(m_escape_sequence_parameters);
+            handle_escape_H(m_escape_sequence_parameters);
             break;
         case 'J':
-            handle_escape_j(m_escape_sequence_parameters);
+            handle_escape_J(m_escape_sequence_parameters);
             break;
         case 'K':
-            handle_escape_k(m_escape_sequence_parameters);
+            handle_escape_K(m_escape_sequence_parameters);
+            break;
+        case 'm':
+            handle_escape_m(m_escape_sequence_parameters);
             break;
         default:
             dbgprintf("VirtualConsole", "Unhandled escape sequence: %c\n", command);
@@ -276,9 +296,8 @@ size_t VirtualConsole::put_string(const char* string, size_t length)
 
 void VirtualConsole::clear_row(u8 row)
 {
-    u16 attribute = (Color::Black << 4) | (Color::White & 0x0F);
     for (u8 x = 0; x < m_width; x++) {
-        m_buffer[x + row * m_width] = ' ' | (attribute << 8);
+        m_buffer[x + row * m_width] = ' ' | kDefaultTextColor;
     }
 }
 

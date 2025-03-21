@@ -20,7 +20,8 @@ int main(int argc, char** argv)
         Readline readline(STDIN_FILENO, STDOUT_FILENO, "$ ");
         auto read_result = readline.read();
         if (read_result.is_ok()) {
-            printf("Typed: '%s'\n", read_result.release_value().str());
+            printf("\033[1;31mTyped:\033[0m '%s'\n", read_result.release_value().str());
+            printf("\033[31mTyped:\033[0m '%s'\n", read_result.release_value().str());
 
             //            pid_t pid = fork();
             //            if (pid < 0) {
