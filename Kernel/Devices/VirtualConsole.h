@@ -52,12 +52,14 @@ private:
         Parameter,
     };
 
-    static constexpr u8 kEscapeSequenceMaxParameters = 2;
+    static constexpr u8 kEscapeSequenceMaxParameters = 3;
     static constexpr u8 kDefaultTextColor = (Black << 4) | (LightGrey);
 
     void scroll(size_t rows);
     void set_color(Color foreground_color, Color background_color);
     void set_cell(size_t row, size_t column, u32 character);
+
+    Color ansi_to_vga(uint8_t);
 
     void handle_escape_C(const ArrayList<int, kEscapeSequenceMaxParameters>&);
     void handle_escape_H(const ArrayList<int, kEscapeSequenceMaxParameters>&);

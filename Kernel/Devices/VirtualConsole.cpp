@@ -103,6 +103,29 @@ void VirtualConsole::set_cell(size_t row, size_t column, u32 character)
     m_buffer[row * m_width + column] = character | (m_attribute << 8);
 }
 
+VirtualConsole::Color VirtualConsole::ansi_to_vga(uint8_t c)
+{
+    switch (c) {
+        case 0:
+            return Black;
+        case 1:
+            return Red;
+        case 2:
+            return Green;
+        case 3:
+            return Brown;
+        case 4:
+            return Blue;
+        case 5:
+            return Magenta;
+        case 6:
+            return Cyan;
+        case 7:
+            return LightGrey;
+    }
+    return LightGrey;
+}
+
 void VirtualConsole::handle_escape_C(const ArrayList<int, kEscapeSequenceMaxParameters>& parameters)
 {
     u32 columns = 0;
@@ -160,12 +183,12 @@ void VirtualConsole::handle_escape_K(const ArrayList<int, kEscapeSequenceMaxPara
     switch (mode) {
         case 0:
             for (u8 x = m_cursor_column; x < m_width; x++) {
-                m_buffer[x + m_cursor_row * m_width] = ' ' | kDefaultTextColor;
+                m_buffer[x + m_cursor_row * m_width] = ' ' | (kDefaultTextColor << 8);
             }
             break;
         case 1:
             for (u8 x = 0; x < m_cursor_column; x++) {
-                m_buffer[x + m_cursor_row * m_width] = ' ' | kDefaultTextColor;
+                m_buffer[x + m_cursor_row * m_width] = ' ' | (kDefaultTextColor << 8);
             }
             break;
         case 2:
@@ -182,14 +205,21 @@ void VirtualConsole::handle_escape_m(const ArrayList<int, kEscapeSequenceMaxPara
         if (code == 0) {
             m_attribute = kDefaultTextColor;
         } else if (code == 1) {
-            m_attribute |= 0x80;
+            m_attribute |= 0x8;
         } else if (code >= 30 && code <= 37) {
-            // Foreground color
-            m_attribute = (m_attribute & 0xFF00) | (code - 30);
+            // Normal foreground color
+            m_attribute = (m_attribute & 0xF8) | ansi_to_vga(code - 30);
+        } else if (code >= 90 && code <= 97) {
+            // Normal foreground color
+            m_attribute = (m_attribute & 0xF8) | (ansi_to_vga(code - 90) + 8);
         } else if (code >= 40 && code <= 47) {
-            // Background color
-            m_attribute = ((code - 40) << 4) | (m_attribute & 0xFF);
+            // Normal background color
+            m_attribute = (ansi_to_vga(code - 40) << 4) | (m_attribute & 0x8F);
+        } else if (code >= 100 && code <= 107) {
+            // Intense background color
+            m_attribute = ((ansi_to_vga(code - 100) + 8) << 4) | (m_attribute & 0x8F);
         }
+        dbgprintln("VirtualConsole", "Attribute after %d: %#02x\n", code, m_attribute);
     }
 }
 
@@ -297,7 +327,7 @@ size_t VirtualConsole::put_string(const char* string, size_t length)
 void VirtualConsole::clear_row(u8 row)
 {
     for (u8 x = 0; x < m_width; x++) {
-        m_buffer[x + row * m_width] = ' ' | kDefaultTextColor;
+        m_buffer[x + row * m_width] = ' ' | (kDefaultTextColor << 8);
     }
 }
 
