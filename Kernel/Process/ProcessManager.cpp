@@ -84,14 +84,23 @@ void ProcessManager::remove_process(Process& process) const
     }
 }
 
-ResultReturn<Process*> ProcessManager::find_by_pid(pid_t pid) const
+Process* ProcessManager::from_pid(pid_t pid) const
 {
     for (Process* p = m_processes->head(); p != nullptr; p = p->next()) {
         if (p->pid() == pid) {
             return p;
         }
     }
-    return {};
+    return nullptr;
+}
+
+void ProcessManager::for_each_child(Process& parent, Function<bool(Process&)> callback) const
+{
+    for (Process* p = m_processes->head(); p != nullptr; p = p->next()) {
+        if (p->ppid() == parent.pid() && !callback(*p)) {
+            return;
+        }
+    }
 }
 
 void ProcessManager::schedule()
@@ -113,21 +122,21 @@ void ProcessManager::schedule()
             p = p->next();
         }
 
-        dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Process '%s' state %d\n", p->name().str(), p->state());
+        dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Process '%s' state %d\n", p->name().data(), p->state());
         if (p->state() == Process::Runnable) {
             next_process = p;
             break;
         }
 
         if (p->state() == Process::Dead && p->pid() != m_current_process->pid()) {
-            dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Reaping dead process '%s'\n", p->name().str());
+            dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Reaping dead process '%s'\n", p->name().data());
             p->reap();
             delete p;
             continue;
         }
 
         if (p->state() == Process::Blocked) {
-            dbgprintln("ProcessManager", "Checking blocked process '%s'", p->name().str());
+            dbgprintln("ProcessManager", "Checking blocked process '%s'", p->name().data());
             p->unblock_if_ready();
         }
     }
@@ -136,7 +145,7 @@ void ProcessManager::schedule()
         next_process = m_kernel_idle_process;
     }
 
-    dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Picked Process '%s'\n", next_process->name().str());
+    dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Picked Process '%s'\n", next_process->name().data());
 
     if (previous_process == next_process) {
         return;

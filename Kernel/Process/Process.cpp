@@ -20,9 +20,10 @@
 
 #define DEBUG_PROCESS 0
 
-Process::Process(const StringView& name, pid_t pid, bool is_kernel, TTYDevice* tty)
+Process::Process(const StringView& name, pid_t pid, pid_t ppid, bool is_kernel, TTYDevice* tty)
     : m_name(name)
     , m_pid(pid)
+    , m_ppid(ppid)
     , m_user(User::root())
     , m_is_kernel(is_kernel)
     , m_tty(tty)
@@ -53,6 +54,7 @@ Process::Process(const StringView& name, pid_t pid, bool is_kernel, TTYDevice* t
 Process::Process(const Process& parent)
     : m_name(parent.name())
     , m_pid(PM.get_next_pid())
+    , m_ppid(parent.pid())
     , m_user(User::root())
     , m_is_kernel(parent.is_kernel())
     , m_tty(parent.m_tty)
@@ -91,7 +93,7 @@ Process::~Process()
 ResultReturn<Process*> Process::create_kernel_process(const StringView& name, void (*entry_point)(), bool add_to_process_list)
 {
     pid_t pid = add_to_process_list ? PM.get_next_pid() : 0;
-    auto process = new Process(move(name), pid, true);
+    auto process = new Process(move(name), pid, 0, true);
 
     TaskRegisters regs = {};
     regs.frame.ss = 0;
@@ -110,16 +112,16 @@ ResultReturn<Process*> Process::create_kernel_process(const StringView& name, vo
         PM.add_process(*process);
     }
 
-    dbgprintf("Process", "Kernel Process '%s' spawned at 0x%x\n", process->m_name.str(), entry_point);
+    dbgprintf("Process", "Kernel Process '%s' spawned at 0x%x\n", process->m_name.data(), entry_point);
     return process;
 }
 
-ResultReturn<Process*> Process::create_user_process(const StringView& path, pid_t pid, TTYDevice* tty)
+ResultReturn<Process*> Process::create_user_process(const StringView& path, pid_t pid, pid_t ppid, TTYDevice* tty)
 {
     if (pid == 0) {
         pid = PM.get_next_pid();
     }
-    auto process = new Process(move(path), pid, false, tty);
+    auto process = new Process(move(path), pid, ppid, false, tty);
 
     u32 entry_point = ENSURE_TAKE(process->load_elf());
     ENSURE(process->initialize_user_stack());
@@ -138,7 +140,7 @@ ResultReturn<Process*> Process::create_user_process(const StringView& path, pid_
 
     PM.add_process(*process);
 
-    dbgprintf("Process", "User Process '%s' (%u) spawned\n", process->m_name.str(), process->m_pid);
+    dbgprintf("Process", "User Process '%s' (%u) spawned\n", process->m_name.data(), process->m_pid);
     return process;
 }
 
@@ -159,7 +161,7 @@ ResultReturn<Process*> Process::fork_user_process(Process& parent, TaskRegisters
 
     PM.add_process(*child);
 
-    dbgprintf("Process", "User Process '%s' (%u) forked to spawn %u\n", parent.m_name.str(), parent.m_pid, child->m_pid);
+    dbgprintf("Process", "User Process '%s' (%u) forked to spawn %u\n", parent.m_name.data(), parent.m_pid, child->m_pid);
     return child;
 }
 
@@ -180,7 +182,7 @@ ResultReturn<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_
     m_regions.add_last(VirtualRegion::create_user_region(range, access).leak_ptr());
     m_regions.last()->map(page_directory());
 
-    dbgprintf_if(DEBUG_PROCESS, "Process", "Allocated virtual region 0x%x - 0x%x for Process '%s'\n", m_regions.last()->lower(), m_regions.last()->upper(), name().str());
+    dbgprintf_if(DEBUG_PROCESS, "Process", "Allocated virtual region 0x%x - 0x%x for Process '%s'\n", m_regions.last()->lower(), m_regions.last()->upper(), name().data());
 
     return m_regions.last();
 }
@@ -191,7 +193,7 @@ Result Process::deallocate_region(size_t index)
         return Result::Failure;
     }
 
-    dbgprintf_if(DEBUG_PROCESS, "Process", "Deallocating virtual region 0x%x - 0x%x for Process '%s'\n", m_regions[index]->lower(), m_regions[index]->upper(), name().str());
+    dbgprintf_if(DEBUG_PROCESS, "Process", "Deallocating virtual region 0x%x - 0x%x for Process '%s'\n", m_regions[index]->lower(), m_regions[index]->upper(), name().data());
 
     ENSURE(m_regions[index]->unmap(page_directory()));
     ENSURE(page_directory().address_allocator().free(m_regions[index]->address_range()));
@@ -272,7 +274,7 @@ Result Process::initialize_user_stack()
 
 ResultReturn<u32> Process::load_elf()
 {
-    auto fd = ENSURE_TAKE(VFS::the().open(m_name.str(), 0, 0));
+    auto fd = ENSURE_TAKE(VFS::the().open(m_name.data(), 0, 0));
     auto elf_result = ENSURE_TAKE(ELF::create(fd));
     auto elf_program_headers = ENSURE_TAKE(elf_result->read_program_headers());
 
@@ -299,7 +301,7 @@ ResultReturn<u32> Process::load_elf()
 
 void Process::set_ready()
 {
-    dbgprintf_if(DEBUG_PROCESS, "Process", "Setting '%s' to Ready\n", name().str());
+    dbgprintf_if(DEBUG_PROCESS, "Process", "Setting '%s' to Ready\n", name().data());
     m_state = Runnable;
 }
 
@@ -347,6 +349,8 @@ void Process::unblock_if_ready()
 
 void Process::reap()
 {
+    m_pid = 0;
+    m_ppid = 0;
     MM.free_kernel_region(*m_kernel_stack);
     PM.remove_process(*this);
 }
@@ -424,7 +428,7 @@ ssize_t Process::sys_read(int fd, void* buf, size_t count)
 
 void Process::sys_exit(int status)
 {
-    dbgprintf("Process", "'%s' (%u) exited with status %d\n", m_name.str(), m_pid, status);
+    dbgprintf("Process", "'%s' (%u) exited with status %d\n", m_name.data(), m_pid, status);
     die();
 }
 
@@ -439,15 +443,32 @@ pid_t Process::sys_fork(TaskRegisters& regs)
     return child->pid();
 }
 
-pid_t Process::sys_wait(int* wstatus)
+pid_t Process::sys_waitpid(pid_t pid, int* wstatus, int options)
 {
-    return 0;
+    dbgprintln("Process", "waitpid called");
+
+    WaitBlocker blocker(*this, pid, options);
+    if (!block(blocker)) {
+        return -ECHILD;
+    }
+
+    auto* p = PM.from_pid(pid);
+    if (p == nullptr) {
+        return -ECHILD;
+    }
+
+    if (p->is_dead()) {
+        p->reap();
+        delete p;
+    }
+
+    return pid;
 }
 
 int Process::sys_execve(const char* pathname, char* const argv[], char* const envp[])
 {
     {
-        auto execve_result = Process::create_user_process(pathname, m_pid, m_tty.ptr());
+        auto execve_result = Process::create_user_process(pathname, m_pid, m_ppid, m_tty.ptr());
         if (execve_result.is_error()) {
             return -EFAULT;
         }
@@ -478,9 +499,14 @@ pid_t Process::sys_getpid()
     return m_pid;
 }
 
+pid_t Process::sys_getppid()
+{
+    return m_ppid;
+}
+
 uid_t Process::sys_getuid()
 {
-    dbgprintf("Process", "'%s' (%u) called getuid() %d\n", m_name.str(), m_pid, m_user.uid());
+    dbgprintf("Process", "'%s' (%u) called getuid() %d\n", m_name.data(), m_pid, m_user.uid());
     return m_user.uid();
 }
 

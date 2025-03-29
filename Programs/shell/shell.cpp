@@ -9,6 +9,7 @@
 #include <Universal/Logger.h>
 #include <Universal/StringView.h>
 #include <stdio.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #define LINE_LENGTH 256
@@ -40,6 +41,9 @@ int main(int argc, char** argv)
                 }
                 return 0;
             }
+
+            int waited_pid = wait(nullptr);
+            printf("pid=%d exited\n", waited_pid);
         }
     }
 

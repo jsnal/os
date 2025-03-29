@@ -18,7 +18,7 @@ int handle(TaskRegisters& regs, SyscallOpcode call, int arg1, int arg2, int arg3
 {
     Process& p = PM.current_process();
 
-    dbgprintf_if(TRACE_SYSCALLS, "Syscall", "%s called %s()\n", p.name().str(), syscall_opcode_to_string(call));
+    dbgprintf_if(TRACE_SYSCALLS, "Syscall", "%s called %s()\n", p.name().data(), syscall_opcode_to_string(call));
 
     switch (call) {
         case SYS_exit:
@@ -27,6 +27,8 @@ int handle(TaskRegisters& regs, SyscallOpcode call, int arg1, int arg2, int arg3
             return 0;
         case SYS_fork:
             return p.sys_fork(regs);
+        case SYS_waitpid:
+            return p.sys_waitpid((pid_t)arg1, (int*)arg2, arg3);
         case SYS_execve:
             return p.sys_execve((const char*)arg1, (char* const*)arg2, (char* const*)arg3);
         case SYS_write:
@@ -35,6 +37,8 @@ int handle(TaskRegisters& regs, SyscallOpcode call, int arg1, int arg2, int arg3
             return p.sys_read(arg1, (void*)arg2, arg3);
         case SYS_getpid:
             return p.sys_getpid();
+        case SYS_getppid:
+            return p.sys_getppid();
         case SYS_getuid:
             return p.sys_getuid();
         case SYS_ioctl:

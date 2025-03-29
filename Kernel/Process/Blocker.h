@@ -6,6 +6,9 @@
 
 #pragma once
 
+#include <Kernel/Process/Process.h>
+#include <Universal/Types.h>
+
 class Blocker {
 public:
     virtual ~Blocker() { }
@@ -24,7 +27,17 @@ private:
 
 class WaitBlocker final : public Blocker {
 public:
-    WaitBlocker() { }
+    WaitBlocker(Process& parent, pid_t& pid, int options)
+        : m_parent(parent)
+        , m_pid(pid)
+        , m_options(options)
+    {
+    }
 
     bool is_ready() override;
+
+private:
+    Process& m_parent;
+    pid_t& m_pid;
+    int m_options { 0 };
 };

@@ -14,10 +14,11 @@
 #include <Kernel/Process/WaitingStatus.h>
 #include <Kernel/User.h>
 #include <LibC/sys/syscall_defines.h>
+#include <Universal/BasicString.h>
+#include <Universal/Function.h>
 #include <Universal/LinkedList.h>
 #include <Universal/Result.h>
 #include <Universal/SharedPtr.h>
-#include <Universal/StringView.h>
 #include <Universal/Types.h>
 
 // TODO: Each process should have a priority where some processes get more time
@@ -49,7 +50,7 @@ public:
     ~Process();
 
     static ResultReturn<Process*> create_kernel_process(const StringView& name, void (*entry_point)(), bool add_to_process_list = true);
-    static ResultReturn<Process*> create_user_process(const StringView& path, pid_t, TTYDevice*);
+    static ResultReturn<Process*> create_user_process(const StringView& path, pid_t pid, pid_t ppid, TTYDevice*);
     static ResultReturn<Process*> fork_user_process(Process& parent, TaskRegisters& frame);
 
     ResultReturn<VirtualRegion*> allocate_region(size_t size, u8 access);
@@ -62,10 +63,12 @@ public:
 
     void dump_stack(bool kernel) const;
 
-    const StringView& name() const { return m_name; }
+    const String& name() const { return m_name; }
     pid_t pid() const { return m_pid; }
+    pid_t ppid() const { return m_ppid; }
 
     bool is_kernel() const { return m_is_kernel; }
+    bool is_dead() const { return m_state == Dead; }
 
     const PageDirectory& page_directory() const { return *m_page_directory; }
     PageDirectory& page_directory() { return *m_page_directory; }
@@ -85,12 +88,13 @@ public:
 
     void sys_exit(int status);
     pid_t sys_fork(TaskRegisters&);
-    pid_t sys_wait(int* wstatus);
+    pid_t sys_waitpid(pid_t, int* wstatus, int options);
     int sys_execve(const char* pathname, char* const argv[], char* const envp[]);
     int sys_ioctl(int fd, uint32_t request, uint32_t* argp);
     ssize_t sys_write(int fd, const void* buf, size_t count);
     ssize_t sys_read(int fd, void* buf, size_t count);
     pid_t sys_getpid();
+    pid_t sys_getppid();
     uid_t sys_getuid();
     int sys_isatty(int fd);
     void* sys_mmap(const mmap_args*);
@@ -101,7 +105,7 @@ private:
     static constexpr size_t kKernelStackSize = 16 * KB;
     static constexpr size_t kUserStackSize = 16 * KB;
 
-    Process(const StringView& name, pid_t, bool is_kernel, TTYDevice* = nullptr);
+    Process(const StringView& name, pid_t pid, pid_t ppid, bool is_kernel, TTYDevice* = nullptr);
     Process(const Process& parent);
 
     ResultReturn<u32> load_elf();
@@ -116,8 +120,9 @@ private:
 
     u8 m_ticks_left { 0 };
 
-    StringView m_name;
+    String m_name;
     pid_t m_pid { 0 };
+    pid_t m_ppid { 0 };
     User m_user;
 
     bool m_is_kernel { false };

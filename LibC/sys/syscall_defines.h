@@ -12,7 +12,9 @@
     SYSCALL_OPCODE(execve)  \
     SYSCALL_OPCODE(exit)    \
     SYSCALL_OPCODE(fork)    \
+    SYSCALL_OPCODE(waitpid) \
     SYSCALL_OPCODE(getpid)  \
+    SYSCALL_OPCODE(getppid) \
     SYSCALL_OPCODE(getuid)  \
     SYSCALL_OPCODE(ioctl)   \
     SYSCALL_OPCODE(isatty)  \

@@ -11,6 +11,7 @@
 #define EIO 5
 #define EBADF 9
 #define ENOMEM 10
+#define ECHILD 11
 #define EFAULT 14
 #define ENOTDIR 20
 #define EISDIR 21

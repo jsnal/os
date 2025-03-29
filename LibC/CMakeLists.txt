@@ -7,6 +7,7 @@ set(LIBC_SOURCES
     sys/ioctl.cpp
     sys/mman.cpp
     sys/syscall.cpp
+    sys/wait.cpp
     termios.cpp
     unistd.cpp
 )

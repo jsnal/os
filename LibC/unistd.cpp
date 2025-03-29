@@ -51,6 +51,11 @@ pid_t getpid()
     return syscall(SYS_getpid);
 }
 
+pid_t getppid()
+{
+    return syscall(SYS_getppid);
+}
+
 uid_t getuid()
 {
     return syscall(SYS_getuid);

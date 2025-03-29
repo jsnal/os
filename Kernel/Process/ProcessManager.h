@@ -8,6 +8,7 @@
 
 #include <Kernel/Process/Process.h>
 #include <Kernel/Process/Spinlock.h>
+#include <Universal/Function.h>
 #include <Universal/Result.h>
 #include <Universal/SharedPtr.h>
 #include <Universal/Types.h>
@@ -35,7 +36,8 @@ public:
 
     pid_t get_next_pid() { return m_current_pid++; }
 
-    ResultReturn<Process*> find_by_pid(pid_t) const;
+    Process* from_pid(pid_t) const;
+    void for_each_child(Process&, Function<bool(Process&)>) const;
 
     void schedule();
 
