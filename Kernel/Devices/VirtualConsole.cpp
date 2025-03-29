@@ -219,7 +219,6 @@ void VirtualConsole::handle_escape_m(const ArrayList<int, kEscapeSequenceMaxPara
             // Intense background color
             m_attribute = ((ansi_to_vga(code - 100) + 8) << 4) | (m_attribute & 0x8F);
         }
-        dbgprintln("VirtualConsole", "Attribute after %d: %#02x\n", code, m_attribute);
     }
 }
 

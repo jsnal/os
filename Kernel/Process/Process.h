@@ -10,6 +10,7 @@
 #include <Kernel/Devices/TTYDevice.h>
 #include <Kernel/Memory/PagingTypes.h>
 #include <Kernel/Memory/VirtualRegion.h>
+#include <Kernel/Process/Blocker.h>
 #include <Kernel/Process/WaitingStatus.h>
 #include <Kernel/User.h>
 #include <LibC/sys/syscall_defines.h>
@@ -38,10 +39,10 @@ class Process : public LinkedListNode<Process> {
 
 public:
     enum State : u8 {
-        Created = 0,
-        Ready,
-        Waiting,
+        Runnable = 0,
         Running,
+        Waiting,
+        Blocked,
         Dead,
     };
 
@@ -77,11 +78,14 @@ public:
 
     void set_ready();
     void set_waiting(WaitingStatus&);
+    bool block(Blocker&);
+    void unblock_if_ready();
 
     void reap();
 
     void sys_exit(int status);
     pid_t sys_fork(TaskRegisters&);
+    pid_t sys_wait(int* wstatus);
     int sys_execve(const char* pathname, char* const argv[], char* const envp[]);
     int sys_ioctl(int fd, uint32_t request, uint32_t* argp);
     ssize_t sys_write(int fd, const void* buf, size_t count);
@@ -119,8 +123,8 @@ private:
     bool m_is_kernel { false };
 
     SharedPtr<TTYDevice> m_tty;
-
     SharedPtr<PageDirectory> m_page_directory;
+    Blocker* m_blocker { nullptr };
 
     // TODO: Make sure this memory is being freed!
     ArrayList<VirtualRegion*> m_regions;
@@ -129,8 +133,6 @@ private:
     UniquePtr<VirtualRegion> m_kernel_stack { nullptr };
     UniquePtr<VirtualRegion> m_user_stack { nullptr };
     u32* m_previous_stack_pointer { nullptr };
-
-    // void (*m_entry_point)() { nullptr };
 
     State m_state;
 

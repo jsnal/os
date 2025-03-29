@@ -113,6 +113,12 @@ void ProcessManager::schedule()
             p = p->next();
         }
 
+        dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Process '%s' state %d\n", p->name().str(), p->state());
+        if (p->state() == Process::Runnable) {
+            next_process = p;
+            break;
+        }
+
         if (p->state() == Process::Dead && p->pid() != m_current_process->pid()) {
             dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Reaping dead process '%s'\n", p->name().str());
             p->reap();
@@ -120,10 +126,9 @@ void ProcessManager::schedule()
             continue;
         }
 
-        dbgprintf_if(DEBUG_PROCESS_MANAGER, "ProcessManager", "Process '%s' state %d\n", p->name().str(), p->state());
-        if (p->state() == Process::Ready || p->state() == Process::Created) {
-            next_process = p;
-            break;
+        if (p->state() == Process::Blocked) {
+            dbgprintln("ProcessManager", "Checking blocked process '%s'", p->name().str());
+            p->unblock_if_ready();
         }
     }
 
@@ -137,8 +142,8 @@ void ProcessManager::schedule()
         return;
     }
 
-    if (previous_process->state() == Process::Created || previous_process->state() == Process::Running) {
-        previous_process->set_state(Process::Ready);
+    if (previous_process->state() == Process::Running) {
+        previous_process->set_state(Process::Runnable);
     }
 
     next_process->set_state(Process::Running);

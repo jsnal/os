@@ -13,10 +13,6 @@
 
 #define DEBUG_PATA_DISK 0
 
-Spinlock PATADisk::s_lock {};
-WaitingStatus PATADisk::s_waiting_status {};
-bool PATADisk::s_currently_waiting { false };
-
 UniquePtr<PATADisk> PATADisk::create(Channel channel, Type type)
 {
     Bus::PCI::Address ide_controller_address = {};
@@ -91,8 +87,8 @@ UniquePtr<PATADisk> PATADisk::create(Channel channel, Type type)
 
     ATAIdentity* ata_info = reinterpret_cast<ATAIdentity*>(identity_buffer);
     disk->m_addressable_blocks = ata_info->user_addressable_sectors;
-    dbgprintf("PATADisk", "%s Disk '%s' created with %d blocks\n", channel == Primary ? "Primary" : "Secondary", disk->m_model_number, disk->m_addressable_blocks);
-    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Disk at PCI id %x:%x\n", ide_controller_id.vendor, ide_controller_id.device);
+    dbgprintln("PATADisk", "%s Disk '%s' created with %d blocks", channel == Primary ? "Primary" : "Secondary", disk->m_model_number, disk->m_addressable_blocks);
+    dbgprintln_if(DEBUG_PATA_DISK, "PATADisk", "Disk at PCI id %x:%x", ide_controller_id.vendor, ide_controller_id.device);
 
     // NOTE: The IDENTIFY command generates an interrupt that needs to be cleared before
     //       issuing any other commands to the controller.
@@ -113,16 +109,15 @@ PATADisk::PATADisk(Bus::PCI::Address address, Channel channel, Type type)
 
 Result PATADisk::read_blocks(u32 block, u32 count, u8* buffer)
 {
-    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Reading %u sectors into 0x%x @ block %u\n", count, buffer, block);
-    // dbgprintf("PATADisk", "Reading %u sectors into 0x%x @ block %u\n", count, buffer, block);
+    dbgprintln_if(DEBUG_PATA_DISK, "PATADisk", "Reading %u sectors into 0x%x @ block %u", count, buffer, block);
 
-    ScopedSpinlock scoped_lock(s_lock);
+    ScopedSpinlock scoped_lock(m_lock);
 
     initiate_command(ATA_CMD_READ_PIO, block, count);
 
     for (u32 i = 0; i < count; i++) {
-        PM.current_process().set_waiting(s_waiting_status);
         PM.enter_critical();
+        wait_until_ready();
 
         u16* ptr = (u16*)buffer;
         for (u16 j = 0; j < 256; j++) {
@@ -130,7 +125,6 @@ Result PATADisk::read_blocks(u32 block, u32 count, u8* buffer)
         }
         buffer += SECTOR_SIZE;
 
-        s_waiting_status.set_waiting();
         PM.exit_critical();
     }
 
@@ -141,9 +135,9 @@ Result PATADisk::read_blocks(u32 block, u32 count, u8* buffer)
 
 Result PATADisk::write_blocks(u32 block, u32 count, const u8* buffer)
 {
-    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Writing %u sectors from 0x%x @ block %u\n", count, buffer, block);
+    dbgprintln_if(DEBUG_PATA_DISK, "PATADisk", "Writing %u sectors from 0x%x @ block %u", count, buffer, block);
 
-    ScopedSpinlock scoped_lock(s_lock);
+    ScopedSpinlock scoped_lock(m_lock);
 
     initiate_command(ATA_CMD_WRITE_PIO, block, count);
 
@@ -156,10 +150,7 @@ Result PATADisk::write_blocks(u32 block, u32 count, const u8* buffer)
         }
         buffer += SECTOR_SIZE;
 
-        s_waiting_status.set_waiting();
         PM.exit_critical();
-
-        PM.current_process().set_waiting(s_waiting_status);
     }
 
     disable_irq();
@@ -173,14 +164,12 @@ Result PATADisk::write_blocks(u32 block, u32 count, const u8* buffer)
 void PATADisk::clear_interrupts() const
 {
     u8 status = IO::inb(m_io_base + ATA_REG_STATUS);
-    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Cleared status register: DRQ=%d BSY=%d DRDY=%d ERR=%d\n", (status & ATA_SR_DRQ) == 0, (status & ATA_SR_BSY) == 0, (status & ATA_SR_DRDY) == 0, (status & ATA_SR_ERR) == 0);
+    dbgprintln_if(DEBUG_PATA_DISK, "PATADisk", "Cleared status register: DRQ=%d BSY=%d DRDY=%d ERR=%d", (status & ATA_SR_DRQ) == 0, (status & ATA_SR_BSY) == 0, (status & ATA_SR_DRDY) == 0, (status & ATA_SR_ERR) == 0);
 }
 
 void PATADisk::initiate_command(u8 command, u32 lba, u8 sectors)
 {
     PM.enter_critical();
-    s_waiting_status = WaitingStatus(PM.current_process_ptr());
-
     wait_until_ready();
 
     IO::outb(m_io_base + ATA_REG_HDDEVSEL, 0xE0 | (m_type == Slave ? 0x8 : 0x0) | (lba & 0xF000000) >> 24);
@@ -199,8 +188,7 @@ void PATADisk::initiate_command(u8 command, u32 lba, u8 sectors)
     PM.exit_critical();
     IO::outb(m_io_base + ATA_REG_COMMAND, command);
 
-    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Done initiating command\n");
-    // dbgprintf("PATADisk", "Done initiating command\n");
+    dbgprintln_if(DEBUG_PATA_DISK, "PATADisk", "Done initiating command");
 }
 
 void PATADisk::wait_until_ready() const
@@ -213,7 +201,6 @@ void PATADisk::wait_until_ready() const
 
 void PATADisk::handle_irq(const InterruptRegisters&)
 {
-    dbgprintf_if(DEBUG_PATA_DISK, "PATADisk", "Received an interrupt while waiting\n");
+    dbgprintln_if(DEBUG_PATA_DISK, "PATADisk", "Received an interrupt while waiting");
     clear_interrupts();
-    s_waiting_status.set_ready();
 }

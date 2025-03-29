@@ -26,7 +26,7 @@ Process::Process(const StringView& name, pid_t pid, bool is_kernel, TTYDevice* t
     , m_user(User::root())
     , m_is_kernel(is_kernel)
     , m_tty(tty)
-    , m_state(State::Created)
+    , m_state(State::Runnable)
 {
     if (is_kernel) {
         m_page_directory = MM.kernel_page_directory();
@@ -56,7 +56,7 @@ Process::Process(const Process& parent)
     , m_user(User::root())
     , m_is_kernel(parent.is_kernel())
     , m_tty(parent.m_tty)
-    , m_state(State::Created)
+    , m_state(State::Runnable)
 {
     if (parent.is_kernel()) {
         panic("Kernel processes may not be forked\n");
@@ -300,7 +300,7 @@ ResultReturn<u32> Process::load_elf()
 void Process::set_ready()
 {
     dbgprintf_if(DEBUG_PROCESS, "Process", "Setting '%s' to Ready\n", name().str());
-    m_state = Ready;
+    m_state = Runnable;
 }
 
 void Process::set_waiting(WaitingStatus& waiting_status)
@@ -316,6 +316,33 @@ void Process::set_waiting(WaitingStatus& waiting_status)
     m_state = Waiting;
     PM.exit_critical();
     PM.yield();
+}
+
+bool Process::block(Blocker& blocker)
+{
+    if (m_state != Running || m_blocker != nullptr) {
+        return false;
+    }
+
+    if (blocker.is_ready()) {
+        return true;
+    }
+
+    m_blocker = &blocker;
+    m_state = Blocked;
+
+    PM.yield();
+
+    m_blocker = nullptr;
+    return true;
+}
+
+void Process::unblock_if_ready()
+{
+    ASSERT(m_state == Blocked && m_blocker != nullptr);
+    if (m_blocker->is_ready()) {
+        m_state = Runnable;
+    }
 }
 
 void Process::reap()
@@ -410,6 +437,11 @@ pid_t Process::sys_fork(TaskRegisters& regs)
 
     auto child = fork_result.release_value();
     return child->pid();
+}
+
+pid_t Process::sys_wait(int* wstatus)
+{
+    return 0;
 }
 
 int Process::sys_execve(const char* pathname, char* const argv[], char* const envp[])

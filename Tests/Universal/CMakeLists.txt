@@ -1,5 +1,5 @@
 function(MAKE_TEST PROGRAM_NAME)
-    add_executable(${PROGRAM_NAME} ${UNIVERSAL_SOURCES} ../../Universal/String.cpp ${PROGRAM_NAME}.cpp)
+    add_executable(${PROGRAM_NAME} ${UNIVERSAL_SOURCES} ${PROGRAM_NAME}.cpp)
     install(TARGETS ${PROGRAM_NAME} RUNTIME DESTINATION ${CMAKE_SOURCE_DIR}/Tests/bin)
 endfunction()
 

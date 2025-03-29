@@ -11,7 +11,6 @@
 #include <Kernel/Devices/ATA.h>
 #include <Kernel/Devices/BlockDevice.h>
 #include <Kernel/Process/Spinlock.h>
-#include <Kernel/Process/WaitingStatus.h>
 #include <Universal/Result.h>
 
 #define SECTOR_SIZE 512
@@ -51,10 +50,7 @@ private:
 
     void wait_until_ready() const;
 
-    static Spinlock s_lock;
-    static WaitingStatus s_waiting_status;
-    static bool s_currently_waiting;
-
+    Spinlock m_lock;
     char m_model_number[ATA_IDENT_MODEL_LENGTH];
     u32 m_addressable_blocks { 0 };
     u16 m_io_base { 0 };
