@@ -26,6 +26,5 @@ bool WaitBlocker::is_ready()
         return false;
     });
 
-    dbgprintln("WaitBlocker", "Process is not ready yet!");
     return ready;
 }

@@ -117,7 +117,8 @@ public:
 
     StringView string_view() const { return data(); }
 
-    char operator[](size_t index) const { return data()[index]; }
+    const CharT& operator[](size_t index) const { return data()[index]; }
+    CharT& operator[](size_t index) { return data()[index]; }
 
     bool operator==(const BasicString&) const;
     bool operator!=(const BasicString& other) const { return !(*this == other); };

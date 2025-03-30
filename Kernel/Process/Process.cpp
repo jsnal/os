@@ -20,7 +20,7 @@
 
 #define DEBUG_PROCESS 0
 
-Process::Process(const StringView& name, pid_t pid, pid_t ppid, bool is_kernel, TTYDevice* tty)
+Process::Process(StringView name, pid_t pid, pid_t ppid, bool is_kernel, TTYDevice* tty)
     : m_name(name)
     , m_pid(pid)
     , m_ppid(ppid)
@@ -90,7 +90,7 @@ Process::~Process()
     }
 }
 
-ResultReturn<Process*> Process::create_kernel_process(const StringView& name, void (*entry_point)(), bool add_to_process_list)
+ResultReturn<Process*> Process::create_kernel_process(StringView name, void (*entry_point)(), bool add_to_process_list)
 {
     pid_t pid = add_to_process_list ? PM.get_next_pid() : 0;
     auto process = new Process(move(name), pid, 0, true);
@@ -116,19 +116,21 @@ ResultReturn<Process*> Process::create_kernel_process(const StringView& name, vo
     return process;
 }
 
-ResultReturn<Process*> Process::create_user_process(const StringView& path, pid_t pid, pid_t ppid, TTYDevice* tty)
+ResultReturn<Process*> Process::create_user_process(StringView path, pid_t pid, pid_t ppid, ArrayList<StringView>&& argv, TTYDevice* tty)
 {
     if (pid == 0) {
         pid = PM.get_next_pid();
     }
-    auto process = new Process(move(path), pid, ppid, false, tty);
+    auto process = new Process(path, pid, ppid, false, tty);
+
+    argv.add_first(path);
 
     u32 entry_point = ENSURE_TAKE(process->load_elf());
-    ENSURE(process->initialize_user_stack());
+    u32 user_esp = ENSURE_TAKE(process->initialize_user_stack(move(argv)));
 
     TaskRegisters regs = {};
     regs.frame.ss = CPU::SegmentSelector(CPU::Ring3, 4);
-    regs.frame.user_esp = reinterpret_cast<u32>(reinterpret_cast<u32*>(process->m_user_stack->lower().ptr()) + ((kUserStackSize / sizeof(u32)) - 4));
+    regs.frame.user_esp = user_esp;
     regs.frame.eflags = 0x0202;
     regs.frame.cs = CPU::SegmentSelector(CPU::Ring3, 3);
     regs.frame.eip = (u32)entry_point;
@@ -255,21 +257,51 @@ Result Process::initialize_kernel_stack(const TaskRegisters& regs)
     return Result::OK;
 }
 
-Result Process::initialize_user_stack()
+ResultReturn<u32> Process::initialize_user_stack(ArrayList<StringView>&& argv)
 {
     m_user_stack = ENSURE_TAKE(allocate_region(kUserStackSize, VirtualRegion::Read | VirtualRegion::Write));
     auto temporary_mapping = ENSURE_TAKE(MM.temporary_map(m_user_stack->physical_pages()[m_user_stack->physical_pages().size() - 1]));
 
     const u32 capacity = Memory::kPageSize / sizeof(u32);
     u32* stack = reinterpret_cast<u32*>(temporary_mapping.ptr());
-    stack[capacity - 1] = 0xDEAD0000; // Fallback return address;
-    stack[capacity - 2] = 0;
-    stack[capacity - 3] = 0;
-    stack[capacity - 4] = 0;
+    stack[capacity - 1] = 0xDEAD0000;
+
+    auto temporary_address_to_user_address = [&](u32 address) {
+        u32 user_stack_top = m_user_stack->lower().get() + kUserStackSize;
+        u32 temporary_stack_top = reinterpret_cast<u32>(stack + capacity);
+        return user_stack_top - (temporary_stack_top - address);
+    };
+
+    // Stack layout:
+    //   0xDEAD0000
+    //   argv[N..0]
+    //   strings[0..N]
+    //   argv**
+    //   argc
+
+    char** stack_argv = reinterpret_cast<char**>(stack + capacity - argv.size() - 1);
+    char* stack_argv_buffer = reinterpret_cast<char*>(stack_argv - 1);
+
+    for (size_t i = 0; i < argv.size(); i++) {
+        char* buffer_start = stack_argv_buffer - argv[i].length();
+
+        // Copy the argument string to the stack
+        memcpy(buffer_start, argv[i].str(), argv[i].length());
+        *stack_argv_buffer = '\0';
+        stack_argv_buffer = buffer_start - 1;
+
+        // Set the pointer to the string
+        stack_argv[i] = (char*)temporary_address_to_user_address((u32)buffer_start);
+    }
+
+    // Round to the nearest u32 border to add the arguments that will eventually goto main()
+    u32* stack_after_args = reinterpret_cast<u32*>(reinterpret_cast<u32>(stack_argv_buffer) & ~0x3) - 1;
+    *(stack_after_args--) = 0;
+    *(stack_after_args--) = temporary_address_to_user_address((u32)stack_argv);
+    *(stack_after_args--) = argv.size();
 
     MM.temporary_unmap();
-
-    return Result::OK;
+    return temporary_address_to_user_address(reinterpret_cast<u32>(stack_after_args));
 }
 
 ResultReturn<u32> Process::load_elf()
@@ -445,12 +477,12 @@ pid_t Process::sys_fork(TaskRegisters& regs)
 
 pid_t Process::sys_waitpid(pid_t pid, int* wstatus, int options)
 {
-    dbgprintln("Process", "waitpid called");
-
     WaitBlocker blocker(*this, pid, options);
     if (!block(blocker)) {
         return -ECHILD;
     }
+
+    PM.enter_critical();
 
     auto* p = PM.from_pid(pid);
     if (p == nullptr) {
@@ -462,13 +494,19 @@ pid_t Process::sys_waitpid(pid_t pid, int* wstatus, int options)
         delete p;
     }
 
+    PM.exit_critical();
     return pid;
 }
 
-int Process::sys_execve(const char* pathname, char* const argv[], char* const envp[])
+int Process::sys_execve(const char* pathname, char* const* argv)
 {
     {
-        auto execve_result = Process::create_user_process(pathname, m_pid, m_ppid, m_tty.ptr());
+        ArrayList<StringView> arguments;
+        for (size_t i = 0; argv[i]; ++i) {
+            arguments.add_last(argv[i]);
+        }
+
+        auto execve_result = Process::create_user_process(pathname, m_pid, m_ppid, move(arguments), m_tty.ptr());
         if (execve_result.is_error()) {
             return -EFAULT;
         }

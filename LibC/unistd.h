@@ -19,7 +19,7 @@ __BEGIN_DECLS
 void _exit(int status);
 pid_t fork();
 
-int execve(const char* pathname, char* const argv[], char* const envp[]);
+int execve(const char* pathname, char* const* argv);
 
 int isatty(int fd);
 

@@ -22,9 +22,9 @@ pid_t fork()
     RETURN_ERRNO(ret, ret, -1);
 }
 
-int execve(const char* pathname, char* const argv[], char* const envp[])
+int execve(const char* pathname, char* const* argv)
 {
-    int ret = syscall(SYS_execve, (int)pathname, (int)argv, (int)envp);
+    int ret = syscall(SYS_execve, (int)pathname, (int)argv);
     RETURN_ERRNO(ret, ret, -1);
 }
 

@@ -16,7 +16,7 @@
 
 int main(int argc, char** argv)
 {
-    printf("Starting shell 0x%x\n", 0x1337);
+    printf("Starting Shell\n");
 
     while (true) {
         Readline readline(STDIN_FILENO, STDOUT_FILENO, "$ ");
@@ -34,9 +34,8 @@ int main(int argc, char** argv)
                 dbgprintln("Shell", "Failed to fork parent process");
                 return 1;
             } else if (pid == 0) {
-                char* const execve_argv[] = { nullptr };
-                char* const execve_envp[] = { nullptr };
-                if (execve(read_result.release_value().str(), execve_argv, execve_envp) == -1) {
+                char* const execve_argv[] = { "-e", "test", "many", "args", nullptr };
+                if (execve(read_result.release_value().str(), execve_argv) == -1) {
                     return -1;
                 }
                 return 0;
