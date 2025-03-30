@@ -144,8 +144,7 @@ ResultReturn<InodeId> Ext2Inode::find(const String& name)
         u32 amount_iterated = 0;
 
         while (directory->inode != 0 && amount_iterated < ext2_fs().block_size()) {
-            String directory_name(directory->name);
-            directory_name[directory->name_length] = '\0';
+            String directory_name(directory->name, directory->name_length);
             dbgprintf_if(DEBUG_INODE, "Ext2Inode", "name='%s' id=%u\n", directory_name.data(), directory->inode);
             if (name == directory_name) {
                 return InodeId(ext2_fs().id(), directory->inode);

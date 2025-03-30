@@ -22,11 +22,10 @@ public:
         m_inline_data[0] = '\0';
     }
 
-    BasicString(const CharT* str)
-        : m_capacity(str == nullptr ? 0 : strlen(str))
+    BasicString(const CharT* str, size_t length)
+        : m_capacity(str == nullptr ? 0 : length)
         , m_length(m_capacity)
     {
-        m_length = m_capacity;
         if (!is_inlined()) {
             m_data = new CharT[m_capacity + 1];
         }
@@ -35,11 +34,15 @@ public:
         data()[m_length] = '\0';
     }
 
+    BasicString(const CharT* str)
+        : BasicString(str, str == nullptr ? 0 : strlen(str))
+    {
+    }
+
     BasicString(const StringView& sv)
         : m_capacity(sv.length())
         , m_length(m_capacity)
     {
-        m_length = m_capacity;
         if (!is_inlined()) {
             m_data = new CharT[m_capacity + 1];
         }

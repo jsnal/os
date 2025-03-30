@@ -61,7 +61,7 @@ TEST_CASE(heap)
     delete int1;
 }
 
-TEST_MAIN(TestString, [&]() {
+TEST_MAIN(TestOptional, [&]() {
     ENUMERATE_TEST(create);
     ENUMERATE_TEST(copy_and_move);
     ENUMERATE_TEST(heap);

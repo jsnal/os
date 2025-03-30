@@ -137,7 +137,7 @@ TEST_CASE(find)
     CHECK_FALSE(sv_empty.find_last('a').has_value());
 }
 
-TEST_MAIN(TestString, [&]() {
+TEST_MAIN(TestStringView, [&]() {
     ENUMERATE_TEST(create);
     ENUMERATE_TEST(equals);
     ENUMERATE_TEST(index);

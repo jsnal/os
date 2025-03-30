@@ -17,6 +17,10 @@ TEST_CASE(create)
     CHECK_EQUAL(5, s.length());
     CHECK_STR_EQUAL("Small", s.data());
 
+    BasicString<char> s_trimmed("Trim-----", 4);
+    CHECK_EQUAL(4, s_trimmed.length());
+    CHECK_STR_EQUAL("Trim", s_trimmed.data());
+
     BasicString<char> l("Larger string heap allocation");
     CHECK_EQUAL(29, l.length());
     CHECK_STR_EQUAL("Larger string heap allocation", l.data());
@@ -253,7 +257,7 @@ TEST_CASE(format)
     CHECK_STR_EQUAL("Number: 10, Hex: 1337, String: My String", f.data());
 }
 
-TEST_MAIN(TestString, [&]() {
+TEST_MAIN(TestBasicString, [&]() {
     ENUMERATE_TEST(create);
     ENUMERATE_TEST(move_and_copy);
     ENUMERATE_TEST(equals);
