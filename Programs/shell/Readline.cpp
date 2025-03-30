@@ -136,7 +136,7 @@ bool Readline::enable_raw_mode()
     return true;
 }
 
-ResultReturn<const StringView> Readline::raw_read()
+ResultReturn<String> Readline::raw_read()
 {
     if (!enable_raw_mode()) {
         return Result(Result::Failure);
@@ -179,7 +179,7 @@ ResultReturn<const StringView> Readline::raw_read()
                 break;
             }
             case KeyAction::Enter:
-                return StringView(m_buffer.data());
+                return String(m_buffer.data());
             case KeyAction::Backspace:
                 do_backspace();
                 break;
@@ -195,7 +195,7 @@ ResultReturn<const StringView> Readline::raw_read()
     return Result(Result::OK);
 }
 
-ResultReturn<const StringView> Readline::read()
+ResultReturn<String> Readline::read()
 {
     ASSERT(isatty(m_fd_in));
 

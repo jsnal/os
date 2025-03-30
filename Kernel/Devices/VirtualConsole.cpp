@@ -8,6 +8,8 @@
 #include <Kernel/Graphics/EmulatorVGAGraphicsCard.h>
 #include <Kernel/IO.h>
 
+#define DEBUG_VIRTUAL_CONSOLE 0
+
 VirtualConsole::VirtualConsole(u32 const minor)
     : TTYDevice(4, minor)
 {
@@ -41,7 +43,7 @@ void VirtualConsole::tty_echo(char c)
 
 void VirtualConsole::handle_key_event(KeyEvent event)
 {
-    dbgprintf("VirtualConsole", "Keyboard event received: %c - %#x\n", event.character, event.character);
+    dbgprintln_if(DEBUG_VIRTUAL_CONSOLE, "VirtualConsole", "Keyboard event received: %c - %#x", event.character, event.character);
 
     if (event.is_control_pressed() && event.character >= 'a' && event.character <= 'z') {
         handle_input(event.character - 'a' + 1);

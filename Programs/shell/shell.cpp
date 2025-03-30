@@ -22,8 +22,6 @@ int main(int argc, char** argv)
         Readline readline(STDIN_FILENO, STDOUT_FILENO, "$ ");
         auto read_result = readline.read();
         if (read_result.is_ok()) {
-            printf("\033[31mTyped:\033[0m '%s'\n", read_result.release_value().str());
-
             auto read_value = read_result.release_value();
             if (read_value.is_empty()) {
                 continue;
@@ -34,15 +32,25 @@ int main(int argc, char** argv)
                 dbgprintln("Shell", "Failed to fork parent process");
                 return 1;
             } else if (pid == 0) {
-                char* const execve_argv[] = { "-e", "test", "many", "args", nullptr };
-                if (execve(read_result.release_value().str(), execve_argv) == -1) {
+                auto args = read_value.split(' ');
+                if (args.is_empty()) {
+                    return -1;
+                }
+
+                char* argv[args.size()];
+                for (size_t i = 1; i < args.size(); i++) {
+                    argv[i - 1] = args[i].data();
+                }
+                argv[args.size() - 1] = nullptr;
+
+                if (execve(args.first().data(), argv) == -1) {
                     return -1;
                 }
                 return 0;
             }
 
-            int waited_pid = wait(nullptr);
-            printf("pid=%d exited\n", waited_pid);
+            // TODO: use waitpid instead
+            wait(nullptr);
         }
     }
 

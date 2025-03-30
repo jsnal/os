@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Universal/Array.h>
+#include <Universal/BasicString.h>
 #include <Universal/Result.h>
 #include <Universal/StringView.h>
 #include <termios.h>
@@ -20,7 +21,7 @@ public:
     {
     }
 
-    ResultReturn<const StringView> read();
+    ResultReturn<String> read();
 
 private:
     enum KeyAction {
@@ -40,7 +41,7 @@ private:
     Result do_clear();
 
     bool enable_raw_mode();
-    ResultReturn<const StringView> raw_read();
+    ResultReturn<String> raw_read();
 
     StringView m_prompt;
 

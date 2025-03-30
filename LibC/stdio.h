@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef _STDIO_H_
-#define _STDIO_H_
+#pragma once
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -13,19 +12,41 @@
 
 __BEGIN_DECLS
 
+#define EOF (-1)
+#define BUFSIZ 1024
+
+#define _IOFBF 0 // Fully buffered
+#define _IOLBF 1 // Line buffered
+#define _IONBF 2 // No buffering
+
 struct __FILE {
     int fd;
-    int options;
+    int eof;
+    int error;
+    int flags;
+    char* buffer;
+    size_t buffer_index;
+    size_t buffer_size;
+    char default_buffer[BUFSIZ];
 };
 
 typedef struct __FILE FILE;
 
+extern FILE* stdin;
+extern FILE* stdout;
+extern FILE* stderr;
+
+int fflush(FILE*);
+
+int fputc(int c, FILE* stream);
+int putc(int c, FILE* stream);
+int putchar(int c);
+
+int fputs(const char* s, FILE* stream);
+int puts(const char* s);
+
 int printf(const char* format, ...);
-
 int vsnprintf(char* str, size_t size, const char* format, va_list ap);
-
 int udbgprintf(const char* format, ...);
 
 __END_DECLS
-
-#endif

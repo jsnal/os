@@ -8,13 +8,21 @@
 
 extern "C" {
 
-int main(int, char**, char**);
+int main(int, char**);
+void __stdio_init();
 
 int __errno = 0;
 
-int _start(int argc, char* argv[], char* env[])
+void __libc_init()
 {
-    int ret = main(argc, argv, env);
+    __stdio_init();
+}
+
+int _start(int argc, char* argv[])
+{
+    __libc_init();
+
+    int ret = main(argc, argv);
     exit(ret);
 
     // Should never reach this line
