@@ -75,7 +75,7 @@ ResultReturn<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags,
     dbgprintf("VFS", "Found inode %u to open for '%s'\n", path_inode->id(), path.data());
 
     if ((flags & O_DIRECTORY) && !path_inode->is_directory()) {
-        return Result(ENOTDIR);
+        return Result(-ENOTDIR);
     }
 
     if (path_inode->is_device()) {

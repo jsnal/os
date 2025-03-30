@@ -45,9 +45,9 @@ Process::Process(StringView name, pid_t pid, pid_t ppid, bool is_kernel, TTYDevi
     reset_timer_ticks();
 
     if (tty != nullptr) {
-        m_fds.add(0, tty->open(O_RDONLY).value());
-        m_fds.add(1, tty->open(O_WRONLY).value());
-        m_fds.add(2, tty->open(O_WRONLY).value());
+        m_fds[0] = tty->open(O_RDONLY).release_value();
+        m_fds[1] = tty->open(O_WRONLY).release_value();
+        m_fds[2] = tty->open(O_WRONLY).release_value();
     }
 }
 
@@ -77,7 +77,7 @@ Process::Process(const Process& parent)
         if (parent.m_fds[i].ptr() == nullptr) {
             continue;
         }
-        m_fds.add(i, parent.m_fds[i]);
+        m_fds[0] = *parent.m_fds[i];
     }
 }
 
@@ -397,6 +397,19 @@ bool Process::is_address_accessible(VirtualAddress address, size_t length)
     return false;
 }
 
+int Process::next_file_descriptor()
+{
+    int fd = -EMFILE;
+    for (size_t i = 0; i < kMaxFileDescriptors; i++) {
+        if (m_fds[i].ptr() == nullptr) {
+            fd = i;
+            break;
+        }
+    }
+
+    return fd;
+}
+
 ResultReturn<SharedPtr<FileDescriptor>> Process::find_file_descriptor(int fd)
 {
     if (fd < 0 || fd > m_fds.size() || m_fds[fd].is_null()) {
@@ -412,50 +425,6 @@ void Process::die()
     }
 
     m_state = Process::Dead;
-}
-
-ssize_t Process::sys_write(int fd, const void* buf, size_t count)
-{
-    if (count < 0) {
-        return -EINVAL;
-    }
-
-    if (count == 0) {
-        return 0;
-    }
-
-    if (!is_address_accessible((u32)buf, count)) {
-        return -EFAULT;
-    }
-
-    auto fd_result = find_file_descriptor(fd);
-    if (fd_result.is_error()) {
-        return -EBADF;
-    }
-
-    return fd_result.release_value()->write((const u8*)buf, count);
-}
-
-ssize_t Process::sys_read(int fd, void* buf, size_t count)
-{
-    if (count < 0) {
-        return -EINVAL;
-    }
-
-    if (count == 0) {
-        return 0;
-    }
-
-    if (!is_address_accessible((u32)buf, count)) {
-        return -EFAULT;
-    }
-
-    auto fd_result = find_file_descriptor(fd);
-    if (fd_result.is_error()) {
-        return -EBADF;
-    }
-
-    return fd_result.release_value()->read((u8*)buf, count);
 }
 
 void Process::sys_exit(int status)
@@ -530,6 +499,64 @@ int Process::sys_ioctl(int fd, uint32_t request, uint32_t* argp)
         return -EBADF;
     }
     return fd_result.release_value()->ioctl(request, argp);
+}
+
+int Process::sys_open(const char* pathname, int flags, mode_t mode)
+{
+    int fd = next_file_descriptor();
+    dbgprintln("Process", "Next fd = %d", fd);
+
+    auto result = VFS::the().open(pathname, flags, mode);
+    if (result.is_error()) {
+        return result.error();
+    }
+
+    m_fds[fd] = result.release_value();
+    return 0;
+}
+
+ssize_t Process::sys_write(int fd, const void* buf, size_t count)
+{
+    if (count < 0) {
+        return -EINVAL;
+    }
+
+    if (count == 0) {
+        return 0;
+    }
+
+    if (!is_address_accessible((u32)buf, count)) {
+        return -EFAULT;
+    }
+
+    auto fd_result = find_file_descriptor(fd);
+    if (fd_result.is_error()) {
+        return -EBADF;
+    }
+
+    return fd_result.release_value()->write((const u8*)buf, count);
+}
+
+ssize_t Process::sys_read(int fd, void* buf, size_t count)
+{
+    if (count < 0) {
+        return -EINVAL;
+    }
+
+    if (count == 0) {
+        return 0;
+    }
+
+    if (!is_address_accessible((u32)buf, count)) {
+        return -EFAULT;
+    }
+
+    auto fd_result = find_file_descriptor(fd);
+    if (fd_result.is_error()) {
+        return -EBADF;
+    }
+
+    return fd_result.release_value()->read((u8*)buf, count);
 }
 
 pid_t Process::sys_getpid()

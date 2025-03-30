@@ -1,6 +1,7 @@
 set(LIBC_SOURCES
     MallocManager.cpp
     crt0.cpp
+    fcntl.cpp
     stdio.cpp
     stdlib.cpp
     string.cpp

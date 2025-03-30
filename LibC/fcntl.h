@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <sys/types.h>
+
 #define O_RDONLY 0x000000
 #define O_WRONLY 0x000001
 #define O_RDWR 0x000002
@@ -21,3 +23,6 @@
 #define O_DIRECTORY 0x200000
 #define O_EXEC 0x400000
 #define O_SEARCH O_EXEC
+
+int open(const char*, int);
+int open(const char*, int, mode_t);

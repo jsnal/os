@@ -5,6 +5,7 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -14,6 +15,8 @@ int main(int argc, char** argv)
 {
     int id = getuid();
     printf("uid=%u\n", id);
+
+    open("/bin/shell", O_RDONLY);
 
     return 0;
 }

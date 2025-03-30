@@ -20,6 +20,7 @@
     SYSCALL_OPCODE(isatty)  \
     SYSCALL_OPCODE(mmap)    \
     SYSCALL_OPCODE(munmap)  \
+    SYSCALL_OPCODE(open)    \
     SYSCALL_OPCODE(read)    \
     SYSCALL_OPCODE(write)   \
     SYSCALL_OPCODE(dbgwrite)

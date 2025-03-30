@@ -91,6 +91,7 @@ public:
     pid_t sys_waitpid(pid_t, int* wstatus, int options);
     int sys_execve(const char* pathname, char* const* argv);
     int sys_ioctl(int fd, uint32_t request, uint32_t* argp);
+    int sys_open(const char*, int, mode_t);
     ssize_t sys_write(int fd, const void* buf, size_t count);
     ssize_t sys_read(int fd, void* buf, size_t count);
     pid_t sys_getpid();
@@ -104,6 +105,7 @@ public:
 private:
     static constexpr size_t kKernelStackSize = 16 * KB;
     static constexpr size_t kUserStackSize = 16 * KB;
+    static constexpr size_t kMaxFileDescriptors = 64;
 
     Process(StringView name, pid_t pid, pid_t ppid, bool is_kernel, TTYDevice* = nullptr);
     Process(const Process& parent);
@@ -114,6 +116,7 @@ private:
     ResultReturn<u32> initialize_user_stack(ArrayList<StringView>&& argv);
 
     bool is_address_accessible(VirtualAddress, size_t);
+    int next_file_descriptor();
     ResultReturn<SharedPtr<FileDescriptor>> find_file_descriptor(int fd);
 
     void die();
@@ -133,7 +136,7 @@ private:
 
     // TODO: Make sure this memory is being freed!
     ArrayList<VirtualRegion*> m_regions;
-    ArrayList<SharedPtr<FileDescriptor>> m_fds;
+    Array<SharedPtr<FileDescriptor>, kMaxFileDescriptors> m_fds;
 
     UniquePtr<VirtualRegion> m_kernel_stack { nullptr };
     UniquePtr<VirtualRegion> m_user_stack { nullptr };

@@ -31,6 +31,8 @@ int handle(TaskRegisters& regs, SyscallOpcode call, int arg1, int arg2, int arg3
             return p.sys_waitpid((pid_t)arg1, (int*)arg2, arg3);
         case SYS_execve:
             return p.sys_execve((const char*)arg1, (char* const*)arg2);
+        case SYS_open:
+            return p.sys_open((const char*)arg1, arg2, (mode_t)arg3);
         case SYS_write:
             return p.sys_write(arg1, (const void*)arg2, arg3);
         case SYS_read:
