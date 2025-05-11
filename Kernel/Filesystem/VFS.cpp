@@ -107,7 +107,7 @@ ResultReturn<SharedPtr<Inode>> VFS::traverse_path(const String& path, SharedPtr<
 
     for (size_t i = 0; i < split_path.size(); i++) {
         if (!current_inode->is_directory()) {
-            return Result(ENOTDIR);
+            return Result(-ENOTDIR);
         }
 
         // TODO: Add support for consecutive '..'

@@ -16,7 +16,13 @@ int main(int argc, char** argv)
     int id = getuid();
     printf("uid=%u\n", id);
 
-    open("/bin/shell", O_RDONLY);
+    int fd = open("/home/user/file.txt", O_RDONLY);
+    printf("file opened @ %d\n", fd);
+
+    uint8_t buffer[1024];
+    read(fd, buffer, 1024);
+
+    printf("%s\n", buffer);
 
     return 0;
 }

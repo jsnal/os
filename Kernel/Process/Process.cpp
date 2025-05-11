@@ -508,11 +508,13 @@ int Process::sys_open(const char* pathname, int flags, mode_t mode)
 
     auto result = VFS::the().open(pathname, flags, mode);
     if (result.is_error()) {
+        // dbgprintln("Process", "ERROR = %d", result.error());
+
         return result.error();
     }
 
     m_fds[fd] = result.release_value();
-    return 0;
+    return fd;
 }
 
 ssize_t Process::sys_write(int fd, const void* buf, size_t count)

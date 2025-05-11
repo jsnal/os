@@ -49,7 +49,7 @@ static void print_with_escape(const char* str)
     }
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
     bool interpret_escapes = false;
     int start_index = 1;

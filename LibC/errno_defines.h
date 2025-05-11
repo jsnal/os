@@ -7,15 +7,17 @@
 #ifndef _ERRNO_DEFINES_H_
 #define _ERRNO_DEFINES_H_
 
+#define EPERM 1
 #define ENOENT 2
-#define EIO 5
-#define EBADF 9
-#define ENOMEM 10
-#define ECHILD 11
-#define EFAULT 14
-#define ENOTDIR 20
-#define EISDIR 21
-#define EINVAL 22
-#define EMFILE 23
+#define EIO 3
+#define EBADF 4
+#define ENOMEM 5
+#define ECHILD 6
+#define EFAULT 7
+#define ENOTDIR 8
+#define EISDIR 9
+#define EINVAL 10
+#define EMFILE 11
+#define EMAXERRNO 12
 
 #endif

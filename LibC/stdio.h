@@ -49,4 +49,6 @@ int printf(const char* format, ...);
 int vsnprintf(char* str, size_t size, const char* format, va_list ap);
 int udbgprintf(const char* format, ...);
 
+void perror(const char* s);
+
 __END_DECLS

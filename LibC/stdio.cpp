@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
@@ -146,6 +147,13 @@ int udbgprintf(const char* format, ...)
 
     (void)syscall(SYS_dbgwrite, (int)buffer, length);
     return length;
+}
+
+void perror(const char* s)
+{
+    int current_errno = errno;
+    dbgprintln("stdio", "perror(%s): %s (%d)", s, strerror(current_errno), current_errno);
+    printf("%s: %s\n", s, strerror(current_errno));
 }
 
 __END_DECLS

@@ -4,15 +4,18 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/syscall.h>
 
 int open(const char* pathname, int flags)
 {
-    return syscall(SYS_open, (int)pathname, flags, 0);
+    int ret = syscall(SYS_open, (int)pathname, flags, 0);
+    RETURN_ERRNO(ret, ret, -1);
 }
 
 int open(const char* pathname, int flags, mode_t mode)
 {
-    return syscall(SYS_open, (int)pathname, flags, mode);
+    int ret = syscall(SYS_open, (int)pathname, flags, mode);
+    RETURN_ERRNO(ret, ret, -1);
 }
