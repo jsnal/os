@@ -15,7 +15,7 @@
 #include <Kernel/Devices/VirtualConsole.h>
 #include <Kernel/Filesystem/VFS.h>
 #include <Kernel/Memory/MemoryManager.h>
-#include <Kernel/Network/E1000NetworkCard.h>
+#include <Kernel/Network/NetworkDaemon.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Universal/Logger.h>
 #include <Universal/StringView.h>
@@ -54,8 +54,7 @@ VirtualConsole* tty0;
 
     VFS::the().init();
 
-    auto card = Network::E1000NetworkCard::detect();
-
+    Process::create_kernel_process("NetworkDaemon", Network::NetworkDaemon::run);
     Process::create_user_process("/bin/shell", 0, 0, {}, tty0);
     // Process::create_user_process("/bin/id", 0, tty0);
 
@@ -92,7 +91,7 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
 
     MemoryManager::init(boot_page_directory, multiboot);
 
-    Process::create_kernel_process("kernel_main", kernel_main);
+    Process::create_kernel_process("KernelMain", kernel_main);
     // Process::create_kernel_process("simple1", simple_process_runnable1);
 
     PM.start();

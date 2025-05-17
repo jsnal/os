@@ -13,15 +13,20 @@
 
 namespace Network {
 
-class MACAddress {
+class [[gnu::packed]] MACAddress {
 public:
-    static constexpr u8 kLength = 8;
+    static constexpr u8 kLength = 6;
 
     MACAddress() = default;
 
     MACAddress(const u8 data[kLength])
     {
-        memcpy(m_address.ptr(), data, kLength);
+        m_address[0] = data[0];
+        m_address[1] = data[1];
+        m_address[2] = data[2];
+        m_address[3] = data[3];
+        m_address[4] = data[4];
+        m_address[5] = data[5];
     }
 
     MACAddress(u8 a, u8 b, u8 c, u8 d, u8 e, u8 f)
@@ -36,8 +41,6 @@ public:
 
     ~MACAddress() = default;
 
-    const Array<u8, kLength>& address() const { return m_address; }
-
     u8 operator[](size_t i) const
     {
         ASSERT(i < kLength);
@@ -51,7 +54,7 @@ public:
     }
 
 private:
-    Array<u8, kLength> m_address;
+    u8 m_address[kLength];
 };
 
 }

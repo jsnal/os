@@ -18,6 +18,8 @@ public:
 
     E1000NetworkCard(Bus::PCI::Address, u8 interrupt_line);
 
+    MACAddress mac_address() const { return m_mac_address; }
+
     void send(const u8* data, size_t length);
 
 private:

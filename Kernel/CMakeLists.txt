@@ -33,6 +33,7 @@ SET(KERNEL_SOURCES
     Memory/VMObject.cpp
     Memory/VirtualRegion.cpp
     Network/E1000NetworkCard.cpp
+    Network/NetworkDaemon.cpp
     Process/Blocker.cpp
     Process/ELF.cpp
     Process/Process.cpp
