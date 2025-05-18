@@ -11,11 +11,11 @@
 
 namespace CPU {
 
-#define panic(format, ...)                                                             \
-    do {                                                                               \
-        kprintf("*** PANIC (%s:%d in %s) ***", __FUNCTION__, __LINE__, __FILE_NAME__); \
-        kprintf(format, ##__VA_ARGS__);                                                \
-        CPU::hang();                                                                   \
+#define panic(format, ...)                                                               \
+    do {                                                                                 \
+        kprintf("*** PANIC (%s:%d in %s) ***\n", __FUNCTION__, __LINE__, __FILE_NAME__); \
+        kprintf(format, ##__VA_ARGS__);                                                  \
+        CPU::hang();                                                                     \
     } while (0)
 
 [[noreturn]] void hang();
@@ -28,7 +28,7 @@ enum RingLevel : u8 {
     Ring3 = 3,
 };
 
-struct [[gnu::packed]] SegmentSelector {
+class [[gnu::packed]] SegmentSelector {
 public:
     SegmentSelector(RingLevel ring, u8 index)
         : m_ring(ring)
@@ -53,10 +53,31 @@ private:
     u16 m_index : 13;
 };
 
+void sti();
+void cli();
 void set_ds_register(const SegmentSelector& selector);
 void set_es_register(const SegmentSelector& selector);
 void set_fs_register(const SegmentSelector& selector);
 void set_gs_register(const SegmentSelector& selector);
 u32 cpu_flags();
+
+class InterruptDisabler {
+public:
+    InterruptDisabler()
+    {
+        m_flags = cpu_flags();
+        cli();
+    }
+
+    ~InterruptDisabler()
+    {
+        if (m_flags & 0x0200) {
+            sti();
+        }
+    }
+
+private:
+    u32 m_flags { 0 };
+};
 
 };

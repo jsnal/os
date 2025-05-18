@@ -41,7 +41,7 @@ VirtualConsole* tty0;
     dbgprintf("Kernel", "Running a simple process 2!\n");
     while (true) { }
 }
-
+#define GET_FLAGS(X)
 [[noreturn]] static void kernel_main()
 {
     // TODO: Only text-mode is supported currently
@@ -54,7 +54,6 @@ VirtualConsole* tty0;
 
     VFS::the().init();
 
-    Process::create_kernel_process("NetworkDaemon", Network::NetworkDaemon::run);
     Process::create_user_process("/bin/shell", 0, 0, {}, tty0);
     // Process::create_user_process("/bin/id", 0, tty0);
 
@@ -92,7 +91,7 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
     MemoryManager::init(boot_page_directory, multiboot);
 
     Process::create_kernel_process("KernelMain", kernel_main);
-    // Process::create_kernel_process("simple1", simple_process_runnable1);
+    Process::create_kernel_process("NetworkDaemon", Network::NetworkDaemon::run);
 
     PM.start();
 

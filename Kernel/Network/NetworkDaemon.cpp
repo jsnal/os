@@ -14,8 +14,6 @@
 
 namespace Network {
 
-#pragma GCC push_options
-#pragma GCC optimize("-O0")
 void NetworkDaemon::run()
 {
     dbgprintln("NetworkDaemon", "Starting the Network Daemon");
@@ -50,16 +48,12 @@ void NetworkDaemon::run()
             continue;
         }
 
-        // if (!empty) {
-        //  PM.yield();
         auto b = card->rx_queue().dequeue();
         dbgprintln("NetworkDaemon", "Got the data from the network card!");
 
-        EthernetHeader* header = (EthernetHeader*)b.ptr();
+        // EthernetHeader* header = (EthernetHeader*)b.ptr();
         // dbgprintln("NetworkDaemon", "From %s to %s", header->source(), header->destination());
-        //}
     }
 }
-#pragma GCC pop_options
 
 }

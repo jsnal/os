@@ -92,8 +92,7 @@ Process::~Process()
 
 ResultReturn<Process*> Process::create_kernel_process(StringView name, void (*entry_point)(), bool add_to_process_list)
 {
-    pid_t pid = add_to_process_list ? PM.get_next_pid() : 0;
-    auto process = new Process(move(name), pid, 0, true);
+    auto process = new Process(move(name), 0, 0, true);
 
     TaskRegisters regs = {};
     regs.frame.ss = 0;
@@ -320,7 +319,6 @@ ResultReturn<u32> Process::load_elf()
 
             // TODO: Find a faster way to do this
             auto tmp_kernel_region = MM.allocate_kernel_region_at(region->physical_pages().first(), load_memory_size);
-
             fd->seek(program_header.p_offset, SEEK_SET);
             fd->read(tmp_kernel_region->lower().ptr(), program_header.p_filesz);
 

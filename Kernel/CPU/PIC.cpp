@@ -1,4 +1,10 @@
-#include <Kernel/CPU/IDT.h>
+/*
+ * Copyright (c) 2025, Jason Long <jasonlongball@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include <Kernel/CPU/CPU.h>
 #include <Kernel/CPU/PIC.h>
 #include <Kernel/IO.h>
 #include <Universal/Logger.h>
@@ -78,7 +84,7 @@ void init()
 
     dbgprintf("PIC", "Initialized PIC: offset1=0x%x offset2=0x%x\n", PIC1_OFFSET, PIC2_OFFSET);
 
-    sti();
+    CPU::sti();
 }
 
 void disable()

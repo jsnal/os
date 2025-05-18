@@ -61,16 +61,6 @@ struct InterruptRegisters {
 
 typedef void (*ExceptionHandler)(const InterruptRegisters&);
 
-static inline void sti()
-{
-    asm volatile("sti");
-}
-
-static inline void cli()
-{
-    asm volatile("cli");
-}
-
 namespace IDT {
 
 Result register_exception_handler(u32 exception_number, ExceptionHandler);

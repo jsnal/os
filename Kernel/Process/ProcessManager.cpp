@@ -163,15 +163,15 @@ void ProcessManager::schedule()
 
 void ProcessManager::yield()
 {
-    // TODO: This should check for more conditions
-    enter_critical();
+    ASSERT(m_current_process != nullptr);
+
+    CPU::InterruptDisabler interrupt_disabler;
     schedule();
-    exit_critical();
 }
 
 void ProcessManager::enter_critical()
 {
-    cli();
+    CPU::cli();
     if ((u32)m_critical_count + 1 > U8_MAX) {
         panic("Too many critical sections!\n");
     }
@@ -181,6 +181,6 @@ void ProcessManager::enter_critical()
 void ProcessManager::exit_critical()
 {
     if (--m_critical_count == 0) {
-        sti();
+        CPU::sti();
     }
 }

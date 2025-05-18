@@ -25,6 +25,16 @@ void assertion_failed(const char* message, const char* file, const char* functio
     hang();
 }
 
+void sti()
+{
+    asm volatile("sti");
+}
+
+void cli()
+{
+    asm volatile("cli");
+}
+
 void set_ds_register(const SegmentSelector& selector)
 {
     asm volatile("mov %%ds, %0"
