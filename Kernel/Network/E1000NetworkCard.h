@@ -8,6 +8,8 @@
 #include <Kernel/CPU/IRQHandler.h>
 #include <Kernel/Memory/VirtualRegion.h>
 #include <Kernel/Network/MACAddress.h>
+#include <Universal/ByteBuffer.h>
+#include <Universal/CircularQueue.h>
 #include <Universal/UniquePtr.h>
 
 namespace Network {
@@ -20,7 +22,12 @@ public:
 
     MACAddress mac_address() const { return m_mac_address; }
 
+    const CircularQueue<ByteBuffer>& rx_queue() const { return m_rx_queue; }
+    CircularQueue<ByteBuffer>& rx_queue() { return m_rx_queue; }
+
     void send(const u8* data, size_t length);
+
+    u32 m_rx_count { 0 };
 
 private:
     struct [[gnu::packed]] rx_desc {
@@ -77,6 +84,8 @@ private:
     UniquePtr<VirtualRegion> m_tx_buffer_region;
     UniquePtr<VirtualRegion> m_rx_desc_region;
     UniquePtr<VirtualRegion> m_rx_buffer_region;
+
+    CircularQueue<ByteBuffer> m_rx_queue;
 
     MACAddress m_mac_address;
 };

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <Kernel/Network/IPv4.h>
 #include <Kernel/Network/MACAddress.h>
 #include <Kernel/Network/NetworkEndianness.h>
 #include <Universal/Types.h>
@@ -40,8 +41,11 @@ public:
     MACAddress source_hardware_address() const { return m_source_hardware_address; }
     void set_source_hardware_address(MACAddress a) { m_source_hardware_address = a; }
 
-    void set_source_protocol_address(u8 a[4]) { memcpy(m_source_protocol_address, a, 4); }
-    void set_destination_protocol_address(u8 a[4]) { memcpy(m_destination_protocol_address, a, 4); }
+    IPv4Address source_protocol_address(IPv4Address a) { return m_source_protocol_address; }
+    void set_source_protocol_address(IPv4Address a) { m_source_protocol_address = a; }
+
+    IPv4Address destination_protocol_address(IPv4Address a) { return m_destination_protocol_address; }
+    void set_destination_protocol_address(IPv4Address a) { m_destination_protocol_address = a; }
 
     MACAddress destination_hardware_address() const { return m_destination_hardware_address; }
     void set_destination_hardware_address(MACAddress a) { m_destination_hardware_address = a; }
@@ -49,13 +53,13 @@ public:
 private:
     NetworkEndianness<u16> m_hardware_type;
     NetworkEndianness<u16> m_protocol_type;
-    u8 m_hardware_address_length { 6 };
-    u8 m_protocol_address_length { 4 };
+    u8 m_hardware_address_length { MACAddress::kLength };
+    u8 m_protocol_address_length { IPv4Address::kLength };
     NetworkEndianness<u16> m_operation;
     MACAddress m_source_hardware_address;
-    u8 m_source_protocol_address[4];
+    IPv4Address m_source_protocol_address;
     MACAddress m_destination_hardware_address;
-    u8 m_destination_protocol_address[4];
+    IPv4Address m_destination_protocol_address;
 };
 
 }

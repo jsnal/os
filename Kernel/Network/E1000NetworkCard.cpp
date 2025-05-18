@@ -130,6 +130,7 @@ UniquePtr<E1000NetworkCard> E1000NetworkCard::detect()
 E1000NetworkCard::E1000NetworkCard(Bus::PCI::Address address, u8 interrupt_line)
     : m_pci_address(address)
     , m_interrupt_line(interrupt_line)
+    , m_rx_queue(8)
 {
     m_mmio_physical_base = Bus::PCI::read_BAR0(m_pci_address);
     size_t mmio_size = Bus::PCI::get_BAR_size(m_pci_address, Bus::PCI::Bar::Zero);
@@ -291,20 +292,27 @@ void E1000NetworkCard::send(const u8* data, size_t length)
 
 void E1000NetworkCard::receive()
 {
-    dbgprintf("E1000NetworkCard", "Data received!!\n");
-
     do {
         u32 current_rx_desc = (in32(REG_RXDESCTAIL) + 1) % E1000_NUM_RX_DESC;
         rx_desc& desc = rx_descs_base()[current_rx_desc];
 
         if (!(desc.status & 0x1)) {
+            dbgprintln("E1000NetworkCard", "Leaving receive: %u", m_rx_count);
             break;
         }
 
         u8* buffer = reinterpret_cast<u8*>(m_rx_buffer_region->lower().offset(E1000_RX_BUFFER_SIZE * current_rx_desc).get());
         dbgprintf("E1000NetworkCard", "Received %u byte frame\n", desc.length);
 
-        // TODO: Send buffer to network stack
+        ByteBuffer queue_buffer = ByteBuffer::create_zeroed(desc.length);
+        memcpy(queue_buffer.ptr(), buffer, desc.length);
+
+        if (m_rx_queue.is_full()) {
+            dbgprintln("E1000NetworkCard", "RX queue is full");
+        }
+        m_rx_queue.enqueue(queue_buffer);
+        dbgprintln("E1000NetworkCard", "Enqueued the data: %u", m_rx_queue.size());
+        m_rx_count++;
 
         desc.status = 0;
         out32(REG_RXDESCTAIL, current_rx_desc);
