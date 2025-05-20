@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <Universal/Number.h>
-#include <Universal/Result.h>
 #include <Universal/Stdlib.h>
 #include <Universal/Types.h>
 
@@ -15,92 +13,77 @@ class ByteBuffer {
 public:
     ByteBuffer() = default;
 
-    ByteBuffer(ByteBuffer const& other)
+    ByteBuffer(size_t size, bool zeroed = false)
+        : m_size(size)
     {
-        memcpy(m_buffer, other.m_buffer, other.m_size);
+        m_data = new u8[m_size];
+
+        if (zeroed) {
+            memset(m_data, 0, size);
+        }
+    }
+
+    ByteBuffer(const ByteBuffer& other)
+        : m_size(other.m_size)
+    {
+        m_data = new u8[m_size];
+        if (m_size > 0 && other.m_data != nullptr) {
+            memcpy(m_data, other.m_data, m_size);
+        }
     }
 
     ByteBuffer(ByteBuffer&& other)
+        : m_size(other.m_size)
+        , m_data(other.m_data)
     {
-        m_size = other.m_size;
-        m_capacity = other.m_capacity;
-        memcpy(m_buffer, other.m_buffer, other.m_size);
-
         other.m_size = 0;
-        other.m_capacity = 0;
-    }
-
-    ByteBuffer& operator=(ByteBuffer const& other)
-    {
-        memcpy(m_buffer, other.m_buffer, other.m_size);
-        return *this;
+        other.m_data = nullptr;
     }
 
     ~ByteBuffer() { clear(); }
 
-    static ByteBuffer create(size_t size)
+    ByteBuffer& operator=(ByteBuffer const& other)
     {
-        return ByteBuffer(size);
-    }
+        if (this != &other) {
+            m_size = other.m_size;
+            m_data = new u8[m_size];
 
-    static ByteBuffer create_zeroed(size_t size)
-    {
-        auto buffer = ByteBuffer(size);
-        memset(buffer.m_buffer, 0, size);
-        return buffer;
-    }
-
-    Result append(void const* data, size_t data_size)
-    {
-        if (data == nullptr || data_size == 0 || m_size + data_size > m_capacity) {
-            return Result::Failure;
+            if (m_size > 0 && other.m_data != nullptr) {
+                memcpy(m_data, other.m_data, m_size);
+            }
         }
-
-        // TODO: Add a resize operation
-
-        memcpy(m_buffer + m_size, data, data_size);
-        m_size += data_size;
-        return Result::OK;
+        return *this;
     }
 
-    Result set(size_t index, u8 data)
+    ByteBuffer& operator=(ByteBuffer&& other)
     {
-        if (!number_between_inclusive(index, (size_t)0, m_capacity)) {
-            return Result::Failure;
+        if (this != &other) {
+            m_size = other.m_size;
+            m_data = other.m_data;
+            other.m_size = 0;
+            other.m_data = nullptr;
         }
-
-        m_buffer[index] = data;
-        return Result::OK;
+        return *this;
     }
 
-    void operator+=(ByteBuffer const& other) { append(other.ptr(), other.size()); }
-
-    u8& operator[](size_t index) { return m_buffer[index]; }
-    const u8& operator[](size_t index) const { return m_buffer[index]; }
+    u8& operator[](size_t index) { return m_data[index]; }
+    const u8& operator[](size_t index) const { return m_data[index]; }
 
     void clear()
     {
-        if (m_buffer != nullptr) {
-            delete m_buffer;
-            m_buffer = nullptr;
+        if (m_data != nullptr) {
+            delete[] m_data;
+            m_data = nullptr;
         }
         m_size = 0;
     }
 
-    u8* ptr() { return m_buffer; }
-    const u8* ptr() const { return m_buffer; }
+    const u8* data() const { return m_data; }
+    u8* data() { return m_data; }
 
-    size_t capacity() const { return m_capacity; }
     size_t size() const { return m_size; }
 
 private:
-    ByteBuffer(size_t capacity)
-        : m_capacity(capacity)
-    {
-        m_buffer = new u8[capacity];
-    }
-
-    u8* m_buffer { nullptr };
-    size_t m_capacity { 0 };
+    u8* m_data { nullptr };
     size_t m_size { 0 };
 };

@@ -9,96 +9,94 @@
 
 TEST_CASE(create)
 {
-    auto byte_buffer = ByteBuffer::create(256);
-    CHECK_NONNULL(byte_buffer.ptr());
-    CHECK_EQUAL(256ul, byte_buffer.capacity());
+    ByteBuffer bb(256);
+    CHECK_NONNULL(bb.data());
+    CHECK_EQUAL(256, bb.size());
 
-    auto byte_buffer_zeroed = ByteBuffer::create_zeroed(256);
-    CHECK_NONNULL(byte_buffer.ptr());
-    CHECK_EQUAL(256ul, byte_buffer.capacity());
+    ByteBuffer bb_zeroed(256, true);
+    CHECK_NONNULL(bb_zeroed.data());
+    CHECK_EQUAL(256, bb_zeroed.size());
 
     for (size_t i = 0; i < 256; i++) {
-        CHECK_EQUAL((u8)0, byte_buffer.ptr()[i]);
+        CHECK_EQUAL(0, bb_zeroed[i]);
     }
 }
 
-TEST_CASE(append)
+TEST_CASE(move_and_copy)
 {
-    auto byte_buffer = ByteBuffer::create(256);
-    u8 append_buffer[] = { 1, 2, 3, 4 };
-    byte_buffer.append(append_buffer, 4);
+    ByteBuffer bb(256);
+    bb[0] = 0;
+    bb[1] = 1;
+    bb[2] = 2;
+    bb[3] = 3;
 
-    CHECK_EQUAL((size_t)4, byte_buffer.size());
-    CHECK_EQUAL((u8)1, byte_buffer.ptr()[0]);
-    CHECK_EQUAL((u8)2, byte_buffer.ptr()[1]);
-    CHECK_EQUAL((u8)3, byte_buffer.ptr()[2]);
-    CHECK_EQUAL((u8)4, byte_buffer.ptr()[3]);
+    CHECK_EQUAL(0, bb[0]);
+    CHECK_EQUAL(1, bb[1]);
+    CHECK_EQUAL(2, bb[2]);
+    CHECK_EQUAL(3, bb[3]);
 
-    auto byte_buffer_operator = ByteBuffer::create(256);
-    byte_buffer_operator += byte_buffer;
+    ByteBuffer bb_copy_constructor(bb);
+    CHECK_EQUAL(256, bb.size());
+    CHECK_EQUAL(256, bb_copy_constructor.size());
+    CHECK_EQUAL(0, bb_copy_constructor[0]);
+    CHECK_EQUAL(1, bb_copy_constructor[1]);
+    CHECK_EQUAL(2, bb_copy_constructor[2]);
+    CHECK_EQUAL(3, bb_copy_constructor[3]);
 
-    CHECK_EQUAL((size_t)4, byte_buffer_operator.size());
-    CHECK_EQUAL((u8)1, byte_buffer_operator.ptr()[0]);
-    CHECK_EQUAL((u8)2, byte_buffer_operator.ptr()[1]);
-    CHECK_EQUAL((u8)3, byte_buffer_operator.ptr()[2]);
-    CHECK_EQUAL((u8)4, byte_buffer_operator.ptr()[3]);
+    ByteBuffer bb_copy_assignment = bb;
+    CHECK_EQUAL(256, bb.size());
+    CHECK_EQUAL(256, bb_copy_assignment.size());
+    CHECK_EQUAL(0, bb_copy_assignment[0]);
+    CHECK_EQUAL(1, bb_copy_assignment[1]);
+    CHECK_EQUAL(2, bb_copy_assignment[2]);
+    CHECK_EQUAL(3, bb_copy_assignment[3]);
+
+    ByteBuffer bb_move_constructor(move(bb_copy_constructor));
+    CHECK_EQUAL(0, bb_copy_constructor.size());
+    CHECK_EQUAL(256, bb_move_constructor.size());
+    CHECK_EQUAL(0, bb_move_constructor[0]);
+    CHECK_EQUAL(1, bb_move_constructor[1]);
+    CHECK_EQUAL(2, bb_move_constructor[2]);
+    CHECK_EQUAL(3, bb_move_constructor[3]);
+
+    ByteBuffer bb_move_assignment = move(bb_copy_assignment);
+    CHECK_EQUAL(0, bb_copy_assignment.size());
+    CHECK_EQUAL(256, bb_move_assignment.size());
+    CHECK_EQUAL(0, bb_move_assignment[0]);
+    CHECK_EQUAL(1, bb_move_assignment[1]);
+    CHECK_EQUAL(2, bb_move_assignment[2]);
+    CHECK_EQUAL(3, bb_move_assignment[3]);
 }
 
-TEST_CASE(getters)
+TEST_CASE(set_and_get)
 {
-    auto byte_buffer = ByteBuffer::create(256);
-    u8 append_buffer[] = { 1, 2, 3, 4 };
-    byte_buffer.append(append_buffer, 4);
-
-    CHECK_NONNULL(byte_buffer.ptr());
-    CHECK_EQUAL((size_t)256, byte_buffer.capacity());
-    CHECK_EQUAL((size_t)4, byte_buffer.size());
-}
-
-TEST_CASE(get)
-{
-    auto byte_buffer = ByteBuffer::create(256);
-    u8 append_buffer[] = { 1, 2, 3, 4 };
-    byte_buffer.append(append_buffer, 4);
-
-    CHECK_EQUAL((u8)1, byte_buffer[0]);
-    CHECK_EQUAL((u8)2, byte_buffer[1]);
-    CHECK_EQUAL((u8)3, byte_buffer[2]);
-    CHECK_EQUAL((u8)4, byte_buffer[3]);
-}
-
-TEST_CASE(set)
-{
-    auto byte_buffer = ByteBuffer::create(256);
-    CHECK_TRUE(byte_buffer.set(0, 1).is_ok());
-    CHECK_EQUAL((u8)1, byte_buffer[0]);
-
-    CHECK_TRUE(byte_buffer.set(10, 11).is_ok());
-    CHECK_EQUAL((u8)11, byte_buffer[10]);
-
-    CHECK_TRUE(byte_buffer.set(257, 1).is_error());
+    ByteBuffer bb(256);
+    bb[0] = 1;
+    CHECK_EQUAL(1, bb[0]);
+    bb[10] = 11;
+    CHECK_EQUAL(11, bb[10]);
 }
 
 TEST_CASE(clear)
 {
-    auto byte_buffer = ByteBuffer::create(256);
-    u8 append_buffer[] = { 1, 2, 3, 4 };
-    byte_buffer.append(append_buffer, 4);
+    ByteBuffer byte_buffer(256);
+    byte_buffer[0] = 1;
+    byte_buffer[1] = 2;
+    byte_buffer[2] = 3;
+    byte_buffer[3] = 4;
 
-    CHECK_NONNULL(byte_buffer.ptr());
-    CHECK_EQUAL((size_t)4, byte_buffer.size());
+    CHECK_NONNULL(byte_buffer.data());
+    CHECK_EQUAL(256, byte_buffer.size());
 
     byte_buffer.clear();
 
-    CHECK_NULL(byte_buffer.ptr());
-    CHECK_EQUAL((size_t)0, byte_buffer.size());
+    CHECK_NULL(byte_buffer.data());
+    CHECK_EQUAL(0, byte_buffer.size());
 }
 
 TEST_MAIN(ByteBuffer, [&]() {
     ENUMERATE_TEST(create);
-    ENUMERATE_TEST(append);
-    ENUMERATE_TEST(getters);
+    ENUMERATE_TEST(move_and_copy);
+    ENUMERATE_TEST(set_and_get);
     ENUMERATE_TEST(clear);
-    ENUMERATE_TEST(get);
-    ENUMERATE_TEST(set);
 })

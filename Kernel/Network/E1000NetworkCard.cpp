@@ -304,8 +304,8 @@ void E1000NetworkCard::receive()
         u8* buffer = reinterpret_cast<u8*>(m_rx_buffer_region->lower().offset(E1000_RX_BUFFER_SIZE * current_rx_desc).get());
         dbgprintf("E1000NetworkCard", "Received %u byte frame\n", desc.length);
 
-        ByteBuffer queue_buffer = ByteBuffer::create_zeroed(desc.length);
-        memcpy(queue_buffer.ptr(), buffer, desc.length);
+        ByteBuffer queue_buffer(desc.length, true);
+        memcpy(queue_buffer.data(), buffer, desc.length);
 
         if (m_rx_queue.is_full()) {
             dbgprintln("E1000NetworkCard", "RX queue is full");
