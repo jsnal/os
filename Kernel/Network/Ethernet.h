@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#pragma once
+
 #include <Kernel/Network/MACAddress.h>
 #include <Kernel/Network/NetworkEndianness.h>
 #include <Universal/Types.h>

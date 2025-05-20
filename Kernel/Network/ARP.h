@@ -41,14 +41,14 @@ public:
     MACAddress source_hardware_address() const { return m_source_hardware_address; }
     void set_source_hardware_address(MACAddress a) { m_source_hardware_address = a; }
 
-    IPv4Address source_protocol_address(IPv4Address a) { return m_source_protocol_address; }
+    IPv4Address source_protocol_address() const { return m_source_protocol_address; }
     void set_source_protocol_address(IPv4Address a) { m_source_protocol_address = a; }
-
-    IPv4Address destination_protocol_address(IPv4Address a) { return m_destination_protocol_address; }
-    void set_destination_protocol_address(IPv4Address a) { m_destination_protocol_address = a; }
 
     MACAddress destination_hardware_address() const { return m_destination_hardware_address; }
     void set_destination_hardware_address(MACAddress a) { m_destination_hardware_address = a; }
+
+    IPv4Address destination_protocol_address() const { return m_destination_protocol_address; }
+    void set_destination_protocol_address(IPv4Address a) { m_destination_protocol_address = a; }
 
 private:
     NetworkEndianness<u16> m_hardware_type;

@@ -91,7 +91,7 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
     MemoryManager::init(boot_page_directory, multiboot);
 
     Process::create_kernel_process("KernelMain", kernel_main);
-    Process::create_kernel_process("NetworkDaemon", Network::NetworkDaemon::run);
+    Process::create_kernel_process("NetworkDaemon", Network::NetworkDaemon::start);
 
     PM.start();
 
