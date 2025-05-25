@@ -7,15 +7,12 @@ command -v tmux >/dev/null 2>&1 || (echo "tmux not installed" && exit 1)
     ./Meta/build_grub.sh && \
 
 GDB_COMMAND="gdb Build/Kernel/Kernel \
-   -ex 'debug-file-directory Build/Kernel' \
+   -ex 'set debug-file-directory Build/Kernel' \
    -ex 'set arch i386:intel' \
    -ex 'set print asm-demangle on' \
-   -ex 'layout asm' \
-   -ex 'layout regs' \
-   -ex 'target remote localhost:1234' \
-   -ex 'fs next'"
+   -ex 'target remote localhost:1234'"
 
 tmux \
-    new-session  'sudo ./Meta/run.sh qemu -g' \; \
-    set-option -t 0 mouse on \; \
+    new-session "sudo ./Meta/run.sh qemu -g" \; \
     split-window "$GDB_COMMAND" \; \
+    select-pane -U \; \
