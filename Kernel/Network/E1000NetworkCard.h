@@ -9,6 +9,7 @@
 #include <Kernel/Bus/PCI.h>
 #include <Kernel/CPU/IRQHandler.h>
 #include <Kernel/Memory/VirtualRegion.h>
+#include <Kernel/Network/ARP.h>
 #include <Kernel/Network/MACAddress.h>
 #include <Universal/ByteBuffer.h>
 #include <Universal/CircularQueue.h>
@@ -25,13 +26,13 @@ public:
     E1000NetworkCard(Bus::PCI::Address, u8 interrupt_line);
 
     MACAddress mac_address() const { return m_mac_address; }
+    IPv4Address ipv4_address() const { return m_ipv4_address; }
 
     const CircularQueue<ByteBuffer, kRXQueueSize>& rx_queue() const { return m_rx_queue; }
     CircularQueue<ByteBuffer, kRXQueueSize>& rx_queue() { return m_rx_queue; }
 
     void send(const u8* data, size_t length);
-
-    u32 m_rx_count { 0 };
+    void send(MACAddress destination, const ARPPacket&);
 
 private:
     struct [[gnu::packed]] rx_desc {
@@ -92,6 +93,9 @@ private:
     CircularQueue<ByteBuffer, kRXQueueSize> m_rx_queue;
 
     MACAddress m_mac_address;
+
+    // TODO: Hardcoded by QEMU but obviously should be dynamic
+    IPv4Address m_ipv4_address { 10, 0, 2, 15 };
 };
 
 }

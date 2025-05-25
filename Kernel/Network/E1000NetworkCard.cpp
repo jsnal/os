@@ -5,7 +5,10 @@
  */
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Network/E1000NetworkCard.h>
+#include <Kernel/Network/Ethernet.h>
 #include <Kernel/Process/ProcessManager.h>
+
+#define DEBUG_E1000 (0)
 
 #define REG_CTRL 0x0000
 #define REG_STATUS 0x0008
@@ -205,7 +208,7 @@ void E1000NetworkCard::link_init()
 {
     out32(REG_CTRL, in32(REG_CTRL) | ECTRL_SLU);
     bool state = in32(REG_STATUS) & 0x02;
-    dbgprintf("E1000NetworkCard", "Link state: %s\n", state ? "UP" : "DOWN");
+    dbgprintf_if(DEBUG_E1000, "E1000NetworkCard", "Link state: %s\n", state ? "UP" : "DOWN");
 }
 
 void E1000NetworkCard::irq_init()
@@ -286,7 +289,21 @@ void E1000NetworkCard::send(const u8* data, size_t length)
     while (!(desc.status & 0xff))
         ;
     PM.exit_critical();
-    dbgprintf("E1000NetworkCard", "Data sent!!\n");
+    dbgprintln_if(DEBUG_E1000, "E1000NetworkCard", "Sent %u byte frame");
+}
+
+void E1000NetworkCard::send(MACAddress destination, const ARPPacket& packet)
+{
+    size_t buffer_size = sizeof(EthernetHeader) + sizeof(ARPPacket);
+    u8 buffer[buffer_size];
+
+    EthernetHeader* ethernet_header = (EthernetHeader*)buffer;
+    ethernet_header->set_destination(destination);
+    ethernet_header->set_source(m_mac_address);
+    ethernet_header->set_type(EthernetType::ARP);
+
+    memcpy(buffer + sizeof(EthernetHeader), &packet, sizeof(ARPPacket));
+    send(buffer, buffer_size);
 }
 
 void E1000NetworkCard::receive()
@@ -296,22 +313,17 @@ void E1000NetworkCard::receive()
         rx_desc& desc = rx_descs_base()[current_rx_desc];
 
         if (!(desc.status & 0x1)) {
-            dbgprintln("E1000NetworkCard", "Leaving receive: %u", m_rx_count);
             break;
         }
 
         u8* buffer = reinterpret_cast<u8*>(m_rx_buffer_region->lower().offset(E1000_RX_BUFFER_SIZE * current_rx_desc).get());
-        dbgprintf("E1000NetworkCard", "Received %u byte frame\n", desc.length);
+        dbgprintln_if(DEBUG_E1000, "E1000NetworkCard", "Received %u byte frame", desc.length);
 
         ByteBuffer queue_buffer(desc.length, true);
         memcpy(queue_buffer.data(), buffer, desc.length);
 
-        if (m_rx_queue.is_full()) {
-            dbgprintln("E1000NetworkCard", "RX queue is full");
-        }
+        ASSERT(!m_rx_queue.is_full());
         m_rx_queue.enqueue(queue_buffer);
-        dbgprintln("E1000NetworkCard", "Enqueued the data: %u", m_rx_queue.size());
-        m_rx_count++;
 
         desc.status = 0;
         out32(REG_RXDESCTAIL, current_rx_desc);

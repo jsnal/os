@@ -11,12 +11,18 @@ namespace Network {
 
 class NetworkDaemon {
 public:
-    static void start();
+    static NetworkDaemon& the();
+    static void start() { the().run(); };
+
+    bool detect();
 
 private:
     void run();
 
-    void handle_arp(E1000NetworkCard&, const EthernetHeader&, size_t size);
+    void handle_arp(const EthernetHeader&, size_t size);
+    void handle_ipv4(const EthernetHeader&, size_t size);
+
+    UniquePtr<E1000NetworkCard> m_card;
 };
 
 }

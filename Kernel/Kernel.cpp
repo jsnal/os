@@ -47,6 +47,10 @@ VirtualConsole* tty0;
     // TODO: Only text-mode is supported currently
     // GraphicsManager::the().init();
 
+    if (Network::NetworkDaemon::the().detect()) {
+        Process::create_kernel_process("NetworkDaemon", Network::NetworkDaemon::start);
+    }
+
     KeyboardDevice::the();
 
     tty0 = new VirtualConsole(0);
@@ -91,7 +95,6 @@ extern "C" [[noreturn]] void kernel_entry(u32* boot_page_directory, const multib
     MemoryManager::init(boot_page_directory, multiboot);
 
     Process::create_kernel_process("KernelMain", kernel_main);
-    Process::create_kernel_process("NetworkDaemon", Network::NetworkDaemon::start);
 
     PM.start();
 
