@@ -130,7 +130,6 @@ UniquePtr<E1000NetworkCard> E1000NetworkCard::detect()
 E1000NetworkCard::E1000NetworkCard(Bus::PCI::Address address, u8 interrupt_line)
     : m_pci_address(address)
     , m_interrupt_line(interrupt_line)
-    , m_rx_queue(8)
 {
     m_mmio_physical_base = Bus::PCI::read_BAR0(m_pci_address);
     size_t mmio_size = Bus::PCI::get_BAR_size(m_pci_address, Bus::PCI::Bar::Zero);

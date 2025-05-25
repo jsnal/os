@@ -9,105 +9,129 @@
 
 TEST_CASE(create)
 {
-    auto queue = CircularQueue<u32>(10);
-    CHECK_EQUAL((size_t)0, queue.size());
-    CHECK_EQUAL((size_t)10, queue.capacity());
+    CircularQueue<u32, 10> queue;
+    CHECK_EQUAL(0, queue.size());
+    CHECK_EQUAL(10, queue.capacity());
 }
 
 TEST_CASE(enqueue_dequeue)
 {
-    auto queue = CircularQueue<u32>(4);
-    CHECK_EQUAL((size_t)0, queue.size());
-    CHECK_EQUAL((size_t)4, queue.capacity());
+    CircularQueue<u32, 4> queue;
+    CHECK_EQUAL(0, queue.size());
+    CHECK_EQUAL(4, queue.capacity());
 
     queue.enqueue(1);
     queue.enqueue(2);
     queue.enqueue(3);
     queue.enqueue(4);
 
-    CHECK_EQUAL((u32)1, queue.dequeue());
-    CHECK_EQUAL((u32)2, queue.dequeue());
-    CHECK_EQUAL((u32)3, queue.dequeue());
-    CHECK_EQUAL((u32)4, queue.dequeue());
+    CHECK_EQUAL(1, queue.dequeue());
+    CHECK_EQUAL(2, queue.dequeue());
+    CHECK_EQUAL(3, queue.dequeue());
+    CHECK_EQUAL(4, queue.dequeue());
 
     queue.enqueue(1);
     queue.enqueue(2);
     queue.enqueue(3);
 
-    CHECK_EQUAL((u32)1, queue.dequeue());
-    CHECK_EQUAL((u32)2, queue.dequeue());
+    CHECK_EQUAL(1, queue.dequeue());
+    CHECK_EQUAL(2, queue.dequeue());
 
     queue.enqueue(4);
 
-    CHECK_EQUAL((u32)3, queue.dequeue());
-    CHECK_EQUAL((u32)4, queue.dequeue());
+    CHECK_EQUAL(3, queue.dequeue());
+    CHECK_EQUAL(4, queue.dequeue());
 }
 
 TEST_CASE(front_back)
 {
-    auto queue = CircularQueue<u32>(4);
-    CHECK_EQUAL((size_t)0, queue.size());
-    CHECK_EQUAL((size_t)4, queue.capacity());
+    CircularQueue<u32, 4> queue;
+    CHECK_EQUAL(0, queue.size());
+    CHECK_EQUAL(4, queue.capacity());
 
     queue.enqueue(1);
     queue.enqueue(2);
     queue.enqueue(3);
     queue.enqueue(4);
 
-    CHECK_EQUAL((u32)1, queue.front());
-    CHECK_EQUAL((u32)4, queue.back());
+    CHECK_EQUAL(1, queue.front());
+    CHECK_EQUAL(4, queue.back());
 
-    CHECK_EQUAL((u32)1, queue.dequeue());
-    CHECK_EQUAL((u32)2, queue.front());
-    CHECK_EQUAL((u32)4, queue.back());
+    CHECK_EQUAL(1, queue.dequeue());
+    CHECK_EQUAL(2, queue.front());
+    CHECK_EQUAL(4, queue.back());
 
-    CHECK_EQUAL((u32)2, queue.dequeue());
-    CHECK_EQUAL((u32)3, queue.front());
-    CHECK_EQUAL((u32)4, queue.back());
+    CHECK_EQUAL(2, queue.dequeue());
+    CHECK_EQUAL(3, queue.front());
+    CHECK_EQUAL(4, queue.back());
 
-    CHECK_EQUAL((u32)3, queue.dequeue());
-    CHECK_EQUAL((u32)4, queue.front());
-    CHECK_EQUAL((u32)4, queue.back());
+    CHECK_EQUAL(3, queue.dequeue());
+    CHECK_EQUAL(4, queue.front());
+    CHECK_EQUAL(4, queue.back());
 
-    CHECK_EQUAL((u32)4, queue.dequeue());
+    CHECK_EQUAL(4, queue.dequeue());
     CHECK_TRUE(queue.is_empty());
 }
 
-TEST_CASE(move)
+TEST_CASE(copy_and_move)
 {
-    auto queue = CircularQueue<u32>(4);
-    CHECK_EQUAL((size_t)0, queue.size());
-    CHECK_EQUAL((size_t)4, queue.capacity());
+    CircularQueue<u32, 4> queue;
+    CHECK_EQUAL(0, queue.size());
+    CHECK_EQUAL(4, queue.capacity());
 
     queue.enqueue(1);
     queue.enqueue(2);
     queue.enqueue(3);
     queue.enqueue(4);
 
-    auto queue_construct = CircularQueue<u32>(move(queue));
-    CHECK_FALSE(queue_construct.is_empty());
-    CHECK_TRUE(queue.is_empty());
-    CHECK_EQUAL((size_t)4, queue_construct.size());
-    CHECK_EQUAL((size_t)4, queue_construct.capacity());
+    CircularQueue<u32, 4> queue_copy_constructor(queue);
+    CHECK_EQUAL(4, queue.size());
+    CHECK_EQUAL(4, queue.capacity());
+    CHECK_EQUAL(4, queue_copy_constructor.size());
+    CHECK_EQUAL(4, queue_copy_constructor.capacity());
+    CHECK_EQUAL(1, queue_copy_constructor.dequeue());
+    CHECK_EQUAL(2, queue_copy_constructor.dequeue());
+    CHECK_EQUAL(3, queue_copy_constructor.dequeue());
+    CHECK_EQUAL(4, queue_copy_constructor.dequeue());
+    CHECK_TRUE(queue_copy_constructor.is_empty());
 
-    CHECK_EQUAL((u32)1, queue_construct.front());
-    CHECK_EQUAL((u32)4, queue_construct.back());
+    CircularQueue<u32, 4> queue_copy_assignment = queue;
+    CHECK_EQUAL(4, queue.size());
+    CHECK_EQUAL(4, queue.capacity());
+    CHECK_EQUAL(4, queue_copy_assignment.size());
+    CHECK_EQUAL(4, queue_copy_assignment.capacity());
+    CHECK_EQUAL(1, queue_copy_assignment.dequeue());
+    CHECK_EQUAL(2, queue_copy_assignment.dequeue());
+    CHECK_EQUAL(3, queue_copy_assignment.dequeue());
+    CHECK_EQUAL(4, queue_copy_assignment.dequeue());
+    CHECK_TRUE(queue_copy_assignment.is_empty());
 
-    auto queue_equals = CircularQueue<u32>(queue_construct.size());
-    CHECK_TRUE(queue_equals.is_empty());
-    CHECK_EQUAL((size_t)4, queue_equals.capacity());
+    CircularQueue<u32, 4> queue_copy1(queue);
+    CircularQueue<u32, 4> queue_move_constructor(move(queue_copy1));
+    CHECK_EQUAL(0, queue_copy1.size());
+    CHECK_EQUAL(4, queue_move_constructor.size());
+    CHECK_EQUAL(4, queue_move_constructor.capacity());
+    CHECK_EQUAL(1, queue_move_constructor.dequeue());
+    CHECK_EQUAL(2, queue_move_constructor.dequeue());
+    CHECK_EQUAL(3, queue_move_constructor.dequeue());
+    CHECK_EQUAL(4, queue_move_constructor.dequeue());
+    CHECK_TRUE(queue_move_constructor.is_empty());
 
-    queue_equals = move(queue_construct);
-
-    CHECK_TRUE(queue.is_empty());
-    CHECK_TRUE(queue_construct.is_empty());
-    CHECK_EQUAL((u32)1, queue_equals.front());
-    CHECK_EQUAL((u32)4, queue_equals.back());
+    CircularQueue<u32, 4> queue_copy2(queue);
+    CircularQueue<u32, 4> queue_move_assignment = move(queue_copy2);
+    CHECK_EQUAL(0, queue_copy2.size());
+    CHECK_EQUAL(4, queue_move_assignment.size());
+    CHECK_EQUAL(4, queue_move_assignment.capacity());
+    CHECK_EQUAL(1, queue_move_assignment.dequeue());
+    CHECK_EQUAL(2, queue_move_assignment.dequeue());
+    CHECK_EQUAL(3, queue_move_assignment.dequeue());
+    CHECK_EQUAL(4, queue_move_assignment.dequeue());
+    CHECK_TRUE(queue_move_assignment.is_empty());
 }
 
 TEST_MAIN(TestCircularQueue, [&]() {
     ENUMERATE_TEST(create);
     ENUMERATE_TEST(enqueue_dequeue);
     ENUMERATE_TEST(front_back);
-    ENUMERATE_TEST(move);
+    ENUMERATE_TEST(copy_and_move);
 })

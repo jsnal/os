@@ -18,14 +18,16 @@ namespace Network {
 
 class E1000NetworkCard : public IRQHandler {
 public:
+    static constexpr u8 kRXQueueSize = 8;
+
     static UniquePtr<E1000NetworkCard> detect();
 
     E1000NetworkCard(Bus::PCI::Address, u8 interrupt_line);
 
     MACAddress mac_address() const { return m_mac_address; }
 
-    const CircularQueue<ByteBuffer>& rx_queue() const { return m_rx_queue; }
-    CircularQueue<ByteBuffer>& rx_queue() { return m_rx_queue; }
+    const CircularQueue<ByteBuffer, kRXQueueSize>& rx_queue() const { return m_rx_queue; }
+    CircularQueue<ByteBuffer, kRXQueueSize>& rx_queue() { return m_rx_queue; }
 
     void send(const u8* data, size_t length);
 
@@ -87,7 +89,7 @@ private:
     UniquePtr<VirtualRegion> m_rx_desc_region;
     UniquePtr<VirtualRegion> m_rx_buffer_region;
 
-    CircularQueue<ByteBuffer> m_rx_queue;
+    CircularQueue<ByteBuffer, kRXQueueSize> m_rx_queue;
 
     MACAddress m_mac_address;
 };

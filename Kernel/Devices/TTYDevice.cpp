@@ -11,7 +11,6 @@
 
 TTYDevice::TTYDevice(u32 major, u32 minor)
     : CharacterDevice(major, minor)
-    , m_input(1024)
 {
     memset(&m_termios, 0, sizeof(termios));
     m_termios.c_lflag = ECHO | ISIG | ICANON;

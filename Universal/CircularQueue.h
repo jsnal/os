@@ -10,43 +10,67 @@
 #include <Universal/Result.h>
 #include <Universal/Types.h>
 
-template<typename T>
+namespace Universal {
+
+template<typename T, size_t Capacity>
 class CircularQueue {
 public:
-    CircularQueue(size_t capacity)
-        : m_capacity(capacity)
-        , m_size(0)
+    CircularQueue()
     {
-        m_queue = new T[capacity]();
+        m_data = new T[Capacity]();
     }
 
-    CircularQueue(CircularQueue&& other)
-        : m_queue(other.m_queue)
-        , m_capacity(other.m_capacity)
+    CircularQueue(const CircularQueue<T, Capacity>& other)
+        : m_size(other.m_size)
+        , m_front(other.m_front)
+        , m_back(other.m_back)
+    {
+        m_data = new T[Capacity]();
+        for (size_t i = 0; i < Capacity; i++) {
+            m_data[i] = other.m_data[i];
+        }
+    }
+
+    CircularQueue(CircularQueue<T, Capacity>&& other)
+        : m_data(other.m_data)
         , m_size(other.m_size)
         , m_front(other.m_front)
         , m_back(other.m_back)
     {
-        other.m_queue = nullptr;
-        other.m_capacity = 0;
+        other.m_data = nullptr;
         other.m_size = 0;
         other.m_front = 0;
         other.m_back = 0;
     }
 
-    CircularQueue& operator=(CircularQueue&& other)
+    ~CircularQueue() { clear(); }
+
+    CircularQueue& operator=(CircularQueue<T, Capacity>& other)
     {
         if (this != &other) {
-            delete[] m_queue;
-
-            m_queue = other.m_queue;
-            m_capacity = other.m_capacity;
             m_size = other.m_size;
             m_front = other.m_front;
             m_back = other.m_back;
 
-            other.m_queue = nullptr;
-            other.m_capacity = 0;
+            m_data = new T[Capacity]();
+            for (size_t i = 0; i < Capacity; i++) {
+                m_data[i] = other.m_data[i];
+            }
+        }
+        return *this;
+    }
+
+    CircularQueue& operator=(CircularQueue<T, Capacity>&& other)
+    {
+        if (this != &other) {
+            clear();
+
+            m_data = other.m_data;
+            m_size = other.m_size;
+            m_front = other.m_front;
+            m_back = other.m_back;
+
+            other.m_data = nullptr;
             other.m_size = 0;
             other.m_front = 0;
             other.m_back = 0;
@@ -54,16 +78,11 @@ public:
         return *this;
     }
 
-    ~CircularQueue()
-    {
-        delete[] m_queue;
-    }
-
-    size_t capacity() const { return m_capacity; }
+    size_t capacity() const { return Capacity; }
     size_t size() const { return m_size; }
 
-    bool is_full() { return m_size == m_capacity; }
-    bool is_empty() { return m_size == 0; }
+    bool is_full() const { return m_size == Capacity; }
+    bool is_empty() const { return m_size == 0; }
 
     void enqueue(const T& element)
     {
@@ -71,10 +90,10 @@ public:
             m_front = 0;
             m_back = 0;
         } else {
-            m_back = (m_back + 1) % m_capacity;
+            m_back = (m_back + 1) % Capacity;
         }
 
-        m_queue[m_back] = element;
+        m_data[m_back] = element;
         m_size++;
     }
 
@@ -82,29 +101,42 @@ public:
     {
         ASSERT(!is_empty());
 
-        T element = m_queue[m_front];
+        T element = m_data[m_front];
         m_size--;
 
         if (is_empty()) {
             m_front = 0;
             m_back = 0;
         } else {
-            m_front = (m_front + 1) % m_capacity;
+            m_front = (m_front + 1) % Capacity;
         }
 
         return element;
     }
 
-    T& front() { return m_queue[m_front]; }
-    const T& front() const { return m_queue[m_front]; }
+    const T& front() const { return m_data[m_front]; }
+    T& front() { return m_data[m_front]; }
 
-    T& back() { return m_queue[m_back]; }
-    const T& back() const { return m_queue[m_back]; }
+    const T& back() const { return m_data[m_back]; }
+    T& back() { return m_data[m_back]; }
+
+    void clear()
+    {
+        while (!is_empty()) {
+            dequeue().~T();
+        }
+        delete[] m_data;
+    }
+
+    T* data() { return m_data; }
 
 private:
-    T* m_queue { nullptr };
-    size_t m_capacity { 0 };
+    T* m_data { nullptr };
     size_t m_size { 0 };
     size_t m_front { 0 };
     size_t m_back { 0 };
 };
+
+}
+
+using Universal::CircularQueue;

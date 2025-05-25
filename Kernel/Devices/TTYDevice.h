@@ -39,7 +39,7 @@ private:
     void dump() const;
 #endif
 
-    CircularQueue<u8> m_input;
+    CircularQueue<u8, 1024> m_input;
     bool m_input_ready { false };
     termios m_termios;
 };
