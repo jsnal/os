@@ -10,6 +10,7 @@
 #include <Kernel/CPU/IRQHandler.h>
 #include <Kernel/Memory/VirtualRegion.h>
 #include <Kernel/Network/ARP.h>
+#include <Kernel/Network/ICMP.h>
 #include <Kernel/Network/MACAddress.h>
 #include <Universal/ByteBuffer.h>
 #include <Universal/CircularQueue.h>
@@ -33,6 +34,7 @@ public:
 
     void send(const u8* data, size_t length);
     void send(MACAddress destination, const ARPPacket&);
+    void send(MACAddress destination_mac_address, IPv4Address destination_ipv4_address, const ICMPPacket&);
 
 private:
     struct [[gnu::packed]] rx_desc {

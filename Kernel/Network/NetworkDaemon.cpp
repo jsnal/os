@@ -7,6 +7,7 @@
 #include <Kernel/Network/ARP.h>
 #include <Kernel/Network/E1000NetworkCard.h>
 #include <Kernel/Network/Ethernet.h>
+#include <Kernel/Network/ICMP.h>
 #include <Kernel/Network/NetworkDaemon.h>
 #include <Kernel/Process/ProcessManager.h>
 #include <Universal/Logger.h>
@@ -42,27 +43,27 @@ void NetworkDaemon::run()
         }
 
         auto buffer = m_card->rx_queue().dequeue();
-        EthernetHeader* header = (EthernetHeader*)buffer.data();
+        const EthernetHeader& header = *reinterpret_cast<const EthernetHeader*>(buffer.data());
 
-        switch (header->type()) {
+        switch (header.type()) {
             case EthernetType::ARP:
-                handle_arp(*header, buffer.size());
+                handle_arp(header, buffer.size());
                 break;
             case EthernetType::IPv4:
-                handle_ipv4(*header, buffer.size());
+                handle_ipv4(header, buffer.size());
                 break;
             case EthernetType::IPv6:
                 dbgprintln_if(DEBUG_NETWORK_DAEMON, "NetworkDaemon", "Found IPv6 packet");
                 break;
             default:
-                dbgprintln("NetworkDaemon", "Unhandled Ethernet frame: %#02x", static_cast<u16>(header->type()));
+                dbgprintln("NetworkDaemon", "Unhandled Ethernet frame: %#02x", static_cast<u16>(header.type()));
         }
     }
 }
 
 void NetworkDaemon::handle_arp(const EthernetHeader& header, size_t size)
 {
-    dbgprintln("NetworkDaemon", "Handling ARP from %s to %s",
+    dbgprintln_if(DEBUG_NETWORK_DAEMON, "NetworkDaemon", "Handling ARP from %s to %s",
         header.source().to_string().data(), header.destination().to_string().data());
 
     if (size < sizeof(EthernetHeader) + sizeof(ARPPacket)) {
@@ -86,16 +87,54 @@ void NetworkDaemon::handle_arp(const EthernetHeader& header, size_t size)
 
 void NetworkDaemon::handle_ipv4(const EthernetHeader& header, size_t size)
 {
-    dbgprintln("NetworkDaemon", "Handling IPv4 packet");
+    dbgprintln_if(DEBUG_NETWORK_DAEMON, "NetworkDaemon", "Handling IPv4 from %s to %s",
+        header.source().to_string().data(), header.destination().to_string().data());
+
+    if (size < sizeof(EthernetHeader) + sizeof(IPv4Packet)) {
+        dbgprintln("NetworkDaemon", "Ethernet frame is too small for an IPv4 packet");
+        return;
+    }
 
     const IPv4Packet& rx_packet = *static_cast<const IPv4Packet*>(header.data());
 
-    dbgprintln("NetworkDaemon", "version = %x", rx_packet.version());
-    dbgprintln("NetworkDaemon", "ihl = %x", rx_packet.ihl());
-    dbgprintln("NetworkDaemon", "dscp = %x", rx_packet.dscp());
-    dbgprintln("NetworkDaemon", "ecn = %x", rx_packet.ecn());
-    dbgprintln("NetworkDaemon", "total length = %u", rx_packet.total_length());
-    dbgprintln("NetworkDaemon", "identification = %x", rx_packet.identification());
+    switch (rx_packet.protocol()) {
+        case IPv4Protocol::ICMP:
+            handle_icmp(header, rx_packet);
+            break;
+        default:
+            break;
+    }
+
+    //    dbgprintln("NetworkDaemon", "version = %x", rx_packet.version());
+    //    dbgprintln("NetworkDaemon", "ihl = %x", rx_packet.ihl());
+    //    dbgprintln("NetworkDaemon", "dscp = %x", rx_packet.dscp());
+    //    dbgprintln("NetworkDaemon", "ecn = %x", rx_packet.ecn());
+    //    dbgprintln("NetworkDaemon", "total length = %u", rx_packet.total_length());
+    //    dbgprintln("NetworkDaemon", "identification = %x", rx_packet.identification());
+    //    dbgprintln("NetworkDaemon", "flags:");
+    //    dbgprintln("NetworkDaemon", "  DF = %x", rx_packet.is_df_bit());
+    //    dbgprintln("NetworkDaemon", "  MF = %x", rx_packet.is_mf_bit());
+    //    dbgprintln("NetworkDaemon", "fragment offset = %u", rx_packet.fragment_offset());
+}
+
+void NetworkDaemon::handle_icmp(const EthernetHeader& header, const IPv4Packet& ipv4_packet)
+{
+    const ICMPPacket& icmp_packet = *static_cast<const ICMPPacket*>(ipv4_packet.data());
+
+    switch (icmp_packet.type()) {
+        case ICMPType::EchoRequest: {
+            const ICMPEchoData& echo_data = *icmp_packet.data<ICMPEchoData>();
+
+            dbgprintln_if(true, "NetworkDaemon", "Handling echo request from %s: id=%u, seq=%u",
+                ipv4_packet.source().to_string().data(), echo_data.identifier(), echo_data.sequence_number());
+
+            m_card->send(header.source(), ipv4_packet.source(), icmp_packet);
+            break;
+        }
+        default:
+            dbgprintln("NetworkDaemon", "Unhandled ICMP type: %#01x", static_cast<u8>(icmp_packet.type()));
+            break;
+    }
 }
 
 }

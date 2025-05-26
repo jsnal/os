@@ -21,6 +21,7 @@ private:
 
     void handle_arp(const EthernetHeader&, size_t size);
     void handle_ipv4(const EthernetHeader&, size_t size);
+    void handle_icmp(const EthernetHeader&, const IPv4Packet&);
 
     UniquePtr<E1000NetworkCard> m_card;
 };

@@ -294,15 +294,37 @@ void E1000NetworkCard::send(const u8* data, size_t length)
 
 void E1000NetworkCard::send(MACAddress destination, const ARPPacket& packet)
 {
-    size_t buffer_size = sizeof(EthernetHeader) + sizeof(ARPPacket);
+    constexpr size_t buffer_size = sizeof(EthernetHeader) + sizeof(ARPPacket);
     u8 buffer[buffer_size];
 
-    EthernetHeader* ethernet_header = (EthernetHeader*)buffer;
-    ethernet_header->set_destination(destination);
-    ethernet_header->set_source(m_mac_address);
-    ethernet_header->set_type(EthernetType::ARP);
+    EthernetHeader& ethernet_header = *reinterpret_cast<EthernetHeader*>(buffer);
+    ethernet_header.set_destination(destination);
+    ethernet_header.set_source(m_mac_address);
+    ethernet_header.set_type(EthernetType::ARP);
 
     memcpy(buffer + sizeof(EthernetHeader), &packet, sizeof(ARPPacket));
+    send(buffer, buffer_size);
+}
+
+void E1000NetworkCard::send(MACAddress destination_mac_address, IPv4Address destination_ipv4_address, const ICMPPacket& packet)
+{
+    size_t buffer_size = sizeof(EthernetHeader) + sizeof(IPv4Packet) + sizeof(ICMPPacket);
+    u8 buffer[buffer_size];
+
+    EthernetHeader& ethernet_header = *reinterpret_cast<EthernetHeader*>(buffer);
+    ethernet_header.set_destination(destination_mac_address);
+    ethernet_header.set_source(m_mac_address);
+    ethernet_header.set_type(EthernetType::IPv4);
+
+    IPv4Packet& ipv4_packet = *reinterpret_cast<IPv4Packet*>(ethernet_header.data());
+    ipv4_packet.set_version(4);
+    ipv4_packet.set_ihl(5);
+    ipv4_packet.set_identification(1);
+    ipv4_packet.set_ttl(64);
+    ipv4_packet.set_destination(destination_ipv4_address);
+    ipv4_packet.set_source(m_ipv4_address);
+    ipv4_packet.set_protocol(IPv4Protocol::ICMP);
+
     send(buffer, buffer_size);
 }
 

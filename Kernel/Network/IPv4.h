@@ -13,6 +13,12 @@
 
 namespace Network {
 
+enum class IPv4Protocol : u8 {
+    ICMP = 0x01,
+    TCP = 0x06,
+    UDP = 0x11
+};
+
 class [[gnu::packed]] IPv4Address {
 public:
     static constexpr u8 kLength = 4;
@@ -73,22 +79,85 @@ public:
     void set_total_length(u16 l) { m_total_length = l; }
 
     u16 identification() const { return m_identification.host_value(); }
-    void identification(u16 i) { m_identification = i; }
+    void set_identification(u16 i) { m_identification = i; }
+
+    u8 is_df_bit() const { return (m_flags_and_fragment_offset.host_value() & 0x4000) >> 14; }
+    void set_df_bit(bool set)
+    {
+        if (set) {
+            m_flags_and_fragment_offset = m_flags_and_fragment_offset.host_value() | 0x4000;
+        } else {
+            m_flags_and_fragment_offset = m_flags_and_fragment_offset.host_value() & ~0x4000;
+        }
+    }
+
+    u8 is_mf_bit() const { return (m_flags_and_fragment_offset.host_value() & 0x2000) >> 13; }
+    void set_mf_bit(bool set)
+    {
+        if (set) {
+            m_flags_and_fragment_offset = m_flags_and_fragment_offset.host_value() | 0x2000;
+        } else {
+            m_flags_and_fragment_offset = m_flags_and_fragment_offset.host_value() & ~0x2000;
+        }
+    }
+
+    u16 fragment_offset() const { return m_flags_and_fragment_offset.host_value() & 0x1FFF; }
+    void set_fragment_offset(u16 o) { m_flags_and_fragment_offset = (m_flags_and_fragment_offset.host_value() & 0xE000) | (o & 0x1FFF); }
+
+    u8 ttl() const { return m_ttl; }
+    void set_ttl(u8 t) { m_ttl = t; }
+
+    IPv4Protocol protocol() const { return static_cast<IPv4Protocol>(m_protocol); }
+    void set_protocol(IPv4Protocol p) { m_protocol = static_cast<u8>(p); }
+
+    u16 checksum() const { return m_checksum.host_value(); }
+
+    IPv4Address source() const { return m_source; }
+    void set_source(IPv4Address a) { m_source = a; }
+
+    IPv4Address destination() const { return m_destination; }
+    void set_destination(IPv4Address a) { m_destination = a; }
+
+    const void* options() const
+    {
+        if (ihl() <= 5) {
+            return nullptr;
+        }
+        return &m_data_and_options[0];
+    }
+    void* options()
+    {
+        if (ihl() <= 5) {
+            return nullptr;
+        }
+        return &m_data_and_options[0];
+    }
+
+    const void* data() const
+    {
+        // TODO: Data will be after the options when IHL > 5
+        ASSERT(ihl() == 5);
+        return &m_data_and_options[0];
+    }
+    void* data()
+    {
+        ASSERT(ihl() == 5);
+        return &m_data_and_options[0];
+    }
 
 private:
-    u8 m_version_and_ihl; // Version = high 4-bits, IHL = low 4-bits
-    u8 m_dscp_and_enc;    // DSCP = high 6-bits, ENC = low 2-bits
-    NetworkEndianness<u16> m_total_length;
-    NetworkEndianness<u16> m_identification;
-    NetworkEndianness<u16> m_flags_and_fragment_offset; // Flags = high 3-bits, Fragment offset = low 13-bits
-    u8 m_ttl;
-    u8 m_protocol;
-    NetworkEndianness<u16> m_checksum;
+    u8 m_version_and_ihl { 0 }; // Version = high 4-bits, IHL = low 4-bits
+    u8 m_dscp_and_enc { 0 };    // DSCP = high 6-bits, ENC = low 2-bits
+    NetworkEndianness<u16> m_total_length { 0 };
+    NetworkEndianness<u16> m_identification { 0 };
+    NetworkEndianness<u16> m_flags_and_fragment_offset { 0 }; // Flags = high 3-bits, Fragment offset = low 13-bits
+    u8 m_ttl { 0 };
+    u8 m_protocol { 0 };
+    NetworkEndianness<u16> m_checksum { 0 };
     IPv4Address m_source;
     IPv4Address m_destination;
-    u8 m_options[0];
+    u8 m_data_and_options[0]; // Options exist if IHL is greater than 5
 };
 
 static_assert(sizeof(IPv4Packet) == 20);
-
 }
