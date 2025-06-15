@@ -1,7 +1,8 @@
 set(PROGRAM_NAMES
-    id
-    echo
     cat
+    echo
+    id
+    ls
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lc")
