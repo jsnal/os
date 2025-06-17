@@ -172,7 +172,7 @@ void ProcessManager::yield()
 void ProcessManager::enter_critical()
 {
     CPU::cli();
-    if ((u32)m_critical_count + 1 > U8_MAX) {
+    if ((u32)m_critical_count + 1 > UINT8_MAX) {
         panic("Too many critical sections!\n");
     }
     m_critical_count++;

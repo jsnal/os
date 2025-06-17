@@ -21,8 +21,9 @@
     SYSCALL_OPCODE(mmap)    \
     SYSCALL_OPCODE(munmap)  \
     SYSCALL_OPCODE(open)    \
-    SYSCALL_OPCODE(read)    \
     SYSCALL_OPCODE(write)   \
+    SYSCALL_OPCODE(read)    \
+    SYSCALL_OPCODE(fstat)   \
     SYSCALL_OPCODE(dbgwrite)
 
 #define SYSCALL_OPCODE(x) SYS_##x,

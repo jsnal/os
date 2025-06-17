@@ -94,6 +94,7 @@ public:
     int sys_open(const char*, int, mode_t);
     ssize_t sys_write(int fd, const void* buf, size_t count);
     ssize_t sys_read(int fd, void* buf, size_t count);
+    int sys_fstat(int fd, struct stat* statbuf);
     pid_t sys_getpid();
     pid_t sys_getppid();
     uid_t sys_getuid();

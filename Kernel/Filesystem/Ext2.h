@@ -78,13 +78,13 @@ struct [[gnu::packed]] Ext2RawBlockGroupDescriptor {
 
 struct [[gnu::packed]] Ext2RawInode {
     u16 mode;
-    uid_t uid;
+    u16 uid;
     u32 size;
     u32 atime;
     u32 ctime;
     u32 mtime;
     u32 dtime;
-    gid_t gid;
+    u16 gid;
     u16 hard_links;
     u32 logical_blocks;
     u32 flags;

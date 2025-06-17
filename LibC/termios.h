@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#pragma once
+
 #include <stdint.h>
 #include <sys/cdefs.h>
-
-#define NCCS 11
 
 typedef uint32_t speed_t;
 typedef uint32_t tcflag_t;
 typedef uint8_t cc_t;
+
+#define NCCS 11
 
 struct termios {
     tcflag_t c_iflag;

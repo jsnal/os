@@ -37,6 +37,8 @@ int handle(TaskRegisters& regs, SyscallOpcode call, int arg1, int arg2, int arg3
             return p.sys_write(arg1, (const void*)arg2, arg3);
         case SYS_read:
             return p.sys_read(arg1, (void*)arg2, arg3);
+        case SYS_fstat:
+            return p.sys_fstat(arg1, (struct stat*)arg2);
         case SYS_getpid:
             return p.sys_getpid();
         case SYS_getppid:

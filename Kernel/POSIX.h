@@ -6,11 +6,50 @@
 
 #pragma once
 
-#define NCCS 11
+typedef __UINT64_TYPE__ uint64_t;
+typedef __UINT32_TYPE__ uint32_t;
+typedef __UINT16_TYPE__ uint16_t;
+typedef __UINT8_TYPE__ uint8_t;
 
-typedef unsigned long speed_t;
-typedef unsigned long tcflag_t;
-typedef unsigned char cc_t;
+typedef __INT64_TYPE__ int64_t;
+typedef __INT32_TYPE__ int32_t;
+typedef __INT16_TYPE__ int16_t;
+typedef __INT8_TYPE__ int8_t;
+
+typedef __UINTPTR_TYPE__ uintptr_t;
+typedef __INTPTR_TYPE__ intptr_t;
+
+#define UINT8_MAX (__UINT8_MAX__)
+#define UINT16_MAX (__UINT16_MAX__)
+#define UINT32_MAX (__UINT32_MAX__)
+#define UINT64_MAX (__UINT64_MAX__)
+
+#define INT8_MAX (__INT8_MAX__)
+#define INT16_MAX (__INT16_MAX__)
+#define INT32_MAX (__INT32_MAX__)
+#define INT64_MAX (__INT64_MAX__)
+
+typedef __SIZE_TYPE__ size_t;
+typedef int32_t ssize_t;
+typedef uint32_t uid_t;
+typedef uint32_t gid_t;
+typedef uint32_t ino_t;
+typedef int32_t off_t;
+typedef int32_t pid_t;
+typedef uint32_t dev_t;
+typedef uint16_t mode_t;
+typedef uint32_t nlink_t;
+typedef uint32_t blksize_t;
+typedef uint32_t blkcnt_t;
+typedef uint32_t time_t;
+typedef uint32_t useconds_t;
+typedef int32_t suseconds_t;
+typedef uint32_t clock_t;
+typedef uint32_t speed_t;
+typedef uint32_t tcflag_t;
+typedef uint8_t cc_t;
+
+#define NCCS 11
 
 struct termios {
     tcflag_t c_iflag;
@@ -20,6 +59,10 @@ struct termios {
     cc_t c_cc[NCCS];
     speed_t c_ispeed;
     speed_t c_ospeed;
+};
+
+struct stat {
+    int dev_id;
 };
 
 // Local Modes

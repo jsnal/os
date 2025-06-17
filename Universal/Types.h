@@ -6,16 +6,17 @@
 
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <sys/types.h>
+#ifdef KERNEL
+#    include <Kernel/POSIX.h>
+#else
+#    include <stddef.h>
+#    include <stdint.h>
+#    include <sys/types.h>
+#endif
 
 #define KB 1024
 #define MB (KB * KB)
 #define GB (KB * KB * KB)
-
-#define U8_MAX 255
 
 namespace std {
 typedef decltype(nullptr) nullptr_t;

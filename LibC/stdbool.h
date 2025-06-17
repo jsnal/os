@@ -4,11 +4,18 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef _STDBOOL_H_
-#define _STDBOOL_H_
+#pragma once
 
-#define bool int
-#define true 1
-#define false 0
+#ifndef __cplusplus
+
+#    include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
+#    define bool _Bool
+#    define true 1
+#    define false 0
+
+__BEGIN_DECLS
 
 #endif

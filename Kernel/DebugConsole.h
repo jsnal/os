@@ -6,9 +6,7 @@
 
 #pragma once
 
-#include <Kernel/Graphics/GraphicsManager.h>
-#include <stdbool.h>
-#include <sys/types.h>
+#include <Universal/Types.h>
 
 class DebugConsole final {
 public:

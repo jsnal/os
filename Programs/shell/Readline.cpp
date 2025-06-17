@@ -129,7 +129,7 @@ bool Readline::enable_raw_mode()
     // 1 byte, no timer
     m_original_termios.c_cc[VTIME] = 0;
 
-    if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &m_original_termios) < 0) {
+    if (tcsetattr(m_fd_in, TCSAFLUSH, &m_original_termios) < 0) {
         return false;
     }
 
@@ -142,13 +142,13 @@ ResultReturn<String> Readline::raw_read()
         return Result(Result::Failure);
     }
 
-    if (!write(STDOUT_FILENO, m_prompt.str(), m_prompt.length())) {
+    if (!write(m_fd_out, m_prompt.str(), m_prompt.length())) {
         return Result(Result::Failure);
     }
 
     while (true) {
         char c;
-        ssize_t nread = ::read(STDIN_FILENO, &c, 1);
+        ssize_t nread = ::read(m_fd_in, &c, 1);
         if (nread <= 0) {
             return Result(Result::Failure);
         }
