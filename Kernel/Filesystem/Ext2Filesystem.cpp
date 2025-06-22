@@ -55,9 +55,9 @@ Ext2RawBlockGroupDescriptor& Ext2Filesystem::block_group_descriptor(u32 group_in
     if (m_block_group_descriptor_table == nullptr) {
         u32 blocks_to_read = ceiling_divide(m_block_group_count * (u32)sizeof(Ext2RawBlockGroupDescriptor), m_block_size);
         u8 first_block = m_block_size == 1024 ? 2 : 1;
-        auto result = read_blocks(first_block, blocks_to_read);
-        ASSERT(result.is_ok());
-        m_block_group_descriptor_table = result.value();
+
+        m_block_group_descriptor_table = new u8[m_block_size * blocks_to_read];
+        MUST(read_blocks(first_block, blocks_to_read, m_block_group_descriptor_table));
     }
 
     return reinterpret_cast<Ext2RawBlockGroupDescriptor*>(m_block_group_descriptor_table)[group_index];
@@ -78,33 +78,25 @@ SharedPtr<Inode> Ext2Filesystem::inode(const InodeId& inode)
     return make_shared_ptr<Ext2Inode>(*this, inode.id());
 }
 
-ResultAnd<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)
+Result Ext2Filesystem::read_block(u32 index, u8* buffer)
 {
-    if (count == 0) {
-        return Result(Status::Failure);
-    }
-
-    u8* blocks = new u8[count * m_block_size];
-    u32 sectors_to_read = ceiling_divide(count * m_block_size, m_disk->block_size());
-    u32 sector = ceiling_divide(index * m_block_size, m_disk->block_size());
-    if (m_disk->read_blocks(sector, sectors_to_read, blocks).is_error()) {
-        delete[] blocks;
-        return Result(Status::Failure);
-    }
-
-    return blocks;
+    return read_blocks(index, 1, buffer);
 }
 
 Result Ext2Filesystem::read_blocks(u32 index, u32 count, u8* buffer)
 {
-    if (count == 0) {
+    if (buffer == nullptr) {
         return Status::Failure;
     }
 
-    u32 sectors_to_read = ceiling_divide(count * m_block_size, m_disk->block_size());
-    u32 sector = ceiling_divide(index * m_block_size, m_disk->block_size());
-    if (m_disk->read_blocks(sector, sectors_to_read, buffer).is_error()) {
-        return Result(Status::Failure);
+    if (count == 0) {
+        return Status::OK;
+    }
+
+    u32 disk_blocks_to_read = ceiling_divide(count * m_block_size, m_disk->block_size());
+    u32 disk_block = ceiling_divide(index * m_block_size, m_disk->block_size());
+    if (m_disk->read_blocks(disk_block, disk_blocks_to_read, buffer).is_error()) {
+        return Status::Failure;
     }
 
     return Status::OK;
