@@ -105,7 +105,7 @@ ResultAnd<Process*> Process::create_kernel_process(StringView name, void (*entry
     regs.segment.fs = CPU::SegmentSelector(CPU::Ring0, 2);
     regs.segment.gs = CPU::SegmentSelector(CPU::Ring0, 2);
 
-    ENSURE(process->initialize_kernel_stack(regs));
+    TRY(process->initialize_kernel_stack(regs));
 
     if (add_to_process_list) {
         PM.add_process(*process);
@@ -124,8 +124,8 @@ ResultAnd<Process*> Process::create_user_process(StringView path, pid_t pid, pid
 
     argv.add_first(path);
 
-    u32 entry_point = ENSURE_TAKE(process->load_elf());
-    u32 user_esp = ENSURE_TAKE(process->initialize_user_stack(move(argv)));
+    u32 entry_point = TRY_TAKE(process->load_elf());
+    u32 user_esp = TRY_TAKE(process->initialize_user_stack(move(argv)));
 
     TaskRegisters regs = {};
     regs.frame.ss = CPU::SegmentSelector(CPU::Ring3, 4);
@@ -137,7 +137,7 @@ ResultAnd<Process*> Process::create_user_process(StringView path, pid_t pid, pid
     regs.segment.es = CPU::SegmentSelector(CPU::Ring3, 4);
     regs.segment.fs = CPU::SegmentSelector(CPU::Ring3, 4);
     regs.segment.gs = CPU::SegmentSelector(CPU::Ring3, 4);
-    ENSURE(process->initialize_kernel_stack(regs));
+    TRY(process->initialize_kernel_stack(regs));
 
     PM.add_process(*process);
 
@@ -150,10 +150,10 @@ ResultAnd<Process*> Process::fork_user_process(Process& parent, TaskRegisters& r
     auto child = new Process(parent);
 
     regs.general_purpose.eax = 0;
-    ENSURE(child->initialize_kernel_stack(regs));
+    TRY(child->initialize_kernel_stack(regs));
 
     for (size_t i = 0; i < parent.m_regions.size(); i++) {
-        ENSURE_TAKE(child->allocate_region_at(parent.m_regions[i]->lower(), parent.m_regions[i]->length(), parent.m_regions[i]->access()));
+        TRY_TAKE(child->allocate_region_at(parent.m_regions[i]->lower(), parent.m_regions[i]->length(), parent.m_regions[i]->access()));
         parent.m_regions[i]->copy(*child->m_regions[i]);
     }
 
@@ -175,9 +175,9 @@ ResultAnd<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_add
 {
     AddressRange range;
     if (virtual_address.is_null()) {
-        range = ENSURE_TAKE(page_directory().address_allocator().allocate(size));
+        range = TRY_TAKE(page_directory().address_allocator().allocate(size));
     } else {
-        range = ENSURE_TAKE(page_directory().address_allocator().allocate_at(virtual_address, size));
+        range = TRY_TAKE(page_directory().address_allocator().allocate_at(virtual_address, size));
     }
 
     m_regions.add_last(VirtualRegion::create_user_region(range, access).leak_ptr());
@@ -196,9 +196,9 @@ Result Process::deallocate_region(size_t index)
 
     dbgprintf_if(DEBUG_PROCESS, "Process", "Deallocating virtual region 0x%x - 0x%x for Process '%s'\n", m_regions[index]->lower(), m_regions[index]->upper(), name().data());
 
-    ENSURE(m_regions[index]->unmap(page_directory()));
-    ENSURE(page_directory().address_allocator().free(m_regions[index]->address_range()));
-    ENSURE(m_regions[index]->free());
+    TRY(m_regions[index]->unmap(page_directory()));
+    TRY(page_directory().address_allocator().free(m_regions[index]->address_range()));
+    TRY(m_regions[index]->free());
     return Status::OK;
 }
 
@@ -258,8 +258,8 @@ Result Process::initialize_kernel_stack(const TaskRegisters& regs)
 
 ResultAnd<u32> Process::initialize_user_stack(ArrayList<StringView>&& argv)
 {
-    m_user_stack = ENSURE_TAKE(allocate_region(kUserStackSize, VirtualRegion::Read | VirtualRegion::Write));
-    auto temporary_mapping = ENSURE_TAKE(MM.temporary_map(m_user_stack->physical_pages()[m_user_stack->physical_pages().size() - 1]));
+    m_user_stack = TRY_TAKE(allocate_region(kUserStackSize, VirtualRegion::Read | VirtualRegion::Write));
+    auto temporary_mapping = TRY_TAKE(MM.temporary_map(m_user_stack->physical_pages()[m_user_stack->physical_pages().size() - 1]));
 
     const u32 capacity = Memory::kPageSize / sizeof(u32);
     u32* stack = reinterpret_cast<u32*>(temporary_mapping.ptr());
@@ -305,9 +305,9 @@ ResultAnd<u32> Process::initialize_user_stack(ArrayList<StringView>&& argv)
 
 ResultAnd<u32> Process::load_elf()
 {
-    auto fd = ENSURE_TAKE(VFS::the().open(m_name.data(), 0, 0));
-    auto elf_result = ENSURE_TAKE(ELF::create(fd));
-    auto elf_program_headers = ENSURE_TAKE(elf_result->read_program_headers());
+    auto fd = TRY_TAKE(VFS::the().open(m_name.data(), 0, 0));
+    auto elf_result = TRY_TAKE(ELF::create(fd));
+    auto elf_program_headers = TRY_TAKE(elf_result->read_program_headers());
 
     for (size_t i = 0; i < elf_program_headers.size(); i++) {
         auto program_header = elf_program_headers[i];
@@ -315,7 +315,7 @@ ResultAnd<u32> Process::load_elf()
             size_t load_location = Memory::page_round_down(program_header.p_vaddr);
             size_t load_memory_size = Memory::page_round_up(program_header.p_memsz);
 
-            auto region = ENSURE_TAKE(allocate_region_at(load_location, load_memory_size, ELF::program_flags_to_access(program_header.p_flags)));
+            auto region = TRY_TAKE(allocate_region_at(load_location, load_memory_size, ELF::program_flags_to_access(program_header.p_flags)));
 
             // TODO: Find a faster way to do this
             auto tmp_kernel_region = MM.allocate_kernel_region_at(region->physical_pages().first(), load_memory_size);

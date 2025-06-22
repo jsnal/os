@@ -125,7 +125,7 @@ bool VirtualRegion::is_accessible(VirtualAddress address, size_t length)
 Result VirtualRegion::copy(const VirtualRegion& dest)
 {
     for (size_t i = 0; i < m_physical_pages.size(); i++) {
-        auto* p = ENSURE_TAKE(MM.temporary_map(dest.physical_pages()[i])).ptr();
+        auto* p = TRY_TAKE(MM.temporary_map(dest.physical_pages()[i])).ptr();
         memcpy(p, lower().ptr() + Memory::kPageSize * i, Memory::kPageSize);
         MM.temporary_unmap();
     }

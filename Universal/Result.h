@@ -12,7 +12,7 @@
 
 namespace Universal {
 
-#define ENSURE(expr)             \
+#define TRY(expr)                \
     ({                           \
         auto&& result = (expr);  \
         if (result.is_error()) { \
@@ -20,13 +20,26 @@ namespace Universal {
         }                        \
     })
 
-#define ENSURE_TAKE(expr)          \
+#define TRY_TAKE(expr)             \
     ({                             \
         auto&& result = (expr);    \
         if (result.is_error()) {   \
             return result.error(); \
         }                          \
         result.release_value();    \
+    })
+
+#define MUST(expr)              \
+    ({                          \
+        auto&& result = (expr); \
+        ASSERT(result.is_ok()); \
+    })
+
+#define MUST_TAKE(expr)         \
+    ({                          \
+        auto&& result = (expr); \
+        ASSERT(result.is_ok()); \
+        result.release_value(); \
     })
 
 enum Status {
@@ -103,9 +116,8 @@ private:
     Optional<T> m_value;
     Result m_result;
 };
-
 }
 
-using Universal::ResultAnd;
 using Universal::Result;
+using Universal::ResultAnd;
 using Universal::Status;

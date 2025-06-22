@@ -194,7 +194,7 @@ Result MemoryManager::free_physical_kernel_page(PhysicalAddress address)
     for (size_t i = 0; i < m_kernel_physical_regions.size(); i++) {
         auto region = m_kernel_physical_regions[i];
         if (region->includes(address)) {
-            ENSURE(region->free_page(address));
+            TRY(region->free_page(address));
             found_region = true;
             break;
         }
@@ -223,7 +223,7 @@ Result MemoryManager::free_physical_user_page(PhysicalAddress address)
     for (size_t i = 0; i < m_user_physical_regions.size(); i++) {
         auto region = m_user_physical_regions[i];
         if (region->includes(address)) {
-            ENSURE(region->free_page(address));
+            TRY(region->free_page(address));
             found_region = true;
             break;
         }
