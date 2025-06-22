@@ -5,6 +5,7 @@
  */
 
 #include <Kernel/Devices/RandomDevice.h>
+#include <LibC/errno_defines.h>
 
 RandomDevice::RandomDevice()
     : CharacterDevice(1, 9)
@@ -29,6 +30,11 @@ ssize_t RandomDevice::read(FileDescriptor&, u8* buffer, off_t offset, ssize_t co
 ssize_t RandomDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
 {
     return 0;
+}
+
+int RandomDevice::fstat(FileDescriptor&, stat&)
+{
+    return -EBADF;
 }
 
 int RandomDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)

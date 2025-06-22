@@ -6,9 +6,9 @@
 
 #include <Kernel/Filesystem/FileDescriptor.h>
 #include <Kernel/Filesystem/InodeFile.h>
-#include <Universal/Logger.h>
 #include <Kernel/POSIX.h>
 #include <LibC/errno_defines.h>
+#include <Universal/Logger.h>
 
 void FileDescriptor::open()
 {
@@ -28,6 +28,11 @@ ssize_t FileDescriptor::write(const u8* buffer, ssize_t count)
 ssize_t FileDescriptor::read(u8* buffer, ssize_t count)
 {
     return m_file->read(*this, buffer, m_offset, count);
+}
+
+int FileDescriptor::fstat(stat& statbuf)
+{
+    return m_file->fstat(*this, statbuf);
 }
 
 int FileDescriptor::ioctl(uint32_t request, uint32_t* argp)

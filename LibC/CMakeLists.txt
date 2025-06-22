@@ -8,6 +8,7 @@ set(LIBC_SOURCES
     string.cpp
     sys/ioctl.cpp
     sys/mman.cpp
+    sys/stat.cpp
     sys/syscall.cpp
     sys/wait.cpp
     termios.cpp

@@ -39,6 +39,7 @@ public:
     ResultAnd<InodeId> find(const String&) override;
     ResultAnd<ssize_t> read(size_t start, size_t length, u8* buffer, FileDescriptor&) override;
     ResultAnd<ssize_t> write(size_t start, size_t length, u8* buffer, FileDescriptor&) override;
+    ResultAnd<int> fstat(stat&, FileDescriptor&) override;
     void open(FileDescriptor&, int flags) override;
     void close(FileDescriptor&) override;
 

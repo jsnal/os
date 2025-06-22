@@ -69,6 +69,11 @@ ssize_t TTYDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
     return count;
 }
 
+int TTYDevice::fstat(FileDescriptor&, stat&)
+{
+    return -EBADF;
+}
+
 int TTYDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
 {
     termios* termios_p;

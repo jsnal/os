@@ -1,5 +1,6 @@
 #include <Kernel/Devices/KeyboardDevice.h>
 #include <Kernel/IO.h>
+#include <LibC/errno_defines.h>
 #include <Universal/Logger.h>
 
 #define DEBUG_KEYBOARD 0
@@ -124,6 +125,11 @@ ssize_t KeyboardDevice::read(FileDescriptor&, u8* buffer, off_t offset, ssize_t 
 ssize_t KeyboardDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
 {
     return 0;
+}
+
+int KeyboardDevice::fstat(FileDescriptor&, stat&)
+{
+    return -EBADF;
 }
 
 int KeyboardDevice::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)

@@ -28,6 +28,11 @@ ResultAnd<ssize_t> PTSInode::write(size_t start, size_t length, u8* buffer, File
     return 0;
 }
 
+ResultAnd<int> PTSInode::fstat(stat&, FileDescriptor&)
+{
+    return 0;
+}
+
 void PTSInode::open(FileDescriptor&, int flags)
 {
 }

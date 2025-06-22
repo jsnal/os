@@ -559,9 +559,18 @@ ssize_t Process::sys_read(int fd, void* buf, size_t count)
     return fd_result.release_value()->read((u8*)buf, count);
 }
 
-int Process::sys_fstat(int fd, struct stat* statbuf)
+int Process::sys_fstat(int fd, stat* statbuf)
 {
-    return 0;
+    if (!is_address_accessible((u32)statbuf, sizeof(stat))) {
+        return -EFAULT;
+    }
+
+    auto fd_result = find_file_descriptor(fd);
+    if (fd_result.is_error()) {
+        return -EBADF;
+    }
+
+    return fd_result.release_value()->fstat(*statbuf);
 }
 
 pid_t Process::sys_getpid()

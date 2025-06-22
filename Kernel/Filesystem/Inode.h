@@ -37,6 +37,7 @@ public:
     virtual ResultAnd<InodeId> find(const String&) = 0;
     virtual ResultAnd<ssize_t> read(size_t start, size_t length, u8* buffer, FileDescriptor&) = 0;
     virtual ResultAnd<ssize_t> write(size_t start, size_t length, u8* buffer, FileDescriptor&) = 0;
+    virtual ResultAnd<int> fstat(stat&, FileDescriptor&) = 0;
     virtual void open(FileDescriptor&, int flags) = 0;
     virtual void close(FileDescriptor&) = 0;
     virtual bool can_read(FileDescriptor&) { return true; };

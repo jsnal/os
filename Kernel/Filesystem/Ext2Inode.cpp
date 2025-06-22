@@ -211,6 +211,21 @@ ResultAnd<ssize_t> Ext2Inode::write(size_t start, size_t length, u8* buffer, Fil
     return 0;
 }
 
+ResultAnd<int> Ext2Inode::fstat(stat& statbuf, FileDescriptor&)
+{
+    statbuf.st_dev = (m_major_device_number << 8) + m_minor_device_number;
+    statbuf.st_ino = m_id;
+    statbuf.st_mode = m_mode;
+    statbuf.st_nlink = m_raw_data.hard_links;
+    statbuf.st_uid = m_uid;
+    statbuf.st_gid = m_gid;
+    statbuf.st_size = m_size;
+    statbuf.st_blksize = ext2_fs().block_size();
+    statbuf.st_blocks = number_of_blocks();
+
+    return 0;
+}
+
 void Ext2Inode::open(FileDescriptor&, int flags)
 {
 }

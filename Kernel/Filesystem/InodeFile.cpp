@@ -41,6 +41,16 @@ ssize_t InodeFile::write(FileDescriptor&, const u8* buffer, ssize_t count)
     return 0;
 }
 
+int InodeFile::fstat(FileDescriptor& fd, stat& statbuf)
+{
+    auto result = m_inode->fstat(statbuf, fd);
+    if (result.is_error()) {
+        return -1;
+    }
+
+    return result.value();
+}
+
 int InodeFile::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
 {
     return 0;

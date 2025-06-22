@@ -17,6 +17,7 @@ public:
     virtual ResultAnd<InodeId> find(const String&) override;
     virtual ResultAnd<ssize_t> read(size_t start, size_t length, u8* buffer, FileDescriptor&) override;
     virtual ResultAnd<ssize_t> write(size_t start, size_t length, u8* buffer, FileDescriptor&) override;
+    virtual ResultAnd<int> fstat(stat&, FileDescriptor&) override;
     virtual void open(FileDescriptor&, int flags) override;
     virtual void close(FileDescriptor&) override;
 };
