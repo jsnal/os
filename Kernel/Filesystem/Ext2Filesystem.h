@@ -43,7 +43,7 @@ public:
     InodeId root_inode() const override;
     SharedPtr<Inode> inode(const InodeId&) override;
 
-    ResultReturn<u8*> read_blocks(u32 index, u32 count);
+    ResultAnd<u8*> read_blocks(u32 index, u32 count);
     Result read_blocks(u32 index, u32 count, u8* buffer);
 
 private:

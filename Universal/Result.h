@@ -29,50 +29,58 @@ namespace Universal {
         result.release_value();    \
     })
 
+enum Status {
+    OK = 0,
+    Failure = -1,
+};
+
 class Result {
 public:
-    constexpr static int OK = 0;
-    constexpr static int Failure = 1;
-
-    Result(int error_value)
-        : m_error_value(error_value)
+    constexpr Result(Status status)
+        : m_status(status)
     {
     }
 
-    operator int() const { return m_error_value; }
+    constexpr Result(i32 status)
+        : m_status(status)
+    {
+    }
 
-    bool is_ok() const { return m_error_value == 0; }
-    bool is_error() const { return m_error_value != 0; }
-
-    Result error() const { return *this; }
+    constexpr operator int() const { return m_status; }
+    constexpr bool is_ok() const { return m_status == 0; }
+    constexpr bool is_error() const { return m_status != 0; }
 
 private:
-    int m_error_value { 0 };
+    i32 m_status { 0 };
 };
 
 template<typename T>
-class ResultReturn {
+class ResultAnd {
 public:
-    ResultReturn()
-        : m_result(1)
+    constexpr ResultAnd()
+        : m_result(Status::Failure)
     {
     }
 
-    ResultReturn(Result result)
+    constexpr ResultAnd(Result result)
         : m_result(result)
     {
     }
 
-    ResultReturn(T value)
-        : m_value(move(value))
-        , m_result(Result::OK)
+    constexpr ResultAnd(Status status)
+        : m_result(status)
     {
     }
 
-    bool is_ok() const { return m_result.is_ok(); }
-    bool is_error() const { return m_result.is_error(); }
+    ResultAnd(T value)
+        : m_value(move(value))
+        , m_result(Status::OK)
+    {
+    }
 
-    Result error() const { return m_result; }
+    constexpr bool is_ok() const { return m_result.is_ok(); }
+    constexpr bool is_error() const { return m_result.is_error(); }
+    constexpr Result error() const { return m_result; }
 
     T& value()
     {
@@ -95,7 +103,9 @@ private:
     Optional<T> m_value;
     Result m_result;
 };
+
 }
 
+using Universal::ResultAnd;
 using Universal::Result;
-using Universal::ResultReturn;
+using Universal::Status;

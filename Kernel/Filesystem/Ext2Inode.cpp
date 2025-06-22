@@ -125,7 +125,7 @@ u32 Ext2Inode::get_block_pointer(u32 index) const
     return m_block_pointers[index];
 }
 
-ResultReturn<InodeId> Ext2Inode::find(const String& name)
+ResultAnd<InodeId> Ext2Inode::find(const String& name)
 {
     dbgprintf_if(DEBUG_INODE, "Ext2Inode", "Searching for '%s' in %u blocks in inode %u\n", name.data(), number_of_blocks(), m_id);
 
@@ -158,10 +158,10 @@ ResultReturn<InodeId> Ext2Inode::find(const String& name)
     return Result(-ENOENT);
 }
 
-ResultReturn<ssize_t> Ext2Inode::read(size_t start, size_t length, u8* buffer, FileDescriptor&)
+ResultAnd<ssize_t> Ext2Inode::read(size_t start, size_t length, u8* buffer, FileDescriptor&)
 {
     if (length == 0 || m_raw_data.size == 0 || start > m_raw_data.size) {
-        return Result::Failure;
+        return Status::Failure;
     }
 
     if (start + length > m_raw_data.size) {
@@ -206,7 +206,7 @@ ResultReturn<ssize_t> Ext2Inode::read(size_t start, size_t length, u8* buffer, F
     return length;
 }
 
-ResultReturn<ssize_t> Ext2Inode::write(size_t start, size_t length, u8* buffer, FileDescriptor&)
+ResultAnd<ssize_t> Ext2Inode::write(size_t start, size_t length, u8* buffer, FileDescriptor&)
 {
     return 0;
 }

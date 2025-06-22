@@ -90,7 +90,7 @@ Process::~Process()
     }
 }
 
-ResultReturn<Process*> Process::create_kernel_process(StringView name, void (*entry_point)(), bool add_to_process_list)
+ResultAnd<Process*> Process::create_kernel_process(StringView name, void (*entry_point)(), bool add_to_process_list)
 {
     auto process = new Process(move(name), 0, 0, true);
 
@@ -115,7 +115,7 @@ ResultReturn<Process*> Process::create_kernel_process(StringView name, void (*en
     return process;
 }
 
-ResultReturn<Process*> Process::create_user_process(StringView path, pid_t pid, pid_t ppid, ArrayList<StringView>&& argv, TTYDevice* tty)
+ResultAnd<Process*> Process::create_user_process(StringView path, pid_t pid, pid_t ppid, ArrayList<StringView>&& argv, TTYDevice* tty)
 {
     if (pid == 0) {
         pid = PM.get_next_pid();
@@ -145,7 +145,7 @@ ResultReturn<Process*> Process::create_user_process(StringView path, pid_t pid, 
     return process;
 }
 
-ResultReturn<Process*> Process::fork_user_process(Process& parent, TaskRegisters& regs)
+ResultAnd<Process*> Process::fork_user_process(Process& parent, TaskRegisters& regs)
 {
     auto child = new Process(parent);
 
@@ -166,12 +166,12 @@ ResultReturn<Process*> Process::fork_user_process(Process& parent, TaskRegisters
     return child;
 }
 
-ResultReturn<VirtualRegion*> Process::allocate_region(size_t size, u8 access)
+ResultAnd<VirtualRegion*> Process::allocate_region(size_t size, u8 access)
 {
     return allocate_region_at(VirtualAddress(), size, access);
 }
 
-ResultReturn<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_address, size_t size, u8 access)
+ResultAnd<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_address, size_t size, u8 access)
 {
     AddressRange range;
     if (virtual_address.is_null()) {
@@ -191,7 +191,7 @@ ResultReturn<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_
 Result Process::deallocate_region(size_t index)
 {
     if (index < 0 || index > m_regions.size()) {
-        return Result::Failure;
+        return Status::Failure;
     }
 
     dbgprintf_if(DEBUG_PROCESS, "Process", "Deallocating virtual region 0x%x - 0x%x for Process '%s'\n", m_regions[index]->lower(), m_regions[index]->upper(), name().data());
@@ -199,7 +199,7 @@ Result Process::deallocate_region(size_t index)
     ENSURE(m_regions[index]->unmap(page_directory()));
     ENSURE(page_directory().address_allocator().free(m_regions[index]->address_range()));
     ENSURE(m_regions[index]->free());
-    return Result::OK;
+    return Status::OK;
 }
 
 void Process::context_switch(Process* next_process)
@@ -216,7 +216,7 @@ Result Process::initialize_kernel_stack(const TaskRegisters& regs)
     const u32 capacity = kKernelStackSize / sizeof(u32);
 
     if (m_kernel_stack.ptr() == nullptr) {
-        return Result::Failure;
+        return Status::Failure;
     }
 
 #if DEBUG_PROCESS
@@ -253,10 +253,10 @@ Result Process::initialize_kernel_stack(const TaskRegisters& regs)
 
     m_previous_stack_pointer = stack + (capacity - 22);
 
-    return Result::OK;
+    return Status::OK;
 }
 
-ResultReturn<u32> Process::initialize_user_stack(ArrayList<StringView>&& argv)
+ResultAnd<u32> Process::initialize_user_stack(ArrayList<StringView>&& argv)
 {
     m_user_stack = ENSURE_TAKE(allocate_region(kUserStackSize, VirtualRegion::Read | VirtualRegion::Write));
     auto temporary_mapping = ENSURE_TAKE(MM.temporary_map(m_user_stack->physical_pages()[m_user_stack->physical_pages().size() - 1]));
@@ -303,7 +303,7 @@ ResultReturn<u32> Process::initialize_user_stack(ArrayList<StringView>&& argv)
     return temporary_address_to_user_address(reinterpret_cast<u32>(stack_after_args));
 }
 
-ResultReturn<u32> Process::load_elf()
+ResultAnd<u32> Process::load_elf()
 {
     auto fd = ENSURE_TAKE(VFS::the().open(m_name.data(), 0, 0));
     auto elf_result = ENSURE_TAKE(ELF::create(fd));
@@ -408,10 +408,10 @@ int Process::next_file_descriptor()
     return fd;
 }
 
-ResultReturn<SharedPtr<FileDescriptor>> Process::find_file_descriptor(int fd)
+ResultAnd<SharedPtr<FileDescriptor>> Process::find_file_descriptor(int fd)
 {
     if (fd < 0 || fd > m_fds.size() || m_fds[fd].is_null()) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
     return m_fds[fd];
 }

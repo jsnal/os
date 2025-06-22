@@ -36,9 +36,9 @@ public:
     inline Ext2Filesystem& ext2_fs() { return reinterpret_cast<Ext2Filesystem&>(fs()); }
     inline const Ext2Filesystem& ext2_fs() const { return reinterpret_cast<const Ext2Filesystem&>(fs()); }
 
-    ResultReturn<InodeId> find(const String&) override;
-    ResultReturn<ssize_t> read(size_t start, size_t length, u8* buffer, FileDescriptor&) override;
-    ResultReturn<ssize_t> write(size_t start, size_t length, u8* buffer, FileDescriptor&) override;
+    ResultAnd<InodeId> find(const String&) override;
+    ResultAnd<ssize_t> read(size_t start, size_t length, u8* buffer, FileDescriptor&) override;
+    ResultAnd<ssize_t> write(size_t start, size_t length, u8* buffer, FileDescriptor&) override;
     void open(FileDescriptor&, int flags) override;
     void close(FileDescriptor&) override;
 

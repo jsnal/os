@@ -44,7 +44,7 @@ u32 PhysicalRegion::commit()
     return m_total_pages;
 }
 
-ResultReturn<PhysicalAddress> PhysicalRegion::allocate_contiguous_pages(u32 number_of_pages)
+ResultAnd<PhysicalAddress> PhysicalRegion::allocate_contiguous_pages(u32 number_of_pages)
 {
     auto contiguous_pages = find_contiguous_pages(number_of_pages);
     if (contiguous_pages.is_error()) {
@@ -60,7 +60,7 @@ ResultReturn<PhysicalAddress> PhysicalRegion::allocate_contiguous_pages(u32 numb
     return m_lower.offset(Memory::kPageSize * start_page);
 }
 
-ResultReturn<PhysicalAddress> PhysicalRegion::allocate_page()
+ResultAnd<PhysicalAddress> PhysicalRegion::allocate_page()
 {
     PhysicalAddress address;
 
@@ -101,7 +101,7 @@ Result PhysicalRegion::free_page(PhysicalAddress address)
     m_used_pages--;
 
     dbgprintf_if(DEBUG_PHYSICAL_REGION, "PhysicalRegion", "Freed physical page at 0x%x\n", address);
-    return Result::OK;
+    return Status::OK;
 }
 
 void PhysicalRegion::allocate_page_at(u32 page_index)
@@ -113,7 +113,7 @@ void PhysicalRegion::allocate_page_at(u32 page_index)
         m_lower.offset(Memory::kPageSize * page_index));
 }
 
-ResultReturn<u32> PhysicalRegion::find_contiguous_pages(u32 number_of_pages)
+ResultAnd<u32> PhysicalRegion::find_contiguous_pages(u32 number_of_pages)
 {
     if (m_used_pages >= m_total_pages) {
         return Result(Memory::kOutOfMemory);
@@ -134,7 +134,7 @@ ResultReturn<u32> PhysicalRegion::find_contiguous_pages(u32 number_of_pages)
     }
 
     if (number_of_pages_found != number_of_pages) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
     return start_page;
 }

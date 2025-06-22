@@ -36,10 +36,10 @@ Result Readline::redraw()
     }
 
     if (write(m_fd_out, redraw_buffer.data(), redraw_buffer.size()) == -1) {
-        return Result::Failure;
+        return Status::Failure;
     }
 
-    return Result::OK;
+    return Status::OK;
 }
 
 Result Readline::do_move_right()
@@ -74,7 +74,7 @@ Result Readline::do_backspace()
 Result Readline::do_insert(char c)
 {
     if (m_length >= m_buffer.size()) {
-        return Result::Failure;
+        return Status::Failure;
     }
 
     if (m_length != m_position) {
@@ -90,7 +90,7 @@ Result Readline::do_insert(char c)
         redraw();
     }
 
-    return Result::OK;
+    return Status::OK;
 }
 
 Result Readline::do_clear()
@@ -98,7 +98,7 @@ Result Readline::do_clear()
     const char* escape_sequence = "\033[H\033[2J";
 
     if (write(m_fd_out, escape_sequence, strlen(escape_sequence)) == -1) {
-        return Result::Failure;
+        return Status::Failure;
     }
 
     return redraw();
@@ -136,21 +136,21 @@ bool Readline::enable_raw_mode()
     return true;
 }
 
-ResultReturn<String> Readline::raw_read()
+ResultAnd<String> Readline::raw_read()
 {
     if (!enable_raw_mode()) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
     if (!write(m_fd_out, m_prompt.str(), m_prompt.length())) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
     while (true) {
         char c;
         ssize_t nread = ::read(m_fd_in, &c, 1);
         if (nread <= 0) {
-            return Result(Result::Failure);
+            return Result(Status::Failure);
         }
 
         switch (c) {
@@ -192,10 +192,10 @@ ResultReturn<String> Readline::raw_read()
         }
     }
 
-    return Result(Result::OK);
+    return Result(Status::OK);
 }
 
-ResultReturn<String> Readline::read()
+ResultAnd<String> Readline::read()
 {
     ASSERT(isatty(m_fd_in));
 

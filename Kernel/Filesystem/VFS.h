@@ -24,7 +24,7 @@ public:
 
     void init();
 
-    ResultReturn<SharedPtr<FileDescriptor>> open(const String& path, int flags, mode_t mode);
+    ResultAnd<SharedPtr<FileDescriptor>> open(const String& path, int flags, mode_t mode);
 
     u32 get_next_filesystem_id() { return m_current_filesystem_id++; }
 
@@ -32,7 +32,7 @@ public:
     Inode& root_inode() { return *m_root_inode; }
 
 private:
-    ResultReturn<SharedPtr<Inode>> traverse_path(const String& path, SharedPtr<Inode>& base);
+    ResultAnd<SharedPtr<Inode>> traverse_path(const String& path, SharedPtr<Inode>& base);
 
     u32 m_current_filesystem_id { 0 };
 

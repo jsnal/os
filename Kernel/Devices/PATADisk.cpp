@@ -130,7 +130,7 @@ Result PATADisk::read_blocks(u32 block, u32 count, u8* buffer)
 
     disable_irq();
 
-    return Result(Result::OK);
+    return Result(Status::OK);
 }
 
 Result PATADisk::write_blocks(u32 block, u32 count, const u8* buffer)
@@ -158,7 +158,7 @@ Result PATADisk::write_blocks(u32 block, u32 count, const u8* buffer)
     IO::outb(m_io_base + ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH);
     wait_until_ready();
 
-    return Result(Result::OK);
+    return Result(Status::OK);
 }
 
 void PATADisk::clear_interrupts() const

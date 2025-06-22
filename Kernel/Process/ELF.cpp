@@ -8,7 +8,7 @@
 #include <Kernel/POSIX.h>
 #include <Kernel/Process/ELF.h>
 
-ResultReturn<UniquePtr<ELF>> ELF::create(SharedPtr<FileDescriptor> fd)
+ResultAnd<UniquePtr<ELF>> ELF::create(SharedPtr<FileDescriptor> fd)
 {
     auto elf = make_unique_ptr<ELF>(fd);
 
@@ -23,13 +23,13 @@ ResultReturn<UniquePtr<ELF>> ELF::create(SharedPtr<FileDescriptor> fd)
     }
 
     if (!IS_ELF(elf->header())) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
     return elf;
 }
 
-ResultReturn<Array<ELFProgramHeader>> ELF::read_program_headers()
+ResultAnd<Array<ELFProgramHeader>> ELF::read_program_headers()
 {
     int seek_ret = m_fd->seek(m_header.e_phoff, SEEK_SET);
     if (seek_ret < 0) {

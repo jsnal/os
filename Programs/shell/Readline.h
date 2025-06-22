@@ -21,7 +21,7 @@ public:
     {
     }
 
-    ResultReturn<String> read();
+    ResultAnd<String> read();
 
 private:
     enum KeyAction {
@@ -41,7 +41,7 @@ private:
     Result do_clear();
 
     bool enable_raw_mode();
-    ResultReturn<String> raw_read();
+    ResultAnd<String> raw_read();
 
     StringView m_prompt;
 

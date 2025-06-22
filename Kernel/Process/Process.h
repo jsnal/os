@@ -49,12 +49,12 @@ public:
 
     ~Process();
 
-    static ResultReturn<Process*> create_kernel_process(StringView name, void (*entry_point)(), bool add_to_process_list = true);
-    static ResultReturn<Process*> create_user_process(StringView path, pid_t pid, pid_t ppid, ArrayList<StringView>&& argv, TTYDevice*);
-    static ResultReturn<Process*> fork_user_process(Process& parent, TaskRegisters& frame);
+    static ResultAnd<Process*> create_kernel_process(StringView name, void (*entry_point)(), bool add_to_process_list = true);
+    static ResultAnd<Process*> create_user_process(StringView path, pid_t pid, pid_t ppid, ArrayList<StringView>&& argv, TTYDevice*);
+    static ResultAnd<Process*> fork_user_process(Process& parent, TaskRegisters& frame);
 
-    ResultReturn<VirtualRegion*> allocate_region(size_t size, u8 access);
-    ResultReturn<VirtualRegion*> allocate_region_at(VirtualAddress, size_t size, u8 access);
+    ResultAnd<VirtualRegion*> allocate_region(size_t size, u8 access);
+    ResultAnd<VirtualRegion*> allocate_region_at(VirtualAddress, size_t size, u8 access);
     Result deallocate_region(size_t index);
 
     bool timer_expired() { return --m_ticks_left == 0; }
@@ -111,14 +111,14 @@ private:
     Process(StringView name, pid_t pid, pid_t ppid, bool is_kernel, TTYDevice* = nullptr);
     Process(const Process& parent);
 
-    ResultReturn<u32> load_elf();
+    ResultAnd<u32> load_elf();
 
     Result initialize_kernel_stack(const TaskRegisters&);
-    ResultReturn<u32> initialize_user_stack(ArrayList<StringView>&& argv);
+    ResultAnd<u32> initialize_user_stack(ArrayList<StringView>&& argv);
 
     bool is_address_accessible(VirtualAddress, size_t);
     int next_file_descriptor();
-    ResultReturn<SharedPtr<FileDescriptor>> find_file_descriptor(int fd);
+    ResultAnd<SharedPtr<FileDescriptor>> find_file_descriptor(int fd);
 
     void die();
 

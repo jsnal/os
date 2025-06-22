@@ -80,7 +80,7 @@ public:
     Result add(u32 index, T&& element)
     {
         if (index < 0 || index > m_size) {
-            return Result::Failure;
+            return Status::Failure;
         }
 
         ensure_capacity(m_size + 1);
@@ -92,7 +92,8 @@ public:
         }
 
         new (&data()[index]) T(move(element));
-        return Result::OK;
+        return Status::OK;
+        return Status::OK;
     }
     Result add(u32 index, const T& element) { return add(index, T(element)); }
 
@@ -105,7 +106,7 @@ public:
     Result remove(u32 index)
     {
         if (!is_index_valid(index)) {
-            return Result::Failure;
+            return Status::Failure;
         }
 
         data()[index].~T();
@@ -115,17 +116,17 @@ public:
         }
 
         m_size--;
-        return Result::OK;
+        return Status::OK;
     }
 
     Result set(u32 index, T element)
     {
         if (!is_index_valid(index)) {
-            return Result::Failure;
+            return Status::Failure;
         }
 
         data()[index] = element;
-        return Result::OK;
+        return Status::OK;
     }
 
     const T& get(u32 index) const
@@ -140,14 +141,14 @@ public:
         return data()[index];
     }
 
-    ResultReturn<size_t> find(Function<bool(T&)> predicate)
+    ResultAnd<size_t> find(Function<bool(T&)> predicate)
     {
         for (int i = 0; i < m_size; i++) {
             if (predicate(data()[i])) {
                 return i;
             }
         }
-        return Result::Failure;
+        return Status::Failure;
     }
 
     // TODO: Replace this with quick-sort

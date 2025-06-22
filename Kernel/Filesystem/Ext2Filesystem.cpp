@@ -15,7 +15,7 @@ Result Ext2Filesystem::init()
 {
     auto& super_block = this->super_block();
     if (super_block.signature != EXT2_SUPER_BLOCK_SIGNATURE) {
-        return Result::Failure;
+        return Status::Failure;
     }
 
     m_block_size = BLOCK_SIZE(super_block.block_size);
@@ -28,7 +28,7 @@ Result Ext2Filesystem::init()
 
     if (m_block_group_count == 0) {
         dbgprintf_if(DEBUG_EXT2_FILESYSTEM, "Ext2Filesystem", "No block groups found\n");
-        return Result::Failure;
+        return Status::Failure;
     }
 
     for (u32 i = 0; i < m_block_group_count; i++) {
@@ -37,7 +37,7 @@ Result Ext2Filesystem::init()
             i, group.block_usage_bitmap, group.inode_usage_bitmap, group.inode_table);
     }
 
-    return Result::OK;
+    return Status::OK;
 }
 
 Ext2RawSuperblock& Ext2Filesystem::super_block()
@@ -78,10 +78,10 @@ SharedPtr<Inode> Ext2Filesystem::inode(const InodeId& inode)
     return make_shared_ptr<Ext2Inode>(*this, inode.id());
 }
 
-ResultReturn<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)
+ResultAnd<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)
 {
     if (count == 0) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
     u8* blocks = new u8[count * m_block_size];
@@ -89,7 +89,7 @@ ResultReturn<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)
     u32 sector = ceiling_divide(index * m_block_size, m_disk->block_size());
     if (m_disk->read_blocks(sector, sectors_to_read, blocks).is_error()) {
         delete[] blocks;
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
     return blocks;
@@ -98,14 +98,14 @@ ResultReturn<u8*> Ext2Filesystem::read_blocks(u32 index, u32 count)
 Result Ext2Filesystem::read_blocks(u32 index, u32 count, u8* buffer)
 {
     if (count == 0) {
-        return Result::Failure;
+        return Status::Failure;
     }
 
     u32 sectors_to_read = ceiling_divide(count * m_block_size, m_disk->block_size());
     u32 sector = ceiling_divide(index * m_block_size, m_disk->block_size());
     if (m_disk->read_blocks(sector, sectors_to_read, buffer).is_error()) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
-    return Result::OK;
+    return Status::OK;
 }

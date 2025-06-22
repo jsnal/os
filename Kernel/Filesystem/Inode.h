@@ -34,9 +34,9 @@ public:
     bool is_block_device() const { return (m_mode & 0xF000) == MODE_BLOCK_DEVICE; };
     bool is_device() const { return is_block_device() || is_character_device(); }
 
-    virtual ResultReturn<InodeId> find(const String&) = 0;
-    virtual ResultReturn<ssize_t> read(size_t start, size_t length, u8* buffer, FileDescriptor&) = 0;
-    virtual ResultReturn<ssize_t> write(size_t start, size_t length, u8* buffer, FileDescriptor&) = 0;
+    virtual ResultAnd<InodeId> find(const String&) = 0;
+    virtual ResultAnd<ssize_t> read(size_t start, size_t length, u8* buffer, FileDescriptor&) = 0;
+    virtual ResultAnd<ssize_t> write(size_t start, size_t length, u8* buffer, FileDescriptor&) = 0;
     virtual void open(FileDescriptor&, int flags) = 0;
     virtual void close(FileDescriptor&) = 0;
     virtual bool can_read(FileDescriptor&) { return true; };

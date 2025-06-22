@@ -41,9 +41,9 @@ class AddressAllocator {
 public:
     AddressAllocator(VirtualAddress base, size_t length);
 
-    ResultReturn<AddressRange> allocate(size_t);
+    ResultAnd<AddressRange> allocate(size_t);
 
-    ResultReturn<AddressRange> allocate_at(VirtualAddress, size_t);
+    ResultAnd<AddressRange> allocate_at(VirtualAddress, size_t);
 
     Result free(AddressRange);
 

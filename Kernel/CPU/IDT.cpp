@@ -56,10 +56,10 @@ Result register_exception_handler(u32 exception_number, ExceptionHandler handler
 {
     if (exception_number < EXCEPTION_HANDLER_COUNT) {
         s_exception_handlers[exception_number] = handler;
-        return Result::OK;
+        return Status::OK;
     }
 
-    return Result::Failure;
+    return Status::Failure;
 }
 
 void dump_interrupt_registers(const InterruptRegisters& regs)

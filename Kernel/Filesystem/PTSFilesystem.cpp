@@ -16,7 +16,7 @@ PTSFilesystem::PTSFilesystem()
 Result PTSFilesystem::init()
 {
     m_root_inode = make_shared_ptr<PTSInode>(*this, 0);
-    return Result::OK;
+    return Status::OK;
 }
 
 InodeId PTSFilesystem::root_inode() const

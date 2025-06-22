@@ -27,7 +27,7 @@ IRQHandler::~IRQHandler()
 Result IRQHandler::set_irq(u8 irq)
 {
     if (irq < 0 || irq > 16 || s_handlers[irq] != nullptr) {
-        return Result::Failure;
+        return Status::Failure;
     }
 
     if (m_irq != -1) {
@@ -40,7 +40,7 @@ Result IRQHandler::set_irq(u8 irq)
     s_handlers[m_irq] = this;
     PIC::unmask(m_irq);
 
-    return Result::OK;
+    return Status::OK;
 }
 
 void IRQHandler::handle_all_irqs(const InterruptRegisters& regs)

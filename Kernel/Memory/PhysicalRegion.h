@@ -28,8 +28,8 @@ public:
     }
 
     u32 commit();
-    ResultReturn<PhysicalAddress> allocate_contiguous_pages(u32 number_of_pages);
-    ResultReturn<PhysicalAddress> allocate_page();
+    ResultAnd<PhysicalAddress> allocate_contiguous_pages(u32 number_of_pages);
+    ResultAnd<PhysicalAddress> allocate_page();
     Result free_page(PhysicalAddress);
 
     const PhysicalAddress lower() const { return m_lower; }
@@ -39,7 +39,7 @@ private:
     PhysicalRegion(PhysicalAddress lower, PhysicalAddress upper);
 
     void allocate_page_at(u32 page_index);
-    ResultReturn<u32> find_contiguous_pages(u32 number_of_pages);
+    ResultAnd<u32> find_contiguous_pages(u32 number_of_pages);
 
     PhysicalAddress m_lower;
     PhysicalAddress m_upper;

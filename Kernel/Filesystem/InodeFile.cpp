@@ -17,7 +17,7 @@ InodeFile::~InodeFile()
 {
 }
 
-ResultReturn<SharedPtr<FileDescriptor>> InodeFile::open(int flags)
+ResultAnd<SharedPtr<FileDescriptor>> InodeFile::open(int flags)
 {
     return make_shared_ptr<FileDescriptor>(*this);
 }

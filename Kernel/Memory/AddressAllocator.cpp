@@ -12,10 +12,10 @@ AddressAllocator::AddressAllocator(VirtualAddress base, size_t length)
     m_ranges.add_last(AddressRange(base, length));
 }
 
-ResultReturn<AddressRange> AddressAllocator::allocate(size_t length)
+ResultAnd<AddressRange> AddressAllocator::allocate(size_t length)
 {
     if (length == 0) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
     // TODO: Always round up to the nearest page since we always allocate
@@ -30,7 +30,7 @@ ResultReturn<AddressRange> AddressAllocator::allocate(size_t length)
     }
 
     if (i >= m_ranges.size()) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
     AddressRange address_range_found = m_ranges[i];
@@ -48,10 +48,10 @@ ResultReturn<AddressRange> AddressAllocator::allocate(size_t length)
     return AddressRange(address_range_found.lower(), length);
 }
 
-ResultReturn<AddressRange> AddressAllocator::allocate_at(VirtualAddress address, size_t length)
+ResultAnd<AddressRange> AddressAllocator::allocate_at(VirtualAddress address, size_t length)
 {
     if (length == 0) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
     int i;
@@ -63,13 +63,13 @@ ResultReturn<AddressRange> AddressAllocator::allocate_at(VirtualAddress address,
 
     if (i >= m_ranges.size()) {
         dbgprintf("AddressAllocator", "Not good!\n");
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
     AddressRange address_range_found = m_ranges[i];
 
     if (address_range_found.upper() - address < length) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
     m_ranges.remove(i);
@@ -126,7 +126,7 @@ merge:
 #if DEBUG_ADDRESS_ALLOCATOR
     dump();
 #endif
-    return Result::OK;
+    return Status::OK;
 }
 
 #if DEBUG_ADDRESS_ALLOCATOR

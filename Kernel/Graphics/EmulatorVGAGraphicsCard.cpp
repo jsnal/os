@@ -116,5 +116,5 @@ Result EmulatorVGAGraphicsCard::set_resolution(u16 width, u16 height)
 
     m_width = width;
     m_height = height;
-    return Result::OK;
+    return Status::OK;
 }

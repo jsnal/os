@@ -24,7 +24,7 @@ public:
 
     virtual size_t length() const { return 0; }
 
-    virtual ResultReturn<SharedPtr<FileDescriptor>> open(int flags) = 0;
+    virtual ResultAnd<SharedPtr<FileDescriptor>> open(int flags) = 0;
     virtual void close() = 0;
 
     virtual ssize_t read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count) = 0;

@@ -32,7 +32,7 @@ Result GraphicsManager::init()
         }
     });
 
-    return Result::OK;
+    return Status::OK;
 }
 
 Result GraphicsManager::init_graphics_device(Bus::PCI::Address const& address, Bus::PCI::ID const& id)
@@ -46,5 +46,5 @@ Result GraphicsManager::init_graphics_device(Bus::PCI::Address const& address, B
             dbgprintf("GraphicsManager", "Unable to find graphics card (%x:%x)\n", id.vendor, id.device);
     }
 
-    return Result::OK;
+    return Status::OK;
 }

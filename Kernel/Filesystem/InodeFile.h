@@ -19,7 +19,7 @@ public:
 
     bool is_inode() override { return true; };
 
-    ResultReturn<SharedPtr<FileDescriptor>> open(int options) override;
+    ResultAnd<SharedPtr<FileDescriptor>> open(int options) override;
     void close() override;
 
     ssize_t read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count) override;

@@ -81,7 +81,7 @@ void VirtualRegion::map(PageDirectory& page_directory)
 Result VirtualRegion::unmap(PageDirectory& page_directory)
 {
     if (m_page_directory.is_null() || m_page_directory != page_directory) {
-        return Result::Failure;
+        return Status::Failure;
     }
 
     for (size_t i = 0; i < m_physical_pages.size(); i++) {
@@ -97,7 +97,7 @@ Result VirtualRegion::unmap(PageDirectory& page_directory)
         Memory::invalidate_page(page_virtual_address);
     }
 
-    return Result::OK;
+    return Status::OK;
 }
 
 Result VirtualRegion::free()
@@ -109,7 +109,7 @@ Result VirtualRegion::free()
             MM.free_physical_user_page(m_physical_pages[i]);
         }
     }
-    return Result::OK;
+    return Status::OK;
 }
 
 bool VirtualRegion::contains(VirtualAddress address)
@@ -130,5 +130,5 @@ Result VirtualRegion::copy(const VirtualRegion& dest)
         MM.temporary_unmap();
     }
 
-    return Result::OK;
+    return Status::OK;
 }

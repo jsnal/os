@@ -160,7 +160,7 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
 
 PhysicalAddress MemoryManager::allocate_physical_kernel_page()
 {
-    ResultReturn<PhysicalAddress> page_result;
+    ResultAnd<PhysicalAddress> page_result;
     for (int i = 0; i < m_kernel_physical_regions.size(); i++) {
         page_result = m_kernel_physical_regions[i]->allocate_page();
         if (page_result.is_ok()) {
@@ -175,7 +175,7 @@ PhysicalAddress MemoryManager::allocate_physical_kernel_page()
 
 PhysicalAddress MemoryManager::allocate_physical_contiguous_kernel_pages(u32 number_of_pages)
 {
-    ResultReturn<PhysicalAddress> page_result;
+    ResultAnd<PhysicalAddress> page_result;
     for (int i = 0; i < m_kernel_physical_regions.size(); i++) {
         page_result = m_kernel_physical_regions[i]->allocate_contiguous_pages(number_of_pages);
         if (page_result.is_ok()) {
@@ -199,12 +199,12 @@ Result MemoryManager::free_physical_kernel_page(PhysicalAddress address)
             break;
         }
     }
-    return found_region ? Result::OK : Result::Failure;
+    return found_region ? Status::OK : Status::Failure;
 }
 
 PhysicalAddress MemoryManager::allocate_physical_user_page()
 {
-    ResultReturn<PhysicalAddress> page_result;
+    ResultAnd<PhysicalAddress> page_result;
     for (int i = 0; i < m_user_physical_regions.size(); i++) {
         page_result = m_user_physical_regions[i]->allocate_page();
         if (page_result.is_ok()) {
@@ -228,7 +228,7 @@ Result MemoryManager::free_physical_user_page(PhysicalAddress address)
             break;
         }
     }
-    return found_region ? Result::OK : Result::Failure;
+    return found_region ? Status::OK : Status::Failure;
 }
 
 UniquePtr<VirtualRegion> MemoryManager::allocate_kernel_region(size_t size)
@@ -304,10 +304,10 @@ void MemoryManager::identity_map(PageDirectory& page_directory, VirtualAddress v
     flush_tlb();
 }
 
-ResultReturn<VirtualAddress> MemoryManager::temporary_map(PhysicalAddress physical_address)
+ResultAnd<VirtualAddress> MemoryManager::temporary_map(PhysicalAddress physical_address)
 {
     if (m_is_temporary_page_mapped) {
-        return Result(Result::Failure);
+        return Result(Status::Failure);
     }
 
     auto& page_table_entry = get_page_table_entry(kernel_page_directory(), kKernelTemporaryMapBase, true);
@@ -368,7 +368,7 @@ Result MemoryManager::remove_page_table_entry(PageDirectory& page_directory, Vir
     PageDirectoryEntry& page_directory_entry = page_directory.entries()[page_directory_index];
 
     if (!page_directory_entry.is_present()) {
-        return Result::OK;
+        return Status::OK;
     }
 
     PageTableEntry& page_table_entry = page_directory_entry.page_table_base()[page_table_index];
@@ -376,7 +376,7 @@ Result MemoryManager::remove_page_table_entry(PageDirectory& page_directory, Vir
     page_table_entry.set_read_write(false);
     // page_table_entry.physical_page_base()
 
-    return Result::OK;
+    return Status::OK;
 }
 
 void MemoryManager::add_vm_object(VMObject& vm_object)
