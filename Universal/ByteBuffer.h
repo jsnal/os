@@ -78,6 +78,8 @@ public:
         m_size = 0;
     }
 
+    constexpr bool is_null() const { return m_data == nullptr; }
+
     const u8* data() const { return m_data; }
     u8* data() { return m_data; }
 

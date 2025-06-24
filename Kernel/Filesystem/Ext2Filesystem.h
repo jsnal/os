@@ -9,6 +9,7 @@
 #include <Kernel/Devices/BlockDevice.h>
 #include <Kernel/Filesystem/Ext2.h>
 #include <Kernel/Filesystem/Filesystem.h>
+#include <Universal/ByteBuffer.h>
 #include <Universal/Logger.h>
 #include <Universal/Result.h>
 #include <Universal/SharedPtr.h>
@@ -46,16 +47,17 @@ public:
     Result read_block(u32 index, u8* buffer);
     Result read_blocks(u32 index, u32 count, u8* buffer);
 
+    Result write_block(u32 index, const u8* buffer);
+    Result write_blocks(u32 index, u32 count, const u8* buffer);
+
 private:
     Result inode_block_and_offset(const Inode& inode, u32& block_index, u32& offset);
 
     UniquePtr<BlockDevice> m_disk;
 
     u32 m_block_size { 0 };
-
     u32 m_block_group_count { 0 };
 
-    u8* m_super_block { nullptr };
-
-    u8* m_block_group_descriptor_table { nullptr };
+    ByteBuffer m_super_block;
+    ByteBuffer m_block_group_descriptor_table;
 };

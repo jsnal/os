@@ -25,10 +25,9 @@ Ext2Inode::Ext2Inode(Ext2Filesystem& fs, ino_t id)
     u32 inodes_per_block = BLOCK_SIZE(super_block.block_size) / super_block.inode_size;
     u32 offset = (index() % inodes_per_block) * super_block.inode_size;
 
-    auto raw_data = new u8[BLOCK_SIZE(super_block.block_size)];
-    MUST(ext2_fs().read_block(block_group_descriptor.inode_table + block(), raw_data));
-    memcpy(&m_raw_data, raw_data + offset, sizeof(Ext2RawInode));
-    delete[] raw_data;
+    ByteBuffer raw_data(BLOCK_SIZE(super_block.block_size));
+    MUST(ext2_fs().read_block(block_group_descriptor.inode_table + block(), raw_data.data()));
+    memcpy(&m_raw_data, raw_data.data() + offset, sizeof(Ext2RawInode));
 
     m_mode = m_raw_data.mode;
     m_size = m_raw_data.size;

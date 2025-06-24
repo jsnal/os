@@ -42,25 +42,25 @@ Result Ext2Filesystem::init()
 
 Ext2RawSuperblock& Ext2Filesystem::super_block()
 {
-    if (m_super_block == nullptr) {
-        m_super_block = new u8[1024];
-        ASSERT(m_disk->read_blocks(2, 2, m_super_block).is_ok());
+    if (m_super_block.is_null()) {
+        m_super_block = ByteBuffer(1024);
+        ASSERT(m_disk->read_blocks(2, 2, m_super_block.data()).is_ok());
     }
 
-    return *reinterpret_cast<Ext2RawSuperblock*>(m_super_block);
+    return *reinterpret_cast<Ext2RawSuperblock*>(m_super_block.data());
 }
 
 Ext2RawBlockGroupDescriptor& Ext2Filesystem::block_group_descriptor(u32 group_index)
 {
-    if (m_block_group_descriptor_table == nullptr) {
-        u32 blocks_to_read = ceiling_divide(m_block_group_count * (u32)sizeof(Ext2RawBlockGroupDescriptor), m_block_size);
+    if (m_block_group_descriptor_table.is_null()) {
+        u32 blocks_to_read = ceiling_divide(m_block_group_count * static_cast<u32>(sizeof(Ext2RawBlockGroupDescriptor)), m_block_size);
         u8 first_block = m_block_size == 1024 ? 2 : 1;
 
-        m_block_group_descriptor_table = new u8[m_block_size * blocks_to_read];
-        MUST(read_blocks(first_block, blocks_to_read, m_block_group_descriptor_table));
+        m_block_group_descriptor_table = ByteBuffer(m_block_size * blocks_to_read);
+        MUST(read_blocks(first_block, blocks_to_read, m_block_group_descriptor_table.data()));
     }
 
-    return reinterpret_cast<Ext2RawBlockGroupDescriptor*>(m_block_group_descriptor_table)[group_index];
+    return reinterpret_cast<Ext2RawBlockGroupDescriptor*>(m_block_group_descriptor_table.data())[group_index];
 }
 
 u32 Ext2Filesystem::block_pointers_per_block() const
@@ -95,9 +95,27 @@ Result Ext2Filesystem::read_blocks(u32 index, u32 count, u8* buffer)
 
     u32 disk_blocks_to_read = ceiling_divide(count * m_block_size, m_disk->block_size());
     u32 disk_block = ceiling_divide(index * m_block_size, m_disk->block_size());
-    if (m_disk->read_blocks(disk_block, disk_blocks_to_read, buffer).is_error()) {
+
+    return m_disk->read_blocks(disk_block, disk_blocks_to_read, buffer);
+}
+
+Result Ext2Filesystem::write_block(u32 index, const u8* buffer)
+{
+    return write_blocks(index, 1, buffer);
+}
+
+Result Ext2Filesystem::write_blocks(u32 index, u32 count, const u8* buffer)
+{
+    if (buffer == nullptr) {
         return Status::Failure;
     }
 
-    return Status::OK;
+    if (count == 0) {
+        return Status::OK;
+    }
+
+    u32 disk_blocks_to_write = ceiling_divide(count * m_block_size, m_disk->block_size());
+    u32 disk_block = ceiling_divide(index * m_block_size, m_disk->block_size());
+
+    return m_disk->write_blocks(disk_block, disk_blocks_to_write, buffer);
 }
