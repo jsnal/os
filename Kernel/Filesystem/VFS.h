@@ -26,6 +26,7 @@ public:
     void init();
 
     ResultAnd<SharedPtr<FileDescriptor>> open(const String& path, int flags, mode_t mode, DirectoryEntry& base);
+    ResultAnd<SharedPtr<DirectoryEntry>> open_directory(const String& path, DirectoryEntry& base);
 
     u32 get_next_filesystem_id() { return m_current_filesystem_id++; }
 

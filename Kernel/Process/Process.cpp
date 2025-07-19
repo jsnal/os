@@ -20,12 +20,13 @@
 
 #define DEBUG_PROCESS 0
 
-Process::Process(StringView name, pid_t pid, pid_t ppid, bool is_kernel, TTYDevice* tty)
+Process::Process(StringView name, pid_t pid, pid_t ppid, bool is_kernel, DirectoryEntry* cwd, TTYDevice* tty)
     : m_name(name)
     , m_pid(pid)
     , m_ppid(ppid)
     , m_user(User::root())
     , m_is_kernel(is_kernel)
+    , m_cwd(cwd)
     , m_tty(tty)
     , m_state(State::Runnable)
 {
@@ -57,6 +58,7 @@ Process::Process(const Process& parent)
     , m_ppid(parent.pid())
     , m_user(User::root())
     , m_is_kernel(parent.is_kernel())
+    , m_cwd(parent.m_cwd)
     , m_tty(parent.m_tty)
     , m_state(State::Runnable)
 {
@@ -115,12 +117,12 @@ ResultAnd<Process*> Process::create_kernel_process(StringView name, void (*entry
     return process;
 }
 
-ResultAnd<Process*> Process::create_user_process(StringView path, pid_t pid, pid_t ppid, ArrayList<StringView>&& argv, TTYDevice* tty)
+ResultAnd<Process*> Process::create_user_process(StringView path, pid_t pid, pid_t ppid, ArrayList<StringView>&& argv, DirectoryEntry* cwd, TTYDevice* tty)
 {
     if (pid == 0) {
         pid = PM.get_next_pid();
     }
-    auto process = new Process(path, pid, ppid, false, tty);
+    auto process = new Process(path, pid, ppid, false, cwd, tty);
 
     argv.add_first(path);
 
@@ -162,6 +164,7 @@ ResultAnd<Process*> Process::fork_user_process(Process& parent, TaskRegisters& r
 
     PM.add_process(*child);
 
+    dbgprintln("Process", "Child Inode = %u", child->working_directory().inode().id());
     dbgprintf("Process", "User Process '%s' (%u) forked to spawn %u\n", parent.m_name.data(), parent.m_pid, child->m_pid);
     return child;
 }
@@ -389,7 +392,6 @@ DirectoryEntry& Process::working_directory()
 {
     if (m_cwd.is_null()) {
         m_cwd = DirectoryEntry::create(nullptr, VFS::the().root_inode());
-        dbgprintln("Process", "Setting default working directory");
     }
     return *m_cwd;
 }
@@ -445,6 +447,8 @@ int Process::sys_chdir(const char* path)
         return -EFAULT;
     }
 
+    m_cwd = TRY_TAKE(VFS::the().open_directory(path, working_directory()));
+    dbgprintln("Process", "Set CWD Inode = %u", working_directory().inode().id());
     return 0;
 }
 
@@ -462,7 +466,7 @@ int Process::sys_execve(const char* pathname, char* const* argv)
             arguments.add_last(argv[i]);
         }
 
-        auto execve_result = Process::create_user_process(pathname, m_pid, m_ppid, move(arguments), m_tty.ptr());
+        auto execve_result = Process::create_user_process(pathname, m_pid, m_ppid, move(arguments), m_cwd.ptr(), m_tty.ptr());
         if (execve_result.is_error()) {
             return -EFAULT;
         }
@@ -638,12 +642,10 @@ int Process::sys_open(const char* pathname, int flags, mode_t mode)
 {
     int fd = next_file_descriptor();
 
-    dbgprintln("VFS", "Inode refcount = %d", working_directory().inode().ref_count());
+    dbgprintln("Process", "Open CWD = %u", working_directory().inode().id());
 
     auto result = VFS::the().open(pathname, flags, mode, working_directory());
     if (result.is_error()) {
-        // dbgprintln("Process", "ERROR = %d", result.error());
-
         return result.error();
     }
 

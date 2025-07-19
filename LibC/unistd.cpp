@@ -61,4 +61,9 @@ uid_t getuid()
     return syscall(SYS_getuid);
 }
 
+int chdir(const char* path)
+{
+    return syscall(SYS_chdir, (int)path);
+}
+
 __END_DECLS

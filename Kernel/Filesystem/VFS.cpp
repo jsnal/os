@@ -88,6 +88,17 @@ ResultAnd<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mo
     return FileDescriptor::create(*entry);
 }
 
+ResultAnd<SharedPtr<DirectoryEntry>> VFS::open_directory(const String& path, DirectoryEntry& base)
+{
+    auto entry = TRY_TAKE(traverse_path(path, base));
+
+    if (!entry->inode().is_directory()) {
+        return Result(-ENOTDIR);
+    }
+
+    return entry;
+}
+
 ResultAnd<SharedPtr<DirectoryEntry>> VFS::traverse_path(const String& path, DirectoryEntry& base)
 {
     dbgprintf("VFS", "Starting to traverse the path for '%s'\n", path.data());
@@ -96,6 +107,7 @@ ResultAnd<SharedPtr<DirectoryEntry>> VFS::traverse_path(const String& path, Dire
 
     auto split_path = path.split('/');
     for (size_t i = 0; i < split_path.size(); i++) {
+        dbgprintln("VFS", "Examining %s", split_path[i].data());
         if (!current_entry->inode().is_directory()) {
             return Result(-ENOTDIR);
         }
@@ -110,7 +122,10 @@ ResultAnd<SharedPtr<DirectoryEntry>> VFS::traverse_path(const String& path, Dire
             continue;
         }
 
+        dbgprintln("VFS", "Here?");
         InodeId inode_id = TRY_TAKE(current_entry->inode().find(split_path[i]));
+        dbgprintln("VFS", "Returning?");
+
         current_entry = DirectoryEntry::create(current_entry.ptr(), *m_root_filesystem->inode(inode_id));
     }
 

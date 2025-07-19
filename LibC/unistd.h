@@ -30,6 +30,8 @@ pid_t getpid();
 pid_t getppid();
 uid_t getuid();
 
+int chdir(const char* path);
+
 __END_DECLS
 
 #endif

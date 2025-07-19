@@ -14,6 +14,45 @@
 
 #define LINE_LENGTH 256
 
+static int builtin_cd(const ArrayList<String>& args)
+{
+    if (args.size() > 2) {
+        printf("cd: too many arguments\n");
+        return -1;
+    }
+
+    if (args.size() == 1) {
+        chdir("/home/user");
+    } else {
+        chdir(args[1].data());
+    }
+
+    return 0;
+}
+
+static int execute(ArrayList<String>& args)
+{
+    pid_t pid = fork();
+    if (pid < 0) {
+        dbgprintln("Shell", "Failed to fork parent process");
+        return -1;
+    } else if (pid == 0) {
+        char* argv[args.size()];
+        for (size_t i = 1; i < args.size(); i++) {
+            argv[i - 1] = args[i].data();
+        }
+        argv[args.size() - 1] = nullptr;
+
+        if (execve(args.first().data(), argv) == -1) {
+            dbgprintln("Shell", "OH no execve failed!");
+            return -1;
+        }
+        return 0;
+    }
+
+    return 0;
+}
+
 int main(int argc, char** argv)
 {
     printf("Starting Shell\n");
@@ -27,30 +66,19 @@ int main(int argc, char** argv)
                 continue;
             }
 
-            pid_t pid = fork();
-            if (pid < 0) {
-                dbgprintln("Shell", "Failed to fork parent process");
-                return 1;
-            } else if (pid == 0) {
-                auto args = read_value.split(' ');
-                if (args.is_empty()) {
-                    return -1;
-                }
-
-                char* argv[args.size()];
-                for (size_t i = 1; i < args.size(); i++) {
-                    argv[i - 1] = args[i].data();
-                }
-                argv[args.size() - 1] = nullptr;
-
-                if (execve(args.first().data(), argv) == -1) {
-                    return -1;
-                }
-                return 0;
+            auto args = read_value.split(' ');
+            if (args.is_empty()) {
+                return -1;
             }
 
-            // TODO: use waitpid instead
-            wait(nullptr);
+            if (args[0] == "cd") {
+                builtin_cd(args);
+            } else {
+                execute(args);
+
+                // TODO: use waitpid instead
+                wait(nullptr);
+            }
         }
     }
 
