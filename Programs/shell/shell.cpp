@@ -8,7 +8,10 @@
 #include <Universal/Array.h>
 #include <Universal/Logger.h>
 #include <Universal/StringView.h>
+#include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -34,8 +37,8 @@ static int execute(ArrayList<String>& args)
 {
     pid_t pid = fork();
     if (pid < 0) {
-        dbgprintln("Shell", "Failed to fork parent process");
-        return -1;
+        printf("shell: failed to fork\n");
+        exit(EXIT_FAILURE);
     } else if (pid == 0) {
         char* argv[args.size()];
         for (size_t i = 1; i < args.size(); i++) {
@@ -43,11 +46,13 @@ static int execute(ArrayList<String>& args)
         }
         argv[args.size() - 1] = nullptr;
 
-        if (execve(args.first().data(), argv) == -1) {
-            dbgprintln("Shell", "OH no execve failed!");
-            return -1;
-        }
-        return 0;
+        execve(args.first().data(), argv);
+
+        printf("shell: %s: %s\n", strerror(errno), args.first().data());
+        exit(EXIT_FAILURE);
+    } else {
+        // TODO: use waitpid instead
+        wait(nullptr);
     }
 
     return 0;
@@ -75,9 +80,6 @@ int main(int argc, char** argv)
                 builtin_cd(args);
             } else {
                 execute(args);
-
-                // TODO: use waitpid instead
-                wait(nullptr);
             }
         }
     }

@@ -79,7 +79,7 @@ Process::Process(const Process& parent)
         if (parent.m_fds[i].ptr() == nullptr) {
             continue;
         }
-        m_fds[0] = *parent.m_fds[i];
+        m_fds[i] = *parent.m_fds[i];
     }
 }
 
@@ -164,7 +164,6 @@ ResultAnd<Process*> Process::fork_user_process(Process& parent, TaskRegisters& r
 
     PM.add_process(*child);
 
-    dbgprintln("Process", "Child Inode = %u", child->working_directory().inode().id());
     dbgprintf("Process", "User Process '%s' (%u) forked to spawn %u\n", parent.m_name.data(), parent.m_pid, child->m_pid);
     return child;
 }
@@ -448,7 +447,6 @@ int Process::sys_chdir(const char* path)
     }
 
     m_cwd = TRY_TAKE(VFS::the().open_directory(path, working_directory()));
-    dbgprintln("Process", "Set CWD Inode = %u", working_directory().inode().id());
     return 0;
 }
 
@@ -460,6 +458,7 @@ int Process::sys_dbgwrite(const char* buf, size_t length)
 
 int Process::sys_execve(const char* pathname, char* const* argv)
 {
+    int ret;
     {
         ArrayList<StringView> arguments;
         for (size_t i = 0; argv[i]; ++i) {
@@ -468,15 +467,19 @@ int Process::sys_execve(const char* pathname, char* const* argv)
 
         auto execve_result = Process::create_user_process(pathname, m_pid, m_ppid, move(arguments), m_cwd.ptr(), m_tty.ptr());
         if (execve_result.is_error()) {
-            return -EFAULT;
+            ret = -EFAULT;
+        } else {
+            ret = 0;
         }
-
-        auto new_process = execve_result.release_value();
     }
 
-    die();
-    PM.yield();
-    return -1;
+    if (ret == 0) {
+        die();
+        PM.yield();
+    }
+
+    ASSERT(ret < 0);
+    return ret;
 }
 
 void Process::sys_exit(int status)
@@ -641,8 +644,6 @@ int Process::sys_munmap(void* addr, size_t length)
 int Process::sys_open(const char* pathname, int flags, mode_t mode)
 {
     int fd = next_file_descriptor();
-
-    dbgprintln("Process", "Open CWD = %u", working_directory().inode().id());
 
     auto result = VFS::the().open(pathname, flags, mode, working_directory());
     if (result.is_error()) {

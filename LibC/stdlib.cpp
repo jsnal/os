@@ -5,6 +5,7 @@
  */
 
 #include <MallocManager.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -12,6 +13,8 @@ static MallocManager s_malloc_manager;
 
 void exit(int status)
 {
+    fflush(stdout);
+    fflush(stderr);
     _exit(status);
 }
 

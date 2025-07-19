@@ -107,7 +107,6 @@ ResultAnd<SharedPtr<DirectoryEntry>> VFS::traverse_path(const String& path, Dire
 
     auto split_path = path.split('/');
     for (size_t i = 0; i < split_path.size(); i++) {
-        dbgprintln("VFS", "Examining %s", split_path[i].data());
         if (!current_entry->inode().is_directory()) {
             return Result(-ENOTDIR);
         }
@@ -122,10 +121,7 @@ ResultAnd<SharedPtr<DirectoryEntry>> VFS::traverse_path(const String& path, Dire
             continue;
         }
 
-        dbgprintln("VFS", "Here?");
         InodeId inode_id = TRY_TAKE(current_entry->inode().find(split_path[i]));
-        dbgprintln("VFS", "Returning?");
-
         current_entry = DirectoryEntry::create(current_entry.ptr(), *m_root_filesystem->inode(inode_id));
     }
 
