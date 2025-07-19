@@ -38,7 +38,7 @@ dirent* readdir(DIR* dirp)
 {
     stat st;
     if (fstat(dirp->fd, &st) < 0) {
-        // TODO: Set errno
+        errno = EIO;
         return nullptr;
     }
 
@@ -51,6 +51,7 @@ dirent* readdir(DIR* dirp)
             free(dirp->buffer);
             dirp->buffer = nullptr;
             dirp->size = 0;
+            errno = EIO;
             return nullptr;
         }
     }
@@ -82,6 +83,8 @@ int closedir(DIR* dirp)
     // TODO: Add this when close in implemented
     // close(dirp->fd);
 
+    free(dirp->buffer);
+    dirp->buffer = nullptr;
     dirp->fd = -1;
     free(dirp);
     return 0;

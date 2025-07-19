@@ -28,12 +28,7 @@ void InodeFile::close()
 
 ssize_t InodeFile::read(FileDescriptor& fd, u8* buffer, off_t offset, ssize_t count)
 {
-    auto result = m_inode->read(fd, offset, count, buffer);
-    if (result.is_error()) {
-        return -1;
-    }
-
-    return result.value();
+    return m_inode->read(fd, offset, count, buffer);
 }
 
 ssize_t InodeFile::write(FileDescriptor&, const u8* buffer, ssize_t count)
@@ -43,22 +38,12 @@ ssize_t InodeFile::write(FileDescriptor&, const u8* buffer, ssize_t count)
 
 ssize_t InodeFile::get_dir_entries(FileDescriptor& fd, u8* buffer, ssize_t count)
 {
-    auto result = m_inode->get_dir_entries(fd, buffer, count);
-    if (result.is_error()) {
-        return -1;
-    }
-
-    return result.value();
+    return m_inode->get_dir_entries(fd, buffer, count);
 }
 
 int InodeFile::fstat(FileDescriptor& fd, stat& statbuf)
 {
-    auto result = m_inode->fstat(fd, statbuf);
-    if (result.is_error()) {
-        return -1;
-    }
-
-    return result.value();
+    return m_inode->fstat(fd, statbuf);
 }
 
 int InodeFile::ioctl(FileDescriptor&, uint32_t request, uint32_t* argp)
