@@ -41,7 +41,7 @@ VirtualConsole* tty0;
     dbgprintf("Kernel", "Running a simple process 2!\n");
     while (true) { }
 }
-#define GET_FLAGS(X)
+
 [[noreturn]] static void kernel_main()
 {
     // TODO: Only text-mode is supported currently

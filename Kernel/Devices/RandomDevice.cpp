@@ -32,6 +32,11 @@ ssize_t RandomDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
     return 0;
 }
 
+ssize_t RandomDevice::get_dir_entries(FileDescriptor&, u8* buffer, ssize_t count)
+{
+    return -EBADF;
+}
+
 int RandomDevice::fstat(FileDescriptor&, stat&)
 {
     return -EBADF;

@@ -24,6 +24,7 @@ public:
 
     ssize_t read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count) override;
     ssize_t write(FileDescriptor&, const u8* buffer, ssize_t count) override;
+    ssize_t get_dir_entries(FileDescriptor&, u8* buffer, ssize_t count) override;
     int fstat(FileDescriptor&, stat&) override;
     int ioctl(FileDescriptor&, uint32_t request, uint32_t* argp) override;
 

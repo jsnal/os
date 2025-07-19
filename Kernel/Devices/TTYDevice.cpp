@@ -69,6 +69,11 @@ ssize_t TTYDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
     return count;
 }
 
+ssize_t TTYDevice::get_dir_entries(FileDescriptor&, u8* buffer, ssize_t count)
+{
+    return -EBADF;
+}
+
 int TTYDevice::fstat(FileDescriptor&, stat&)
 {
     return -EBADF;

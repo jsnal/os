@@ -573,6 +573,20 @@ int Process::sys_fstat(int fd, stat* statbuf)
     return fd_result.release_value()->fstat(*statbuf);
 }
 
+ssize_t Process::sys_getdirentries(int fd, void* buf, size_t count)
+{
+    if (!is_address_accessible((u32)buf, count)) {
+        return -EFAULT;
+    }
+
+    auto fd_result = find_file_descriptor(fd);
+    if (fd_result.is_error()) {
+        return -EBADF;
+    }
+
+    return fd_result.release_value()->get_dir_entries((u8*)buf, count);
+}
+
 pid_t Process::sys_getpid()
 {
     return m_pid;

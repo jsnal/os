@@ -14,10 +14,11 @@ class PTSInode : public Inode {
 public:
     PTSInode(PTSFilesystem& fs, ino_t id);
 
-    virtual ResultAnd<InodeId> find(const String&) override;
-    virtual ResultAnd<ssize_t> read(size_t start, size_t length, u8* buffer, FileDescriptor&) override;
-    virtual ResultAnd<ssize_t> write(size_t start, size_t length, u8* buffer, FileDescriptor&) override;
-    virtual ResultAnd<int> fstat(stat&, FileDescriptor&) override;
-    virtual void open(FileDescriptor&, int flags) override;
-    virtual void close(FileDescriptor&) override;
+    ResultAnd<InodeId> find(const String&) override;
+    ResultAnd<ssize_t> read(FileDescriptor&, size_t start, size_t length, u8* buffer) override;
+    ResultAnd<ssize_t> write(FileDescriptor&, size_t start, size_t length, u8* buffer) override;
+    ResultAnd<ssize_t> get_dir_entries(FileDescriptor&, u8* buffer, ssize_t count) override;
+    ResultAnd<int> fstat(FileDescriptor&, stat&) override;
+    void open(FileDescriptor&, int flags) override;
+    void close(FileDescriptor&) override;
 };

@@ -7,6 +7,8 @@
 #ifndef _LIMITS_H_
 #define _LIMITS_H_
 
+#define NAME_MAX 256
+
 #define UCHAR_MAX 255
 
 #define CHAR_BIT 8

@@ -127,6 +127,11 @@ ssize_t KeyboardDevice::write(FileDescriptor&, const u8* buffer, ssize_t count)
     return 0;
 }
 
+ssize_t KeyboardDevice::get_dir_entries(FileDescriptor&, u8* buffer, ssize_t count)
+{
+    return -EBADF;
+}
+
 int KeyboardDevice::fstat(FileDescriptor&, stat&)
 {
     return -EBADF;

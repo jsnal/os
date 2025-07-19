@@ -157,7 +157,7 @@ ResultAnd<InodeId> Ext2Inode::find(const String& name)
     return Result(-ENOENT);
 }
 
-ResultAnd<ssize_t> Ext2Inode::read(size_t start, size_t length, u8* buffer, FileDescriptor&)
+ResultAnd<ssize_t> Ext2Inode::read(FileDescriptor&, size_t start, size_t length, u8* buffer)
 {
     if (length == 0 || m_raw_data.size == 0 || start > m_raw_data.size) {
         return Status::Failure;
@@ -205,12 +205,37 @@ ResultAnd<ssize_t> Ext2Inode::read(size_t start, size_t length, u8* buffer, File
     return length;
 }
 
-ResultAnd<ssize_t> Ext2Inode::write(size_t start, size_t length, u8* buffer, FileDescriptor&)
+ResultAnd<ssize_t> Ext2Inode::write(FileDescriptor&, size_t start, size_t length, u8* buffer)
 {
     return 0;
 }
 
-ResultAnd<int> Ext2Inode::fstat(stat& statbuf, FileDescriptor&)
+ResultAnd<ssize_t> Ext2Inode::get_dir_entries(FileDescriptor& fd, u8* buffer, ssize_t count)
+{
+    if (count != m_raw_data.size) {
+        return -EFAULT;
+    }
+
+    if (!is_directory()) {
+        return -ENOTDIR;
+    }
+
+    //    ByteBuffer entries(m_raw_data.size);
+    read(fd, 0, m_raw_data.size, buffer);
+
+    //    auto* entry = reinterpret_cast<Ext2RawDirectory*>(buffer);
+    //    size_t offset = 0;
+
+    //    while (offset < m_raw_data.size) {
+    //        dbgprintln("Ext2Inode", "get_dir_entries: inode=%u, size=%u, name='%s'", entry->inode, entry->size, entry->name);
+    //        offset += entry->size;
+    //        entry = reinterpret_cast<Ext2RawDirectory*>(reinterpret_cast<u8*>(entry) + entry->size);
+    //    }
+
+    return 0;
+}
+
+ResultAnd<int> Ext2Inode::fstat(FileDescriptor&, stat& statbuf)
 {
     statbuf.st_dev = (m_major_device_number << 8) + m_minor_device_number;
     statbuf.st_ino = m_id;

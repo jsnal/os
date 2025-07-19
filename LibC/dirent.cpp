@@ -8,6 +8,17 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/syscall.h>
+
+#include <stdio.h>
+struct [[gnu::packed]] sys_dirent {
+    u32 inode;
+    u16 size;
+    u8 name_length;
+    u8 type;
+    char name[];
+};
 
 DIR* opendir(const char* name)
 {
@@ -18,7 +29,48 @@ DIR* opendir(const char* name)
 
     DIR* dir = (DIR*)malloc(sizeof(DIR));
     dir->fd = fd;
+    dir->buffer = nullptr;
+    dir->size = 0;
     return dir;
+}
+
+dirent* readdir(DIR* dirp)
+{
+    stat st;
+    if (fstat(dirp->fd, &st) < 0) {
+        // TODO: Set errno
+        return nullptr;
+    }
+
+    if (dirp->buffer == nullptr) {
+        dirp->size = st.st_size;
+        dirp->offset = 0;
+        dirp->buffer = (u8*)malloc(st.st_size);
+
+        if (syscall(SYS_getdirentries, (int)dirp->fd, (int)dirp->buffer, (int)dirp->size) < 0) {
+            free(dirp->buffer);
+            dirp->buffer = nullptr;
+            dirp->size = 0;
+            return nullptr;
+        }
+    }
+
+    if (dirp->offset >= dirp->size) {
+        return nullptr;
+    }
+
+    auto* entry = reinterpret_cast<sys_dirent*>(dirp->buffer + dirp->offset);
+    dirp->offset += entry->size;
+
+    dirp->last_read_entry.d_ino = entry->inode;
+    dirp->last_read_entry.d_reclen = entry->size;
+    dirp->last_read_entry.d_type = entry->type;
+    for (int i = 0; i < entry->name_length; i++) {
+        dirp->last_read_entry.d_name[i] = entry->name[i];
+    }
+    dirp->last_read_entry.d_name[entry->name_length] = '\0';
+
+    return &dirp->last_read_entry;
 }
 
 int closedir(DIR* dirp)

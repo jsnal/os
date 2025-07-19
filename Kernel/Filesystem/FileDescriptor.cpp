@@ -30,6 +30,11 @@ ssize_t FileDescriptor::read(u8* buffer, ssize_t count)
     return m_file->read(*this, buffer, m_offset, count);
 }
 
+ssize_t FileDescriptor::get_dir_entries(u8* buffer, ssize_t count)
+{
+    return m_file->get_dir_entries(*this, buffer, count);
+}
+
 int FileDescriptor::fstat(stat& statbuf)
 {
     return m_file->fstat(*this, statbuf);

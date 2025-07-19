@@ -35,9 +35,10 @@ public:
     bool is_device() const { return is_block_device() || is_character_device(); }
 
     virtual ResultAnd<InodeId> find(const String&) = 0;
-    virtual ResultAnd<ssize_t> read(size_t start, size_t length, u8* buffer, FileDescriptor&) = 0;
-    virtual ResultAnd<ssize_t> write(size_t start, size_t length, u8* buffer, FileDescriptor&) = 0;
-    virtual ResultAnd<int> fstat(stat&, FileDescriptor&) = 0;
+    virtual ResultAnd<ssize_t> read(FileDescriptor&, size_t start, size_t length, u8* buffer) = 0;
+    virtual ResultAnd<ssize_t> write(FileDescriptor&, size_t start, size_t length, u8* buffer) = 0;
+    virtual ResultAnd<ssize_t> get_dir_entries(FileDescriptor&, u8* buffer, ssize_t count) = 0;
+    virtual ResultAnd<int> fstat(FileDescriptor&, stat&) = 0;
     virtual void open(FileDescriptor&, int flags) = 0;
     virtual void close(FileDescriptor&) = 0;
     virtual bool can_read(FileDescriptor&) { return true; };
