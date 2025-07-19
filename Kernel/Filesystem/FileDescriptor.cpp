@@ -10,6 +10,18 @@
 #include <LibC/errno_defines.h>
 #include <Universal/Logger.h>
 
+SharedPtr<FileDescriptor> FileDescriptor::create(DirectoryEntry& entry)
+{
+    auto fd = adopt_shared_ptr(*new FileDescriptor(*InodeFile::create(entry.inode())));
+    fd->m_directory_entry = entry;
+    return fd;
+}
+
+SharedPtr<FileDescriptor> FileDescriptor::create(File& file)
+{
+    return adopt_shared_ptr(*new FileDescriptor(file));
+}
+
 void FileDescriptor::open()
 {
     m_file->open(m_flags);

@@ -8,6 +8,7 @@
 
 #include <Kernel/CPU/TSS.h>
 #include <Kernel/Devices/TTYDevice.h>
+#include <Kernel/Filesystem/DirectoryEntry.h>
 #include <Kernel/Memory/PagingTypes.h>
 #include <Kernel/Memory/VirtualRegion.h>
 #include <Kernel/Process/Blocker.h>
@@ -83,26 +84,28 @@ public:
     void set_waiting(WaitingStatus&);
     bool block(Blocker&);
     void unblock_if_ready();
-
     void reap();
 
+    DirectoryEntry& working_directory();
+
+    int sys_chdir(const char* path);
+    int sys_dbgwrite(const char*, size_t);
+    int sys_execve(const char* pathname, char* const* argv);
     void sys_exit(int status);
     pid_t sys_fork(TaskRegisters&);
-    pid_t sys_waitpid(pid_t, int* wstatus, int options);
-    int sys_execve(const char* pathname, char* const* argv);
-    int sys_ioctl(int fd, uint32_t request, uint32_t* argp);
-    int sys_open(const char*, int, mode_t);
-    ssize_t sys_write(int fd, const void* buf, size_t count);
-    ssize_t sys_read(int fd, void* buf, size_t count);
     int sys_fstat(int fd, stat* statbuf);
     ssize_t sys_getdirentries(int fd, void* buf, size_t count);
     pid_t sys_getpid();
     pid_t sys_getppid();
     uid_t sys_getuid();
+    int sys_ioctl(int fd, uint32_t request, uint32_t* argp);
     int sys_isatty(int fd);
     void* sys_mmap(const mmap_args*);
     int sys_munmap(void* addr, size_t length);
-    int sys_dbgwrite(const char*, size_t);
+    int sys_open(const char*, int, mode_t);
+    ssize_t sys_read(int fd, void* buf, size_t count);
+    pid_t sys_waitpid(pid_t, int* wstatus, int options);
+    ssize_t sys_write(int fd, const void* buf, size_t count);
 
 private:
     static constexpr size_t kKernelStackSize = 16 * KB;
@@ -117,7 +120,8 @@ private:
     Result initialize_kernel_stack(const TaskRegisters&);
     ResultAnd<u32> initialize_user_stack(ArrayList<StringView>&& argv);
 
-    bool is_address_accessible(VirtualAddress, size_t);
+    bool is_address_accessible(const void*, size_t);
+    bool is_string_accessible(StringView);
     int next_file_descriptor();
     ResultAnd<SharedPtr<FileDescriptor>> find_file_descriptor(int fd);
 
@@ -132,6 +136,7 @@ private:
 
     bool m_is_kernel { false };
 
+    SharedPtr<DirectoryEntry> m_cwd;
     SharedPtr<TTYDevice> m_tty;
     SharedPtr<PageDirectory> m_page_directory;
     Blocker* m_blocker { nullptr };

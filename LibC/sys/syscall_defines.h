@@ -9,10 +9,13 @@
 #include <sys/types.h>
 
 #define SYSCALL_OPCODE_LIST       \
+    SYSCALL_OPCODE(chdir)         \
+    SYSCALL_OPCODE(dbgwrite)      \
     SYSCALL_OPCODE(execve)        \
     SYSCALL_OPCODE(exit)          \
     SYSCALL_OPCODE(fork)          \
-    SYSCALL_OPCODE(waitpid)       \
+    SYSCALL_OPCODE(fstat)         \
+    SYSCALL_OPCODE(getdirentries) \
     SYSCALL_OPCODE(getpid)        \
     SYSCALL_OPCODE(getppid)       \
     SYSCALL_OPCODE(getuid)        \
@@ -21,11 +24,9 @@
     SYSCALL_OPCODE(mmap)          \
     SYSCALL_OPCODE(munmap)        \
     SYSCALL_OPCODE(open)          \
-    SYSCALL_OPCODE(write)         \
     SYSCALL_OPCODE(read)          \
-    SYSCALL_OPCODE(fstat)         \
-    SYSCALL_OPCODE(getdirentries) \
-    SYSCALL_OPCODE(dbgwrite)
+    SYSCALL_OPCODE(waitpid)       \
+    SYSCALL_OPCODE(write)
 
 #define SYSCALL_OPCODE(x) SYS_##x,
 enum SyscallOpcode {

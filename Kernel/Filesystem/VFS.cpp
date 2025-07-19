@@ -7,6 +7,7 @@
 #include <Kernel/Devices/Device.h>
 #include <Kernel/Devices/PATADisk.h>
 #include <Kernel/Devices/PartitionDevice.h>
+#include <Kernel/Filesystem/DirectoryEntry.h>
 #include <Kernel/Filesystem/Ext2Filesystem.h>
 #include <Kernel/Filesystem/FileDescriptor.h>
 #include <Kernel/Filesystem/Inode.h>
@@ -63,24 +64,18 @@ void VFS::init()
     dbgprintf("VFS", "VFS initialized\n");
 }
 
-ResultAnd<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mode_t mode)
+ResultAnd<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mode_t mode, DirectoryEntry& base)
 {
-    auto path_traversal_result = traverse_path(path, m_root_inode);
-    if (path_traversal_result.is_error()) {
-        return path_traversal_result.error();
-    }
+    auto entry = TRY_TAKE(traverse_path(path, base));
+    dbgprintf("VFS", "Found inode %u to open for '%s'\n", entry->inode().id(), path.data());
 
-    auto path_inode = path_traversal_result.value();
-
-    dbgprintf("VFS", "Found inode %u to open for '%s'\n", path_inode->id(), path.data());
-
-    if (flags & O_DIRECTORY && !path_inode->is_directory()) {
+    if (flags & O_DIRECTORY && !entry->inode().is_directory()) {
         return Result(-ENOTDIR);
     }
 
-    if (path_inode->is_device()) {
-        u32 major = path_inode->major_device_number();
-        u32 minor = path_inode->minor_device_number();
+    if (entry->inode().is_device()) {
+        u32 major = entry->inode().major_device_number();
+        u32 minor = entry->inode().minor_device_number();
 
         auto device = Device::get_device(major, minor);
         dbgprintf("VFS", "We've got a device! %u:%u\n", device->major(), device->minor());
@@ -90,45 +85,34 @@ ResultAnd<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mo
 
     // TODO: Add many more flags here!
 
-    auto inode_file = make_shared_ptr<InodeFile>(move(path_inode));
-
-    return inode_file->open(flags);
+    return FileDescriptor::create(*entry);
 }
 
-ResultAnd<SharedPtr<Inode>> VFS::traverse_path(const String& path, SharedPtr<Inode>& base)
+ResultAnd<SharedPtr<DirectoryEntry>> VFS::traverse_path(const String& path, DirectoryEntry& base)
 {
     dbgprintf("VFS", "Starting to traverse the path for '%s'\n", path.data());
 
-    InodeId current_inode_id;
-    SharedPtr<Inode> current_inode = path[0] == '/' ? m_root_inode : base;
-    SharedPtr<Inode> previous_inode;
+    SharedPtr<DirectoryEntry> current_entry = path[0] == '/' ? DirectoryEntry::create(nullptr, *m_root_inode) : base;
 
     auto split_path = path.split('/');
-
     for (size_t i = 0; i < split_path.size(); i++) {
-        if (!current_inode->is_directory()) {
+        if (!current_entry->inode().is_directory()) {
             return Result(-ENOTDIR);
         }
 
         // TODO: Add support for consecutive '..'
         if (split_path[i] == "..") {
-            if (!previous_inode.is_null()) {
-                current_inode = previous_inode;
+            if (current_entry->has_parent()) {
+                current_entry = current_entry->parent();
             }
             continue;
         } else if (split_path[i] == ".") {
             continue;
         }
 
-        auto find_result = current_inode->find(split_path[i]);
-        if (find_result.is_error()) {
-            return find_result.error();
-        }
-
-        current_inode_id = find_result.value();
-        previous_inode = current_inode;
-        current_inode = root_filesystem().inode(current_inode_id);
+        InodeId inode_id = TRY_TAKE(current_entry->inode().find(split_path[i]));
+        current_entry = DirectoryEntry::create(current_entry.ptr(), *m_root_filesystem->inode(inode_id));
     }
 
-    return current_inode;
+    return current_entry;
 }

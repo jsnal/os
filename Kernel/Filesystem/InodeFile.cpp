@@ -8,9 +8,9 @@
 #include <Kernel/Filesystem/Inode.h>
 #include <Kernel/Filesystem/InodeFile.h>
 
-InodeFile::InodeFile(SharedPtr<Inode>&& inode)
-    : m_inode(move(inode))
+SharedPtr<InodeFile> InodeFile::create(SharedPtr<Inode>&& inode)
 {
+    return adopt_shared_ptr(*new InodeFile(move(inode)));
 }
 
 InodeFile::~InodeFile()
@@ -19,7 +19,7 @@ InodeFile::~InodeFile()
 
 ResultAnd<SharedPtr<FileDescriptor>> InodeFile::open(int flags)
 {
-    return make_shared_ptr<FileDescriptor>(*this);
+    return FileDescriptor::create(*this);
 }
 
 void InodeFile::close()

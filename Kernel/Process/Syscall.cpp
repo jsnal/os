@@ -21,22 +21,18 @@ int handle(TaskRegisters& regs, SyscallOpcode call, int arg1, int arg2, int arg3
     dbgprintf_if(TRACE_SYSCALLS, "Syscall", "%s called %s()\n", p.name().data(), syscall_opcode_to_string(call));
 
     switch (call) {
+        case SYS_chdir:
+            return p.sys_chdir((const char*)arg1);
+        case SYS_dbgwrite:
+            return p.sys_dbgwrite((const char*)arg1, arg2);
+        case SYS_execve:
+            return p.sys_execve((const char*)arg1, (char* const*)arg2);
         case SYS_exit:
             p.sys_exit(arg1);
             PM.yield();
             return 0;
         case SYS_fork:
             return p.sys_fork(regs);
-        case SYS_waitpid:
-            return p.sys_waitpid((pid_t)arg1, (int*)arg2, arg3);
-        case SYS_execve:
-            return p.sys_execve((const char*)arg1, (char* const*)arg2);
-        case SYS_open:
-            return p.sys_open((const char*)arg1, arg2, (mode_t)arg3);
-        case SYS_write:
-            return p.sys_write(arg1, (const void*)arg2, arg3);
-        case SYS_read:
-            return p.sys_read(arg1, (void*)arg2, arg3);
         case SYS_fstat:
             return p.sys_fstat(arg1, (struct stat*)arg2);
         case SYS_getdirentries:
@@ -55,8 +51,14 @@ int handle(TaskRegisters& regs, SyscallOpcode call, int arg1, int arg2, int arg3
             return (int)p.sys_mmap((const mmap_args*)arg1);
         case SYS_munmap:
             return p.sys_munmap((void*)arg1, arg2);
-        case SYS_dbgwrite:
-            return p.sys_dbgwrite((const char*)arg1, arg2);
+        case SYS_open:
+            return p.sys_open((const char*)arg1, arg2, (mode_t)arg3);
+        case SYS_read:
+            return p.sys_read(arg1, (void*)arg2, arg3);
+        case SYS_waitpid:
+            return p.sys_waitpid((pid_t)arg1, (int*)arg2, arg3);
+        case SYS_write:
+            return p.sys_write(arg1, (const void*)arg2, arg3);
         default:
             dbgprintf_if(TRACE_SYSCALLS, "Syscall", "Unknown syscall %u\n", call);
             break;

@@ -13,8 +13,7 @@ class Inode;
 
 class InodeFile : public File {
 public:
-    InodeFile(SharedPtr<Inode>&&);
-
+    static SharedPtr<InodeFile> create(SharedPtr<Inode>&&);
     virtual ~InodeFile();
 
     bool is_inode() override { return true; };
@@ -31,5 +30,10 @@ public:
     size_t length() const override;
 
 private:
+    InodeFile(SharedPtr<Inode>&& inode)
+        : m_inode(move(inode))
+    {
+    }
+
     SharedPtr<Inode> m_inode;
 };
