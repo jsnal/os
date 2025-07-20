@@ -86,7 +86,7 @@ ArrayList<BasicString<CharT>> BasicString<CharT>::split(char delimiter) const
 
     size_t leftover_length = m_length - previous_split_start;
     if (leftover_length != 0) {
-        split_array.add_last(substring(previous_split_start, m_length));
+        split_array.add_last(substring(previous_split_start, m_length - 1));
     }
 
     return split_array;
