@@ -28,6 +28,13 @@ int execve(const char* pathname, char* const* argv)
     RETURN_ERRNO(ret, ret, -1);
 }
 
+int execvp(const char* file, char* const* argv)
+{
+
+    int ret = syscall(SYS_execve, (int)file, (int)argv);
+    RETURN_ERRNO(ret, ret, -1);
+}
+
 int isatty(int fd)
 {
     int ret = syscall(SYS_isatty, fd);
@@ -61,9 +68,27 @@ uid_t getuid()
     return syscall(SYS_getuid);
 }
 
+char* getcwd(char* buf, size_t size)
+{
+    // TODO: POSIX.1-2001 states buf should be allocated when null
+    if (buf == nullptr) {
+        errno = EINVAL;
+        return nullptr;
+    }
+
+    if (size == 0 && buf != nullptr) {
+        errno = EINVAL;
+        return nullptr;
+    }
+
+    int ret = syscall(SYS_getcwd, (int)buf, (int)size);
+    RETURN_ERRNO(ret, buf, nullptr);
+}
+
 int chdir(const char* path)
 {
-    return syscall(SYS_chdir, (int)path);
+    int ret = syscall(SYS_chdir, (int)path);
+    RETURN_ERRNO(ret, ret, -1);
 }
 
 __END_DECLS

@@ -20,6 +20,7 @@ void _exit(int status);
 pid_t fork();
 
 int execve(const char* pathname, char* const* argv);
+int execvp(const char* file, char* const* argv);
 
 int isatty(int fd);
 
@@ -29,6 +30,8 @@ ssize_t read(int fd, void* buf, size_t count);
 pid_t getpid();
 pid_t getppid();
 uid_t getuid();
+
+char* getcwd(char* buf, size_t size);
 
 int chdir(const char* path);
 

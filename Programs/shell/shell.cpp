@@ -33,6 +33,24 @@ static int builtin_cd(const ArrayList<String>& args)
     return 0;
 }
 
+static int builtin_pwd(const ArrayList<String>& args)
+{
+    char path[512];
+
+    if (args.size() > 1) {
+        printf("pwd: too many arguments\n");
+        return -1;
+    }
+
+    if (getcwd(path, 512) == nullptr) {
+        printf("pwd: failed to get working directory");
+        return -1;
+    }
+
+    printf("%s\n", path);
+    return 0;
+}
+
 static int execute(ArrayList<String>& args)
 {
     pid_t pid = fork();
@@ -78,6 +96,8 @@ int main(int argc, char** argv)
 
             if (args[0] == "cd") {
                 builtin_cd(args);
+            } else if (args[0] == "pwd") {
+                builtin_pwd(args);
             } else {
                 execute(args);
             }

@@ -15,6 +15,7 @@
     SYSCALL_OPCODE(exit)          \
     SYSCALL_OPCODE(fork)          \
     SYSCALL_OPCODE(fstat)         \
+    SYSCALL_OPCODE(getcwd)        \
     SYSCALL_OPCODE(getdirentries) \
     SYSCALL_OPCODE(getpid)        \
     SYSCALL_OPCODE(getppid)       \

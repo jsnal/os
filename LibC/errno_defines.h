@@ -19,5 +19,6 @@
 #define EINVAL 10
 #define EMFILE 11
 #define EMAXERRNO 12
+#define ERANGE 13
 
 #endif
