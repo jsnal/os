@@ -94,6 +94,7 @@ public:
     void sys_exit(int status);
     pid_t sys_fork(TaskRegisters&);
     int sys_fstat(int fd, stat* statbuf);
+    int sys_getcwd(char* buf, size_t size);
     ssize_t sys_getdirentries(int fd, void* buf, size_t count);
     pid_t sys_getpid();
     pid_t sys_getppid();

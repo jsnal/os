@@ -103,7 +103,7 @@ ResultAnd<SharedPtr<DirectoryEntry>> VFS::traverse_path(const String& path, Dire
 {
     dbgprintf("VFS", "Starting to traverse the path for '%s'\n", path.data());
 
-    SharedPtr<DirectoryEntry> current_entry = path[0] == '/' ? DirectoryEntry::create(nullptr, *m_root_inode) : base;
+    SharedPtr<DirectoryEntry> current_entry = path[0] == '/' ? DirectoryEntry::create(nullptr, *m_root_inode, "/") : base;
 
     auto split_path = path.split('/');
     for (size_t i = 0; i < split_path.size(); i++) {
@@ -122,8 +122,9 @@ ResultAnd<SharedPtr<DirectoryEntry>> VFS::traverse_path(const String& path, Dire
         }
 
         InodeId inode_id = TRY_TAKE(current_entry->inode().find(split_path[i]));
-        current_entry = DirectoryEntry::create(current_entry.ptr(), *m_root_filesystem->inode(inode_id));
+        current_entry = DirectoryEntry::create(current_entry.ptr(), *m_root_filesystem->inode(inode_id), split_path[i]);
     }
 
+    dbgprintln("VFS", "Absolute path = '%s'", current_entry->absolute_path().data());
     return current_entry;
 }

@@ -390,7 +390,7 @@ void Process::reap()
 DirectoryEntry& Process::working_directory()
 {
     if (m_cwd.is_null()) {
-        m_cwd = DirectoryEntry::create(nullptr, VFS::the().root_inode());
+        m_cwd = DirectoryEntry::create(nullptr, VFS::the().root_inode(), "/");
     }
     return *m_cwd;
 }
@@ -511,6 +511,23 @@ int Process::sys_fstat(int fd, stat* statbuf)
     }
 
     return fd_result.release_value()->fstat(*statbuf);
+}
+
+int Process::sys_getcwd(char* buf, size_t size)
+{
+    if (!is_address_accessible(buf, size)) {
+        return -EFAULT;
+    }
+
+    String cwd = working_directory().absolute_path();
+    if (cwd.length() > size) {
+        return -ERANGE;
+    }
+
+    size_t length = min(size, cwd.length());
+    memcpy(buf, cwd.data(), length);
+    buf[length] = '\0';
+    return 0;
 }
 
 ssize_t Process::sys_getdirentries(int fd, void* buf, size_t count)

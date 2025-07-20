@@ -35,6 +35,8 @@ int handle(TaskRegisters& regs, SyscallOpcode call, int arg1, int arg2, int arg3
             return p.sys_fork(regs);
         case SYS_fstat:
             return p.sys_fstat(arg1, (struct stat*)arg2);
+        case SYS_getcwd:
+            return p.sys_getcwd((char*)arg1, (size_t)arg2);
         case SYS_getdirentries:
             return p.sys_getdirentries(arg1, (void*)arg2, (size_t)arg3);
         case SYS_getpid:
