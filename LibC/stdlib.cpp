@@ -5,11 +5,16 @@
  */
 
 #include <MallocManager.h>
+#include <Universal/BasicString.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <Universal/Logger.h>
+
 static MallocManager s_malloc_manager;
+static ArrayList<String> s_environment;
+char** environ;
 
 void exit(int status)
 {
@@ -39,4 +44,30 @@ void free(void* ptr)
         return;
     }
     s_malloc_manager.deallocate(ptr);
+}
+
+char* getenv(const char* name)
+{
+    char* value = nullptr;
+    for (size_t i = 0; i < s_environment.size(); i++) {
+        auto pair = s_environment[i].split('=');
+        if (pair.size() != 2) {
+            continue;
+        }
+
+        if (pair[0] == name) {
+            value = pair[1].data();
+        }
+    }
+
+    return value;
+}
+
+int setenv(const char* name, const char* value, int overwrite)
+{
+    String entry(name);
+    entry += "=";
+    entry += value;
+    s_environment.add_last(entry);
+    return 0;
 }

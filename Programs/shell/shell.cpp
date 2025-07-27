@@ -98,6 +98,10 @@ int main(int argc, char** argv)
                 builtin_cd(args);
             } else if (args[0] == "pwd") {
                 builtin_pwd(args);
+            } else if (args[0] == "env") {
+                setenv("PATH", "testing", 0);
+                char* path = getenv("PATH");
+                printf("PATH = %s", path);
             } else {
                 execute(args);
             }

@@ -38,7 +38,7 @@ Device* Device::get_device(u32 major, u32 minor)
     return nullptr;
 }
 
-ResultAnd<SharedPtr<FileDescriptor>> Device::open(int flags)
+Expected<SharedPtr<FileDescriptor>> Device::open(int flags)
 {
     return FileDescriptor::create(*this);
 }

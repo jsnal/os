@@ -25,8 +25,8 @@ public:
 
     void init();
 
-    ResultAnd<SharedPtr<FileDescriptor>> open(const String& path, int flags, mode_t mode, DirectoryEntry& base);
-    ResultAnd<SharedPtr<DirectoryEntry>> open_directory(const String& path, DirectoryEntry& base);
+    Expected<SharedPtr<FileDescriptor>> open(const String& path, int flags, mode_t mode, DirectoryEntry& base);
+    Expected<SharedPtr<DirectoryEntry>> open_directory(const String& path, DirectoryEntry& base);
 
     u32 get_next_filesystem_id() { return m_current_filesystem_id++; }
 
@@ -34,7 +34,7 @@ public:
     Inode& root_inode() { return *m_root_inode; }
 
 private:
-    ResultAnd<SharedPtr<DirectoryEntry>> traverse_path(const String& path, DirectoryEntry& base);
+    Expected<SharedPtr<DirectoryEntry>> traverse_path(const String& path, DirectoryEntry& base);
 
     u32 m_current_filesystem_id { 0 };
 

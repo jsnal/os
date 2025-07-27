@@ -62,7 +62,7 @@ struct [[gnu::packed]] ELFProgramHeader {
 
 class ELF {
 public:
-    static ResultAnd<UniquePtr<ELF>> create(SharedPtr<FileDescriptor>);
+    static Expected<UniquePtr<ELF>> create(SharedPtr<FileDescriptor>);
 
     ELF(SharedPtr<FileDescriptor> fd)
         : m_fd(fd)
@@ -71,7 +71,7 @@ public:
 
     const ELFHeader& header() const { return m_header; }
 
-    ResultAnd<Array<ELFProgramHeader>> read_program_headers();
+    Expected<Array<ELFProgramHeader>> read_program_headers();
 
     static u8 program_flags_to_access(u32 flags);
 

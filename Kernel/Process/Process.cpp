@@ -92,7 +92,7 @@ Process::~Process()
     }
 }
 
-ResultAnd<Process*> Process::create_kernel_process(StringView name, void (*entry_point)(), bool add_to_process_list)
+Expected<Process*> Process::create_kernel_process(StringView name, void (*entry_point)(), bool add_to_process_list)
 {
     auto process = new Process(move(name), 0, 0, true);
 
@@ -117,7 +117,7 @@ ResultAnd<Process*> Process::create_kernel_process(StringView name, void (*entry
     return process;
 }
 
-ResultAnd<Process*> Process::create_user_process(StringView path, pid_t pid, pid_t ppid, ArrayList<StringView>&& argv, DirectoryEntry* cwd, TTYDevice* tty)
+Expected<Process*> Process::create_user_process(StringView path, pid_t pid, pid_t ppid, ArrayList<StringView>&& argv, DirectoryEntry* cwd, TTYDevice* tty)
 {
     if (pid == 0) {
         pid = PM.get_next_pid();
@@ -147,7 +147,7 @@ ResultAnd<Process*> Process::create_user_process(StringView path, pid_t pid, pid
     return process;
 }
 
-ResultAnd<Process*> Process::fork_user_process(Process& parent, TaskRegisters& regs)
+Expected<Process*> Process::fork_user_process(Process& parent, TaskRegisters& regs)
 {
     auto child = new Process(parent);
 
@@ -168,12 +168,12 @@ ResultAnd<Process*> Process::fork_user_process(Process& parent, TaskRegisters& r
     return child;
 }
 
-ResultAnd<VirtualRegion*> Process::allocate_region(size_t size, u8 access)
+Expected<VirtualRegion*> Process::allocate_region(size_t size, u8 access)
 {
     return allocate_region_at(VirtualAddress(), size, access);
 }
 
-ResultAnd<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_address, size_t size, u8 access)
+Expected<VirtualRegion*> Process::allocate_region_at(VirtualAddress virtual_address, size_t size, u8 access)
 {
     AddressRange range;
     if (virtual_address.is_null()) {
@@ -258,7 +258,7 @@ Result Process::initialize_kernel_stack(const TaskRegisters& regs)
     return Status::OK;
 }
 
-ResultAnd<u32> Process::initialize_user_stack(ArrayList<StringView>&& argv)
+Expected<u32> Process::initialize_user_stack(ArrayList<StringView>&& argv)
 {
     m_user_stack = TRY_TAKE(allocate_region(kUserStackSize, VirtualRegion::Read | VirtualRegion::Write));
     auto temporary_mapping = TRY_TAKE(MM.temporary_map(m_user_stack->physical_pages()[m_user_stack->physical_pages().size() - 1]));
@@ -305,7 +305,7 @@ ResultAnd<u32> Process::initialize_user_stack(ArrayList<StringView>&& argv)
     return temporary_address_to_user_address(reinterpret_cast<u32>(stack_after_args));
 }
 
-ResultAnd<u32> Process::load_elf()
+Expected<u32> Process::load_elf()
 {
     auto fd = TRY_TAKE(VFS::the().open(m_name.data(), 0, 0, working_directory()));
     auto elf_result = TRY_TAKE(ELF::create(fd));
@@ -423,7 +423,7 @@ int Process::next_file_descriptor()
     return fd;
 }
 
-ResultAnd<SharedPtr<FileDescriptor>> Process::find_file_descriptor(int fd)
+Expected<SharedPtr<FileDescriptor>> Process::find_file_descriptor(int fd)
 {
     if (fd < 0 || fd > m_fds.size() || m_fds[fd].is_null()) {
         return Result(Status::Failure);

@@ -43,7 +43,7 @@ public:
     void protected_map(PageDirectory&, VirtualAddress, size_t);
     void identity_map(PageDirectory&, VirtualAddress, size_t);
 
-    ResultAnd<VirtualAddress> temporary_map(PhysicalAddress);
+    Expected<VirtualAddress> temporary_map(PhysicalAddress);
     void temporary_unmap();
 
     void copy_kernel_page_directory(PageDirectory&);

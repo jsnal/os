@@ -13,7 +13,7 @@ class Device : public File {
 public:
     static Device* get_device(u32 major, u32 minor);
 
-    virtual ResultAnd<SharedPtr<FileDescriptor>> open(int flags) override;
+    virtual Expected<SharedPtr<FileDescriptor>> open(int flags) override;
     virtual void close() override;
 
     u32 major() const { return m_major; }

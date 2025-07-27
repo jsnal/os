@@ -13,7 +13,7 @@ PTSInode::PTSInode(PTSFilesystem& fs, ino_t id)
 {
 }
 
-ResultAnd<InodeId> PTSInode::find(const String&)
+Expected<InodeId> PTSInode::find(const String&)
 {
     return Result(Status::Failure);
 }

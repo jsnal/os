@@ -34,7 +34,7 @@ public:
     bool is_block_device() const { return (m_mode & 0xF000) == MODE_BLOCK_DEVICE; };
     bool is_device() const { return is_block_device() || is_character_device(); }
 
-    virtual ResultAnd<InodeId> find(const String&) = 0;
+    virtual Expected<InodeId> find(const String&) = 0;
     virtual ssize_t read(FileDescriptor&, size_t start, size_t length, u8* buffer) = 0;
     virtual ssize_t write(FileDescriptor&, size_t start, size_t length, u8* buffer) = 0;
     virtual ssize_t get_dir_entries(FileDescriptor&, u8* buffer, ssize_t count) = 0;

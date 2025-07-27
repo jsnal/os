@@ -6,8 +6,8 @@
 
 #pragma once
 
+#include <Universal/Expected.h>
 #include <Universal/RefCounted.h>
-#include <Universal/Result.h>
 #include <Universal/SharedPtr.h>
 
 class FileDescriptor;
@@ -24,7 +24,7 @@ public:
 
     virtual size_t length() const { return 0; }
 
-    virtual ResultAnd<SharedPtr<FileDescriptor>> open(int flags) = 0;
+    virtual Expected<SharedPtr<FileDescriptor>> open(int flags) = 0;
     virtual void close() = 0;
 
     virtual ssize_t read(FileDescriptor&, u8* buffer, off_t offset, ssize_t count) = 0;

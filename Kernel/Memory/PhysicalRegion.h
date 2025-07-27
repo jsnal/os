@@ -8,8 +8,8 @@
 
 #include <Kernel/Memory/Address.h>
 #include <Universal/Bitmap.h>
+#include <Universal/Expected.h>
 #include <Universal/RefCounted.h>
-#include <Universal/Result.h>
 #include <Universal/SharedPtr.h>
 
 class PhysicalRegion : public RefCounted<PhysicalRegion> {
@@ -28,8 +28,8 @@ public:
     }
 
     u32 commit();
-    ResultAnd<PhysicalAddress> allocate_contiguous_pages(u32 number_of_pages);
-    ResultAnd<PhysicalAddress> allocate_page();
+    Expected<PhysicalAddress> allocate_contiguous_pages(u32 number_of_pages);
+    Expected<PhysicalAddress> allocate_page();
     Result free_page(PhysicalAddress);
 
     const PhysicalAddress lower() const { return m_lower; }
@@ -39,7 +39,7 @@ private:
     PhysicalRegion(PhysicalAddress lower, PhysicalAddress upper);
 
     void allocate_page_at(u32 page_index);
-    ResultAnd<u32> find_contiguous_pages(u32 number_of_pages);
+    Expected<u32> find_contiguous_pages(u32 number_of_pages);
 
     PhysicalAddress m_lower;
     PhysicalAddress m_upper;

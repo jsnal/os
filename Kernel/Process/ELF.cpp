@@ -8,7 +8,7 @@
 #include <Kernel/POSIX.h>
 #include <Kernel/Process/ELF.h>
 
-ResultAnd<UniquePtr<ELF>> ELF::create(SharedPtr<FileDescriptor> fd)
+Expected<UniquePtr<ELF>> ELF::create(SharedPtr<FileDescriptor> fd)
 {
     auto elf = make_unique_ptr<ELF>(fd);
 
@@ -29,7 +29,7 @@ ResultAnd<UniquePtr<ELF>> ELF::create(SharedPtr<FileDescriptor> fd)
     return elf;
 }
 
-ResultAnd<Array<ELFProgramHeader>> ELF::read_program_headers()
+Expected<Array<ELFProgramHeader>> ELF::read_program_headers()
 {
     int seek_ret = m_fd->seek(m_header.e_phoff, SEEK_SET);
     if (seek_ret < 0) {

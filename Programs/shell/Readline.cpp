@@ -136,21 +136,21 @@ bool Readline::enable_raw_mode()
     return true;
 }
 
-ResultAnd<String> Readline::raw_read()
+Expected<String> Readline::raw_read()
 {
     if (!enable_raw_mode()) {
-        return Result(Status::Failure);
+        return Status::Failure;
     }
 
     if (!write(m_fd_out, m_prompt.str(), m_prompt.length())) {
-        return Result(Status::Failure);
+        return Status::Failure;
     }
 
     while (true) {
         char c;
         ssize_t nread = ::read(m_fd_in, &c, 1);
         if (nread <= 0) {
-            return Result(Status::Failure);
+            return Status::Failure;
         }
 
         switch (c) {
@@ -192,10 +192,10 @@ ResultAnd<String> Readline::raw_read()
         }
     }
 
-    return Result(Status::OK);
+    return Status::OK;
 }
 
-ResultAnd<String> Readline::read()
+Expected<String> Readline::read()
 {
     ASSERT(isatty(m_fd_in));
 

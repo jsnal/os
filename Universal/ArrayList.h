@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Universal/Expected.h>
 #include <Universal/Function.h>
 #include <Universal/Malloc.h>
 #include <Universal/Result.h>
@@ -141,7 +142,7 @@ public:
         return data()[index];
     }
 
-    ResultAnd<size_t> find(Function<bool(T&)> predicate)
+    Expected<size_t> find(Function<bool(T&)> predicate)
     {
         for (int i = 0; i < m_size; i++) {
             if (predicate(data()[i])) {

@@ -15,6 +15,8 @@
 
 __BEGIN_DECLS
 
+extern char** environ;
+
 void exit(int status);
 
 int abs(int j);
@@ -24,6 +26,9 @@ char* itoa(char* dest, size_t size, int a, int base);
 void* malloc(size_t size);
 void* calloc(size_t element_count, size_t size);
 void free(void* ptr);
+
+char* getenv(const char* name);
+int setenv(const char* name, const char* value, int overwrite);
 
 __END_DECLS
 

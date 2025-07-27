@@ -124,7 +124,7 @@ u32 Ext2Inode::get_block_pointer(u32 index) const
     return m_block_pointers[index];
 }
 
-ResultAnd<InodeId> Ext2Inode::find(const String& name)
+Expected<InodeId> Ext2Inode::find(const String& name)
 {
     dbgprintf_if(DEBUG_INODE, "Ext2Inode", "Searching for '%s' in %u blocks in inode %u\n", name.data(), number_of_blocks(), m_id);
 

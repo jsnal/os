@@ -64,7 +64,7 @@ void VFS::init()
     dbgprintf("VFS", "VFS initialized\n");
 }
 
-ResultAnd<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mode_t mode, DirectoryEntry& base)
+Expected<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mode_t mode, DirectoryEntry& base)
 {
     auto entry = TRY_TAKE(traverse_path(path, base));
     dbgprintf("VFS", "Found inode %u to open for '%s'\n", entry->inode().id(), path.data());
@@ -88,7 +88,7 @@ ResultAnd<SharedPtr<FileDescriptor>> VFS::open(const String& path, int flags, mo
     return FileDescriptor::create(*entry);
 }
 
-ResultAnd<SharedPtr<DirectoryEntry>> VFS::open_directory(const String& path, DirectoryEntry& base)
+Expected<SharedPtr<DirectoryEntry>> VFS::open_directory(const String& path, DirectoryEntry& base)
 {
     auto entry = TRY_TAKE(traverse_path(path, base));
 
@@ -99,7 +99,7 @@ ResultAnd<SharedPtr<DirectoryEntry>> VFS::open_directory(const String& path, Dir
     return entry;
 }
 
-ResultAnd<SharedPtr<DirectoryEntry>> VFS::traverse_path(const String& path, DirectoryEntry& base)
+Expected<SharedPtr<DirectoryEntry>> VFS::traverse_path(const String& path, DirectoryEntry& base)
 {
     dbgprintf("VFS", "Starting to traverse the path for '%s'\n", path.data());
 

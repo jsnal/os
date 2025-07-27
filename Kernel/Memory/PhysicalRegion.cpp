@@ -44,7 +44,7 @@ u32 PhysicalRegion::commit()
     return m_total_pages;
 }
 
-ResultAnd<PhysicalAddress> PhysicalRegion::allocate_contiguous_pages(u32 number_of_pages)
+Expected<PhysicalAddress> PhysicalRegion::allocate_contiguous_pages(u32 number_of_pages)
 {
     auto contiguous_pages = find_contiguous_pages(number_of_pages);
     if (contiguous_pages.is_error()) {
@@ -60,7 +60,7 @@ ResultAnd<PhysicalAddress> PhysicalRegion::allocate_contiguous_pages(u32 number_
     return m_lower.offset(Memory::kPageSize * start_page);
 }
 
-ResultAnd<PhysicalAddress> PhysicalRegion::allocate_page()
+Expected<PhysicalAddress> PhysicalRegion::allocate_page()
 {
     PhysicalAddress address;
 
@@ -113,7 +113,7 @@ void PhysicalRegion::allocate_page_at(u32 page_index)
         m_lower.offset(Memory::kPageSize * page_index));
 }
 
-ResultAnd<u32> PhysicalRegion::find_contiguous_pages(u32 number_of_pages)
+Expected<u32> PhysicalRegion::find_contiguous_pages(u32 number_of_pages)
 {
     if (m_used_pages >= m_total_pages) {
         return Result(Memory::kOutOfMemory);

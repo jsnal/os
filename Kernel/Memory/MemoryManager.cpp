@@ -160,7 +160,7 @@ void MemoryManager::internal_init(u32* boot_page_directory, const multiboot_info
 
 PhysicalAddress MemoryManager::allocate_physical_kernel_page()
 {
-    ResultAnd<PhysicalAddress> page_result;
+    Expected<PhysicalAddress> page_result;
     for (int i = 0; i < m_kernel_physical_regions.size(); i++) {
         page_result = m_kernel_physical_regions[i]->allocate_page();
         if (page_result.is_ok()) {
@@ -175,7 +175,7 @@ PhysicalAddress MemoryManager::allocate_physical_kernel_page()
 
 PhysicalAddress MemoryManager::allocate_physical_contiguous_kernel_pages(u32 number_of_pages)
 {
-    ResultAnd<PhysicalAddress> page_result;
+    Expected<PhysicalAddress> page_result;
     for (int i = 0; i < m_kernel_physical_regions.size(); i++) {
         page_result = m_kernel_physical_regions[i]->allocate_contiguous_pages(number_of_pages);
         if (page_result.is_ok()) {
@@ -204,7 +204,7 @@ Result MemoryManager::free_physical_kernel_page(PhysicalAddress address)
 
 PhysicalAddress MemoryManager::allocate_physical_user_page()
 {
-    ResultAnd<PhysicalAddress> page_result;
+    Expected<PhysicalAddress> page_result;
     for (int i = 0; i < m_user_physical_regions.size(); i++) {
         page_result = m_user_physical_regions[i]->allocate_page();
         if (page_result.is_ok()) {
@@ -304,7 +304,7 @@ void MemoryManager::identity_map(PageDirectory& page_directory, VirtualAddress v
     flush_tlb();
 }
 
-ResultAnd<VirtualAddress> MemoryManager::temporary_map(PhysicalAddress physical_address)
+Expected<VirtualAddress> MemoryManager::temporary_map(PhysicalAddress physical_address)
 {
     if (m_is_temporary_page_mapped) {
         return Result(Status::Failure);

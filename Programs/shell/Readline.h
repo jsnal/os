@@ -8,6 +8,7 @@
 
 #include <Universal/Array.h>
 #include <Universal/BasicString.h>
+#include <Universal/Expected.h>
 #include <Universal/Result.h>
 #include <Universal/StringView.h>
 #include <termios.h>
@@ -21,7 +22,7 @@ public:
     {
     }
 
-    ResultAnd<String> read();
+    Expected<String> read();
 
 private:
     enum KeyAction {
@@ -41,7 +42,7 @@ private:
     Result do_clear();
 
     bool enable_raw_mode();
-    ResultAnd<String> raw_read();
+    Expected<String> raw_read();
 
     StringView m_prompt;
 
