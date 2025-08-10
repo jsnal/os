@@ -1,19 +1,40 @@
 # Toolchain
 
-1. Clone GCC and binutils into this directory and run `build.sh`
+Contains the build scripts and patches to build the toolchain.
+
+## Building
+
+1. Install dependencies
 
 ```
-$ git clone git@github.com:jsnal/gcc.git
-$ git clone git@github.com:jsnal/binutils-gdb.git
+apt install autoconf automake bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libisl-dev
 ```
-2. Install dependencies
 
-```
-apt install bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libisl-dev
-```
+> autoconf 2.69 is required and may need to be built from source
 
 3. Build
 
 ```
 $ ./build.sh
+```
+
+## Generating Patches
+
+1. Download the tarball of the project
+
+```
+curl -LO https://xyz/<NAME>.tar.gz
+```
+2. Untar and create two copies
+
+```
+tar zxf <NAME>.tar.gz
+cp -r <NAME> <NAME>-clean
+```
+
+3. Make necessary changes to the copy that is not marked '-clean'
+4. Generate the patch
+
+```
+diff -uraN <NAME>-clean <NAME> > <NAME>.patch 
 ```

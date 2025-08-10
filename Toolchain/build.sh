@@ -13,33 +13,32 @@ if [ ! -d "binutils" ] || [ ! -d "gcc" ]; then
     echo "Submodules have not been cloned"
 fi
 
-pushd "binutils"
-    echo "Automaking LD"
-    pushd ld
-        autoreconf
-        automake
-    popd
-
-    if [ ! -d "build" ]; then
-        mkdir build
-        pushd "build"
-        echo "Configuring binutils"
-        ../configure \
-            --target=$TARGET \
-            --prefix="$PREFIX" \
-            --with-sysroot \
-            --disable-nls \
-            --disable-werror
-
-        echo "Building binutils"
-        make all -j4
-
-        echo "Installing binutils"
-        make install
-        popd
-    fi
-
-popd
+#pushd "binutils"
+#    echo "Automaking LD"
+#    pushd ld
+#        autoreconf
+#        automake
+#    popd
+#
+#    if [ ! -d "build" ]; then
+#        mkdir build
+#        pushd "build"
+#        echo "Configuring binutils"
+#        ../configure \
+#            --target=$TARGET \
+#            --prefix="$PREFIX" \
+#            --with-sysroot \
+#            --disable-nls \
+#            --disable-werror
+#
+#        echo "Building binutils"
+#        make all -j4
+#
+#        echo "Installing binutils"
+#        make install
+#        popd
+#    fi
+#popd
 
 pushd "gcc"
   echo "Downloading dependencies"
