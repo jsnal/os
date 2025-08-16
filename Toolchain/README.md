@@ -15,7 +15,7 @@ apt install autoconf automake bison flex libgmp3-dev libmpc-dev libmpfr-dev texi
 3. Build
 
 ```
-$ ./build.sh
+$ ./build_tools.sh
 ```
 
 ## Generating Patches
@@ -36,5 +36,5 @@ cp -r <NAME> <NAME>-clean
 4. Generate the patch
 
 ```
-diff -uraN <NAME>-clean <NAME> > <NAME>.patch 
+diff -uraN <NAME>-clean <NAME> > <NAME>.patch
 ```
