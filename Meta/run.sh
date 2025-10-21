@@ -24,10 +24,18 @@ usage() {
     echo "  --help, -h                 Display this help page"
 }
 
-if [ "$(id -u)" != 0 ]; then
-  exec sudo -E -- "$0" "$@" || die "this script needs to run as root"
+if grep -qi microsoft /proc/version; then
+    PATH_RESOLVER="wslpath -aw"
+    QEMU_BIN="/mnt/c/Program Files/qemu/qemu-system-i386.exe"
 else
-  : "${SUDO_UID:=0}" "${SUDO_GID:=0}"
+    PATH_RESOLVER="echo"
+    QEMU_BIN="qemu-system-i386"
+fi
+
+if [ "$(id -u)" != 0 ]; then
+    exec sudo -E -- "$0" "$@" || die "this script needs to run as root"
+else
+    : "${SUDO_UID:=0}" "${SUDO_GID:=0}"
 fi
 
 . "$DIR/Meta/env.sh"
@@ -62,16 +70,14 @@ while true; do
 done
 
 if [ "$EMULATOR" = "bochs" ]; then
-    bochs -f $DIR/Meta/bochsrc.txt -q || die "unable to run bochs"
+    bochs -f "$($PATH_RESOLVER $DIR/Meta/bochsrc.txt)" -q || die "unable to run bochs"
 elif [ "$EMULATOR" = "qemu" ]; then
-    qemu-system-i386 \
-        $EXTRA_ARGUMENTS \
-        $NETWORK_ARGUMENTS \
+    "$QEMU_BIN" $EXTRA_ARGUMENTS $NETWORK_ARGUMENTS \
         -rtc base=utc \
         -m 128M \
         -serial stdio \
         -d cpu_reset,guest_errors \
-        -drive file=$DIR/Kernel.img,format=raw,index=0,media=disk \
+        -drive file="$($PATH_RESOLVER $DIR/Kernel.img)",format=raw,index=0,media=disk \
         || die "unable to run qemu"
 else
     usage
