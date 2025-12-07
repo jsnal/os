@@ -160,4 +160,10 @@ private:
 };
 
 static_assert(sizeof(IPv4Packet) == 20);
+
+inline NetworkEndianness<u16> calculate_checksum(const u8* buffer, size_t size)
+{
+    return 0;
+}
+
 }

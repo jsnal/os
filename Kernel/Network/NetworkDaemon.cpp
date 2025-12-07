@@ -13,7 +13,7 @@
 #include <Universal/Logger.h>
 #include <Universal/Stdlib.h>
 
-#define DEBUG_NETWORK_DAEMON (0)
+#define DEBUG_NETWORK_DAEMON (1)
 
 namespace Network {
 
@@ -123,7 +123,7 @@ void NetworkDaemon::handle_icmp(const EthernetHeader& header, const IPv4Packet& 
 
     switch (icmp_packet.type()) {
         case ICMPType::EchoRequest: {
-            const ICMPEchoData& echo_data = *icmp_packet.data<ICMPEchoData>();
+            const ICMPEchoData& echo_data = *reinterpret_cast<const ICMPEchoData*>(icmp_packet.data());
 
             dbgprintln_if(true, "NetworkDaemon", "Handling echo request from %s: id=%u, seq=%u",
                 ipv4_packet.source().to_string().data(), echo_data.identifier(), echo_data.sequence_number());
