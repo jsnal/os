@@ -306,9 +306,9 @@ void E1000NetworkCard::send(MACAddress destination, const ARPPacket& packet)
     send(buffer, buffer_size);
 }
 
-void E1000NetworkCard::send(MACAddress destination_mac_address, IPv4Address destination_ipv4_address, const ICMPPacket& packet)
+void E1000NetworkCard::send(MACAddress destination_mac_address, IPv4Address destination_ipv4_address, const u8* payload, size_t payload_size)
 {
-    size_t buffer_size = sizeof(EthernetHeader) + sizeof(IPv4Packet) + sizeof(ICMPPacket) + sizeof(ICMPEchoData);
+    size_t buffer_size = sizeof(EthernetHeader) + sizeof(IPv4Packet) + payload_size;
     u8 buffer[buffer_size];
 
     EthernetHeader& ethernet_header = *reinterpret_cast<EthernetHeader*>(buffer);
@@ -320,28 +320,19 @@ void E1000NetworkCard::send(MACAddress destination_mac_address, IPv4Address dest
     ipv4_packet.set_version(4);
     ipv4_packet.set_ihl(5);
     ipv4_packet.set_identification(1);
+    ipv4_packet.set_df_bit(true);
+    ipv4_packet.set_mf_bit(false);
+    ipv4_packet.set_fragment_offset(0);
     ipv4_packet.set_ttl(64);
     ipv4_packet.set_destination(destination_ipv4_address);
     ipv4_packet.set_source(m_ipv4_address);
     ipv4_packet.set_protocol(IPv4Protocol::ICMP);
-    ipv4_packet.set_total_length(28);
+    ipv4_packet.set_checksum(0);
+    ipv4_packet.set_total_length(sizeof(IPv4Packet) + payload_size);
 
-    ICMPPacket& icmp_packet = *reinterpret_cast<ICMPPacket*>(ipv4_packet.data());
-    icmp_packet.set_type(ICMPType::EchoReply);
-    icmp_packet.set_code(0);
+    memcpy(ipv4_packet.data(), payload, payload_size);
 
-    const ICMPEchoData& icmp_echo_request_data = *reinterpret_cast<const ICMPEchoData*>(packet.data());
-    ICMPEchoData& icmp_echo_response_data = *reinterpret_cast<ICMPEchoData*>(icmp_packet.data());
-    icmp_echo_response_data.set_identifier(icmp_echo_request_data.identifier());
-    icmp_echo_response_data.set_sequence_number(icmp_echo_request_data.sequence_number());
-
-    icmp_packet.set_checksum(calculate_checksum(reinterpret_cast<const u8*>(&icmp_packet), 8).host_value());
-
-    // memcpy(buffer + sizeof(EthernetHeader) + sizeof(IPv4Packet), &packet, sizeof(ICMPPacket));
-
-    for (size_t i = 0; i < buffer_size; i++) {
-        dbgprintln("E1000NetworkCard", " %x", buffer[i]);
-    }
+    ipv4_packet.set_checksum(calculate_checksum(buffer, buffer_size));
 
     send(buffer, buffer_size);
 }

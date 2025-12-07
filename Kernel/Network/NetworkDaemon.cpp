@@ -104,31 +104,43 @@ void NetworkDaemon::handle_ipv4(const EthernetHeader& header, size_t size)
         default:
             break;
     }
-
-    //    dbgprintln("NetworkDaemon", "version = %x", rx_packet.version());
-    //    dbgprintln("NetworkDaemon", "ihl = %x", rx_packet.ihl());
-    //    dbgprintln("NetworkDaemon", "dscp = %x", rx_packet.dscp());
-    //    dbgprintln("NetworkDaemon", "ecn = %x", rx_packet.ecn());
-    //    dbgprintln("NetworkDaemon", "total length = %u", rx_packet.total_length());
-    //    dbgprintln("NetworkDaemon", "identification = %x", rx_packet.identification());
-    //    dbgprintln("NetworkDaemon", "flags:");
-    //    dbgprintln("NetworkDaemon", "  DF = %x", rx_packet.is_df_bit());
-    //    dbgprintln("NetworkDaemon", "  MF = %x", rx_packet.is_mf_bit());
-    //    dbgprintln("NetworkDaemon", "fragment offset = %u", rx_packet.fragment_offset());
 }
 
 void NetworkDaemon::handle_icmp(const EthernetHeader& header, const IPv4Packet& ipv4_packet)
 {
     const ICMPPacket& icmp_packet = *static_cast<const ICMPPacket*>(ipv4_packet.data());
+    size_t packet_size = ipv4_packet.total_length() - sizeof(IPv4Packet);
+
+    if (calculate_checksum(&icmp_packet, packet_size) != 0) {
+        dbgprintln("NetworkDaemon", "Bad ICMP checksum... dropping");
+        return;
+    }
 
     switch (icmp_packet.type()) {
         case ICMPType::EchoRequest: {
-            const ICMPEchoData& echo_data = *reinterpret_cast<const ICMPEchoData*>(icmp_packet.data());
+            const ICMPEchoData& icmp_echo_request_data = *reinterpret_cast<const ICMPEchoData*>(icmp_packet.data());
 
             dbgprintln_if(true, "NetworkDaemon", "Handling echo request from %s: id=%u, seq=%u",
-                ipv4_packet.source().to_string().data(), echo_data.identifier(), echo_data.sequence_number());
+                ipv4_packet.source().to_string().data(), icmp_echo_request_data.identifier(), icmp_echo_request_data.sequence_number());
 
-            m_card->send(header.source(), ipv4_packet.source(), icmp_packet);
+            u8 buffer[packet_size];
+
+            ICMPPacket& icmp_packet = *reinterpret_cast<ICMPPacket*>(buffer);
+            icmp_packet.set_type(ICMPType::EchoReply);
+            icmp_packet.set_code(0);
+            icmp_packet.set_checksum(0);
+
+            ICMPEchoData& icmp_echo_response_data = *reinterpret_cast<ICMPEchoData*>(icmp_packet.data());
+            icmp_echo_response_data.set_identifier(icmp_echo_request_data.identifier());
+            icmp_echo_response_data.set_sequence_number(icmp_echo_request_data.sequence_number());
+
+            size_t left_over_size = packet_size - (sizeof(ICMPPacket) + sizeof(ICMPEchoData));
+            if (left_over_size > 0) {
+                memcpy(icmp_echo_response_data.data(), icmp_echo_request_data.data(), left_over_size);
+            }
+
+            icmp_packet.set_checksum(calculate_checksum(buffer, packet_size));
+            m_card->send(header.source(), ipv4_packet.source(), buffer, packet_size);
             break;
         }
         default:

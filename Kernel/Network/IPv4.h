@@ -111,6 +111,7 @@ public:
     void set_protocol(IPv4Protocol p) { m_protocol = static_cast<u8>(p); }
 
     u16 checksum() const { return m_checksum.host_value(); }
+    void set_checksum(u16 c) { m_checksum = c; }
 
     IPv4Address source() const { return m_source; }
     void set_source(IPv4Address a) { m_source = a; }
@@ -161,9 +162,25 @@ private:
 
 static_assert(sizeof(IPv4Packet) == 20);
 
-inline NetworkEndianness<u16> calculate_checksum(const u8* buffer, size_t size)
+inline u16 calculate_checksum(const void* buffer, size_t size)
 {
-    return 0;
+    u32 sum = 0;
+    const u16* ptr = reinterpret_cast<const u16*>(buffer);
+
+    while (size > 1) {
+        sum += convert_between_host_and_network(*ptr++);
+        size -= 2;
+    }
+
+    if (size > 0) {
+        sum += *reinterpret_cast<const u8*>(ptr);
+    }
+
+    while (sum >> 16) {
+        sum = (sum & 0xFFFF) + (sum >> 16);
+    }
+
+    return static_cast<u16>(~sum);
 }
 
 }

@@ -34,7 +34,7 @@ public:
 
     void send(const u8* data, size_t length);
     void send(MACAddress destination, const ARPPacket&);
-    void send(MACAddress destination_mac_address, IPv4Address destination_ipv4_address, const ICMPPacket&);
+    void send(MACAddress destination_mac_address, IPv4Address destination_ipv4_address, const u8* payload, size_t payload_size);
 
 private:
     struct [[gnu::packed]] rx_desc {

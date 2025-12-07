@@ -46,10 +46,6 @@ public:
     u16 checksum() const { return m_checksum.host_value(); }
     void set_checksum(u16 c) { m_checksum = c; }
 
-    //    template<typename T>
-    //    const T* data() const { return reinterpret_cast<const T*>(m_data); }
-    //    template<typename T>
-    //    T* data() { return reinterpret_cast<T*>(m_data); }
     const void* data() const { return m_data; }
     void* data() { return m_data; }
 
