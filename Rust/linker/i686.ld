@@ -6,12 +6,12 @@ SECTIONS {
 
     /* Read-only data for the Boot code */
     .boot.data : {
-        *(.boot.data)
+        KEEP(*(.boot.data))
     }
 
     /* Text section for the Boot code */
     .boot.text : {
-        *(.boot.text)
+        KEEP(*(.boot.text))
     }
 
     /* Start the Kernel at 3 GB */

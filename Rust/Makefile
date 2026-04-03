@@ -8,7 +8,7 @@ TARGET_SPEC=$(SOURCE)/i686-unknown-kernel.json
 
 all: $(BUILD)/kernel.bin $(BUILD)/kernel.sym
 
-$(BUILD)/kernel.all: $(LDFILE) $(LOCKFILE) $(MANIFEST) $(TARGET_SPEC) $(shell find $(SOURCE) -name "*.rs" -type f)
+$(BUILD)/kernel.all: $(LDFILE) $(LOCKFILE) $(MANIFEST) $(TARGET_SPEC) $(shell find $(SOURCE) -name "*.rs" -or -name "*.s" -type f)
 	cargo rustc \
 		-vv \
 		--bin kernel \
@@ -19,13 +19,9 @@ $(BUILD)/kernel.all: $(LDFILE) $(LOCKFILE) $(MANIFEST) $(TARGET_SPEC) $(shell fi
 		-Zbuild-std=core,alloc \
 		-Zbuild-std-features=compiler-builtins-mem \
 		-- \
+		-Clink-arg=-T -Clink-arg="$(LDFILE)" \
+		-C link-arg=-z -Clink-arg=max-page-size=0x1000 \
 		--emit link="$(BUILD)/kernel.all"
-
-%.o: %.asm
-	nasm -felf32 $< -o $@
-
-# $(BUILD)/%.o: $(shell find $(SOURCE) -name "*.asm" -type f)
-# 	nasm -felf64 $< -o $@
 
 $(BUILD)/kernel.sym: $(BUILD)/kernel.all
 	objcopy \

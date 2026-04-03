@@ -1,5 +1,8 @@
 *.img
 *.img.lock
+*.all
+*.sym
+*.bin
 \#*\#
 bochs_serial.txt
 compile_commands.json
