@@ -31,11 +31,19 @@ impl fmt::Write for DebugConsole {
 
 #[macro_export]
 macro_rules! dbgprint {
-    ($($arg:tt)*) => {
+    ($($args:tt)*) => {
         {
             use core::fmt::Write;
             let mut debug = $crate::debug::DebugConsole::new();
-            let _ = write!(debug, $($arg)*);
+            let _ = write!(debug, $($args)*);
         }
     };
+}
+
+#[macro_export]
+macro_rules! dbgprintln {
+    () => ($crate::dbgprint!("\n"));
+    ($fmt:expr) => ($crate::dbgprint!(concat!($fmt, "\n")));
+    ($fmt:expr, $($args:tt)*) => ($crate::dbgprint!(
+        concat!($fmt, "\n"), $($args)*));
 }
