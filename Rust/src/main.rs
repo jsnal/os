@@ -2,7 +2,10 @@
 #![no_main]
 
 use core::{arch::global_asm, panic::PanicInfo};
-use kernel::{cpu::gdt, dbgprintln};
+use kernel::{
+    cpu::{gdt, idt},
+    dbgprintln,
+};
 
 global_asm!(include_str!("boot/boot.s"));
 
@@ -11,6 +14,7 @@ static HELLO: &[u8] = b"Hello World!";
 #[unsafe(no_mangle)]
 pub extern "C" fn kmain() -> ! {
     gdt::init();
+    idt::init();
 
     dbgprintln!();
     dbgprintln!("Testing");

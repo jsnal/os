@@ -88,7 +88,6 @@ struct RingLevel;
 
 impl RingLevel {
     const KERNEL: u16 = 0;
-    const USER: u16 = 3;
 }
 
 pub struct SegmentSelector(u16);
@@ -164,6 +163,18 @@ pub fn init() {
         );
     }
 
-    // TODO: Load the CS register? Not sure how yet.
+    // Set the CS selector to the Kernel's code segment
+    unsafe {
+        core::arch::asm!(
+            "push {selector:e}", // Push the new CS selector onto the stack
+            "lea eax, [2f]",     // Load the address of label '2' into eax
+            "push eax",          // Push that offset onto the stack
+            "retf",              // Far return to set EIP and CS at the same time
+            "2:",
+            selector = in(reg) SegmentSelector::new(EntryIndex::KERNEL_CODE, RingLevel::KERNEL).raw(),
+            out("eax") _,
+        );
+    }
+
     dbgprintln!("Loaded GDT: {:p}", &GDT);
 }
