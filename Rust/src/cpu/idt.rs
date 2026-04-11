@@ -30,12 +30,12 @@ struct GateDescriptor {
 }
 
 impl GateDescriptor {
-    const fn new(flags: u8) -> Self {
+    const fn new() -> Self {
         Self {
             offset_low: 0,
             selector: SegmentSelector::NULL,
             reserved: 0,
-            flags,
+            flags: 0,
             offset_high: 0,
         }
     }
@@ -90,17 +90,11 @@ unsafe extern "C" {
 }
 
 static mut IDT: [GateDescriptor; GATE_DESCRIPTOR_COUNT] =
-    [GateDescriptor::new(0x8E); GATE_DESCRIPTOR_COUNT];
+    [GateDescriptor::new(); GATE_DESCRIPTOR_COUNT];
 
 #[repr(C, packed)]
 #[derive(Debug)]
 struct StackFrame {
-    // Segment registers push manually
-    gs: u32,
-    fs: u32,
-    es: u32,
-    ds: u32,
-
     // General purpose registered pushed with 'pusha'
     edi: u32,
     esi: u32,
@@ -125,14 +119,20 @@ struct StackFrame {
 
 #[unsafe(no_mangle)]
 fn isr_handler(stack_frame: &StackFrame) {
-    //dbgprintln!("Interrupt fired: {}", stack_frame.int_no);
     dbgprintln!("{:#x?}", stack_frame);
-    //panic!("Oh no");
+
+    // panic!();
+    // if stack_frame.int_no != 5 {
+    //     panic!("Oh no");
+    // }
 }
 
 pub fn init() {
     unsafe {
         for (index, &handler) in isrs.iter().enumerate() {
+            if handler.addr() == 0 {
+                continue;
+            }
             IDT[index].set_isr(handler.addr());
         }
     }
@@ -148,5 +148,12 @@ pub fn init() {
 
     dbgprintln!("Loaded IDT: {:#x}", descriptor.raw());
 
-    unsafe { asm!("int 5") }
+    unsafe {
+        // Temporary to disable PIC interrupts
+        asm!("out 0x21, al", in("al") 0xFFu8, options(nomem, nostack, preserves_flags));
+        asm!("out 0xa1, al", in("al") 0xFFu8, options(nomem, nostack, preserves_flags));
+        asm!("sti");
+    }
+
+    unsafe { asm!("int 3") }
 }

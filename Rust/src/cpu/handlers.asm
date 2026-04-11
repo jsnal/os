@@ -4,7 +4,6 @@
 .altmacro
 .macro ISR_NO_ERROR num
 isr_\num:
-    cli
     push 0x0
     push \num
     jmp isr_common
@@ -14,7 +13,6 @@ isr_\num:
 .altmacro
 .macro ISR_ERROR num
 isr_\num:
-    cli
     push \num
     jmp isr_common
 .endm
@@ -22,17 +20,6 @@ isr_\num:
 .global isr_common
 isr_common:
     pusha
-
-    // Save the segment selectors. Load each one into EAX to prevent the LLVM
-    // assembler from using 'pushw', which misaligns the stack frame
-    mov eax, ds
-    push eax
-    mov eax, es
-    push eax
-    mov eax, fs
-    push eax
-    mov eax, gs
-    push eax
 
     // Load the Kernel's data segment
     mov ax, 0x10
@@ -45,20 +32,9 @@ isr_common:
     call isr_handler
     add esp, 0x4
 
-    // Restore the segment selectors. Load each one into EAX to prevent the LLVM
-    // assembler from using 'popw'
-    pop eax
-    mov gs, eax
-    pop eax
-    mov fs, eax
-    pop eax
-    mov es, eax
-    pop eax
-    mov ds, eax
-
     popa
     add esp, 0x8
-    iret
+    iretd
 
 ISR_NO_ERROR 0
 ISR_NO_ERROR 1
