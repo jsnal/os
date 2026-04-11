@@ -14,7 +14,7 @@ impl AccessFlags {
 }
 
 #[repr(C, packed)]
-struct Entry {
+struct SegmentDescriptor {
     limit_low: u16,
     base_low: u16,
     base_middle: u8,
@@ -23,7 +23,7 @@ struct Entry {
     base_high: u8,
 }
 
-impl Entry {
+impl SegmentDescriptor {
     const NULL: Self = Self {
         limit_low: 0,
         base_low: 0,
@@ -59,40 +59,48 @@ impl Entry {
     }
 }
 
-impl fmt::Debug for Entry {
+impl fmt::Debug for SegmentDescriptor {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Entry({:#018x})", self.raw())
+        write!(f, "SegmentDescriptor({:#018x})", self.raw())
     }
 }
 
 #[repr(C, packed)]
-struct TablePointer {
+struct GdtDescriptor {
     size: u16,
     offset: u32,
 }
 
-impl TablePointer {
+impl GdtDescriptor {
     const fn new(size: u16, offset: u32) -> Self {
         Self { size, offset }
     }
+
+    pub fn raw(&self) -> u64 {
+        (self.size as u64) | (self.offset as u64) << 16
+    }
 }
 
-struct EntryIndex;
+pub struct SegmentDescriptorIndex;
 
-impl EntryIndex {
-    const KERNEL_CODE: u16 = 1;
-    const KERNEL_DATA: u16 = 2;
+impl SegmentDescriptorIndex {
+    pub const KERNEL_CODE: u16 = 1;
+    pub const KERNEL_DATA: u16 = 2;
 }
 
-struct RingLevel;
+pub struct SegmentRingLevel;
 
-impl RingLevel {
-    const KERNEL: u16 = 0;
+impl SegmentRingLevel {
+    pub const KERNEL: u16 = 0;
 }
 
+#[repr(C, packed)]
+#[derive(Clone, Copy)]
 pub struct SegmentSelector(u16);
 
 impl SegmentSelector {
+    pub const NULL: Self = Self(0);
+
     pub const fn new(index: u16, ring: u16) -> Self {
         Self(index << 3 | (ring as u16))
     }
@@ -104,34 +112,34 @@ impl SegmentSelector {
 
 impl fmt::Debug for SegmentSelector {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "SegmentSelector({:#018x})", self.raw())
+        write!(f, "SegmentSelector({:#x})", self.raw())
     }
 }
 
-const ENTRY_COUNT: usize = 5;
-static GDT: [Entry; ENTRY_COUNT] = [
-    Entry::NULL,
-    Entry::new(
+const SEGMENT_DESCRIPTOR_COUNT: usize = 5;
+static GDT: [SegmentDescriptor; SEGMENT_DESCRIPTOR_COUNT] = [
+    SegmentDescriptor::NULL,
+    SegmentDescriptor::new(
         AccessFlags::PRESENT
             | AccessFlags::KERNEL
             | AccessFlags::DATA_OR_CODE
             | AccessFlags::EXECUTABLE
             | AccessFlags::READABLE_OR_WRITEABLE,
     ),
-    Entry::new(
+    SegmentDescriptor::new(
         AccessFlags::PRESENT
             | AccessFlags::KERNEL
             | AccessFlags::DATA_OR_CODE
             | AccessFlags::READABLE_OR_WRITEABLE,
     ),
-    Entry::new(
+    SegmentDescriptor::new(
         AccessFlags::PRESENT
             | AccessFlags::USER
             | AccessFlags::DATA_OR_CODE
             | AccessFlags::EXECUTABLE
             | AccessFlags::READABLE_OR_WRITEABLE,
     ),
-    Entry::new(
+    SegmentDescriptor::new(
         AccessFlags::PRESENT
             | AccessFlags::USER
             | AccessFlags::DATA_OR_CODE
@@ -140,14 +148,14 @@ static GDT: [Entry; ENTRY_COUNT] = [
 ];
 
 pub fn init() {
-    let table_pointer = TablePointer::new(
-        mem::size_of::<[Entry; ENTRY_COUNT]>() as u16,
+    let descriptor = GdtDescriptor::new(
+        mem::size_of::<[SegmentDescriptor; SEGMENT_DESCRIPTOR_COUNT]>() as u16,
         addr_of!(GDT).addr() as u32,
     );
 
     // Load the GDTR with a pointer to the static table
     unsafe {
-        asm!("lgdt [{}]", in(reg) &table_pointer, options(nomem, nostack));
+        asm!("lgdt [{}]", in(reg) &descriptor, options(nomem, nostack));
     }
 
     // All segment selector registers should point to the Kernel's data segment except for CS which
@@ -159,7 +167,7 @@ pub fn init() {
             "mov fs, ax",
             "mov gs, ax",
             "mov ss, ax",
-            in("ax") SegmentSelector::new(EntryIndex::KERNEL_DATA, RingLevel::KERNEL).raw()
+            in("ax") SegmentSelector::new(SegmentDescriptorIndex::KERNEL_DATA, SegmentRingLevel::KERNEL).raw()
         );
     }
 
@@ -171,10 +179,10 @@ pub fn init() {
             "push eax",          // Push that offset onto the stack
             "retf",              // Far return to set EIP and CS at the same time
             "2:",
-            selector = in(reg) SegmentSelector::new(EntryIndex::KERNEL_CODE, RingLevel::KERNEL).raw(),
+            selector = in(reg) SegmentSelector::new(SegmentDescriptorIndex::KERNEL_CODE, SegmentRingLevel::KERNEL).raw(),
             out("eax") _,
         );
     }
 
-    dbgprintln!("Loaded GDT: {:p}", &GDT);
+    dbgprintln!("Loaded GDT: {:#x}", descriptor.raw());
 }

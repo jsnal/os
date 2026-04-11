@@ -22,10 +22,17 @@ isr_\num:
 .global isr_common
 isr_common:
     pusha
-    push ds
-    push es
-    push fs
-    push gs
+
+    // Save the segment selectors. Load each one into EAX to prevent the LLVM
+    // assembler from using 'pushw', which misaligns the stack frame
+    mov eax, ds
+    push eax
+    mov eax, es
+    push eax
+    mov eax, fs
+    push eax
+    mov eax, gs
+    push eax
 
     // Load the Kernel's data segment
     mov ax, 0x10
@@ -38,12 +45,19 @@ isr_common:
     call isr_handler
     add esp, 0x4
 
-    pop gs
-    pop fs
-    pop es
-    pop ds
+    // Restore the segment selectors. Load each one into EAX to prevent the LLVM
+    // assembler from using 'popw'
+    pop eax
+    mov gs, eax
+    pop eax
+    mov fs, eax
+    pop eax
+    mov es, eax
+    pop eax
+    mov ds, eax
+
     popa
-    add esp, 0x08
+    add esp, 0x8
     iret
 
 ISR_NO_ERROR 0
@@ -66,10 +80,6 @@ ISR_NO_ERROR 18
 ISR_NO_ERROR 19
 ISR_NO_ERROR 20
 ISR_ERROR 21
-ISR_NO_ERROR 28
-ISR_ERROR 29
-ISR_ERROR 30
-ISR_NO_ERROR 31
 
 .set i, 32
 .rept 224
@@ -107,10 +117,10 @@ isrs:
     .long 0
     .long 0
     .long 0
-    .long isr_28
-    .long isr_29
-    .long isr_30
-    .long isr_31
+    .long 0
+    .long 0
+    .long 0
+    .long 0
 
     .altmacro
     .macro GEN num
