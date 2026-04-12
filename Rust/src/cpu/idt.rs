@@ -9,7 +9,7 @@ use crate::{
     dbgprintln,
 };
 
-global_asm!(include_str!("handlers.asm"));
+global_asm!(include_str!("isrs.s"));
 
 struct GateDescriptorFlags;
 
@@ -83,18 +83,9 @@ impl IdtDescriptor {
     }
 }
 
-const GATE_DESCRIPTOR_COUNT: usize = 256;
-
-unsafe extern "C" {
-    static isrs: [*const u8; GATE_DESCRIPTOR_COUNT];
-}
-
-static mut IDT: [GateDescriptor; GATE_DESCRIPTOR_COUNT] =
-    [GateDescriptor::new(); GATE_DESCRIPTOR_COUNT];
-
 #[repr(C, packed)]
 #[derive(Debug)]
-struct StackFrame {
+pub struct InterruptStackFrame {
     // General purpose registered pushed with 'pusha'
     edi: u32,
     esi: u32,
@@ -117,14 +108,77 @@ struct StackFrame {
     ss: u32,
 }
 
-#[unsafe(no_mangle)]
-fn isr_handler(stack_frame: &StackFrame) {
-    dbgprintln!("{:#x?}", stack_frame);
+pub type InterruptHandler = fn(&mut InterruptStackFrame);
 
-    // panic!();
-    // if stack_frame.int_no != 5 {
-    //     panic!("Oh no");
-    // }
+macro_rules! define_exception_handler {
+    ($($name:ident => $msg:expr),*) => {
+        $(
+            fn $name(stack_frame: &mut InterruptStackFrame) {
+                let int_no = stack_frame.int_no;
+                panic!("unrecoverable interrupt: {} ({})\n{:#x?}", $msg, int_no, stack_frame);
+            }
+        )*
+    };
+}
+
+const GATE_DESCRIPTOR_COUNT: usize = 256;
+
+unsafe extern "C" {
+    // The list of all the ISR assembly routines. Defined in 'isrs.asm'
+    static isrs: [*const u8; GATE_DESCRIPTOR_COUNT];
+}
+
+static mut IDT: [GateDescriptor; GATE_DESCRIPTOR_COUNT] =
+    [GateDescriptor::new(); GATE_DESCRIPTOR_COUNT];
+
+static mut INTERRUPT_HANDLERS: [Option<InterruptHandler>; GATE_DESCRIPTOR_COUNT] =
+    [None; GATE_DESCRIPTOR_COUNT];
+
+define_exception_handler!(
+    division_error => "division error",
+    debug => "debug",
+    non_maskable_interrupt => "non-maskable interrupt",
+    breakpoint => "breakpoint",
+    overflow => "overflow",
+    bound_range_exceeded => "bound range exceeded",
+    invalid_opcode => "invalid opcode",
+    device_not_available => "device not available",
+    double_fault => "double fault",
+    invalid_tss => "invalid tss",
+    segment_not_present => "segment not present",
+    stack_segment_fault => "stack-segment fault",
+    general_protection_fault => "general protection fault",
+    page_fault => "page fault",
+    x87_floating_point_exception => "x87 floating-point exception",
+    alignment_check => "alignment check",
+    machine_check => "machine check",
+    simd_floating_point_exception => "simd floating-point exception",
+    virtualization_exception => "virtualization exception",
+    control_protection_exception => "control protection exception"
+);
+
+/// Entry point from assembly after an interrupt fires. All this function does is call out to the
+/// real interrupt handler which will take any necessary actions.
+#[unsafe(no_mangle)]
+fn interrupt_handler_dispatcher(stack_frame: &mut InterruptStackFrame) {
+    if let Some(handler) = unsafe { INTERRUPT_HANDLERS[stack_frame.int_no as usize] } {
+        handler(stack_frame);
+    } else {
+        let int_no = stack_frame.int_no;
+        dbgprintln!("unhandled interrupt: {}", int_no);
+    }
+}
+
+/// # Panics
+/// * If an interrupt already exists for the given interrupt index
+pub fn set_interrupt_handler(index: u8, handler: InterruptHandler) {
+    if let Some(_) = unsafe { INTERRUPT_HANDLERS[index as usize] } {
+        panic!("interrupt handler already registered, index={}", index);
+    }
+
+    unsafe {
+        INTERRUPT_HANDLERS[index as usize] = Some(handler);
+    }
 }
 
 pub fn init() {
@@ -142,11 +196,10 @@ pub fn init() {
         addr_of!(IDT).addr() as u32,
     );
 
+    // Load the LDTR with a pointer to the static table
     unsafe {
         asm!("lidt [{}]", in(reg) &descriptor, options(nomem, nostack));
     }
-
-    dbgprintln!("Loaded IDT: {:#x}", descriptor.raw());
 
     unsafe {
         // Temporary to disable PIC interrupts
@@ -155,5 +208,27 @@ pub fn init() {
         asm!("sti");
     }
 
-    unsafe { asm!("int 3") }
+    // Load all of the CPU exceptions into their interrupt handler
+    set_interrupt_handler(0, division_error);
+    set_interrupt_handler(1, debug);
+    set_interrupt_handler(2, non_maskable_interrupt);
+    set_interrupt_handler(3, breakpoint);
+    set_interrupt_handler(4, overflow);
+    set_interrupt_handler(5, bound_range_exceeded);
+    set_interrupt_handler(6, invalid_opcode);
+    set_interrupt_handler(7, device_not_available);
+    set_interrupt_handler(8, double_fault);
+    set_interrupt_handler(10, invalid_tss);
+    set_interrupt_handler(11, segment_not_present);
+    set_interrupt_handler(12, stack_segment_fault);
+    set_interrupt_handler(13, general_protection_fault);
+    set_interrupt_handler(14, page_fault);
+    set_interrupt_handler(16, x87_floating_point_exception);
+    set_interrupt_handler(17, alignment_check);
+    set_interrupt_handler(18, machine_check);
+    set_interrupt_handler(19, simd_floating_point_exception);
+    set_interrupt_handler(20, virtualization_exception);
+    set_interrupt_handler(21, control_protection_exception);
+
+    dbgprintln!("loaded IDT: {:#016x}", descriptor.raw());
 }

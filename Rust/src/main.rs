@@ -3,7 +3,7 @@
 
 use core::{arch::global_asm, panic::PanicInfo};
 use kernel::{
-    cpu::{gdt, idt},
+    cpu::{self, gdt, idt},
     dbgprintln,
 };
 
@@ -16,10 +16,6 @@ pub extern "C" fn kmain() -> ! {
     gdt::init();
     idt::init();
 
-    dbgprintln!();
-    dbgprintln!("Testing");
-    dbgprintln!("Testing {:x}", 900);
-
     let vga_buffer = 0xb8000 as *mut u8;
     for (i, &byte) in HELLO.iter().enumerate() {
         unsafe {
@@ -28,10 +24,21 @@ pub extern "C" fn kmain() -> ! {
         }
     }
 
-    loop {}
+    loop {
+        cpu::hlt();
+    }
 }
 
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    loop {}
+fn panic(info: &PanicInfo) -> ! {
+    dbgprintln!(
+        "kernel panic at {}: {}",
+        info.location().unwrap(),
+        info.message()
+    );
+
+    cpu::cli();
+    loop {
+        cpu::hlt();
+    }
 }

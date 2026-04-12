@@ -184,5 +184,5 @@ pub fn init() {
         );
     }
 
-    dbgprintln!("Loaded GDT: {:#x}", descriptor.raw());
+    dbgprintln!("loaded GDT: {:#016x}", descriptor.raw());
 }

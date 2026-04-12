@@ -29,7 +29,7 @@ isr_common:
     mov gs, ax
 
     push esp
-    call isr_handler
+    call interrupt_handler_dispatcher
     add esp, 0x4
 
     popa

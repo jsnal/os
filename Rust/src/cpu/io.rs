@@ -1,5 +1,6 @@
 use core::arch::asm;
 
+#[inline]
 pub fn inb(port: u16) -> u8 {
     let value: u8;
     unsafe {
@@ -8,12 +9,14 @@ pub fn inb(port: u16) -> u8 {
     return value;
 }
 
+#[inline]
 pub fn outb(port: u16, value: u8) {
     unsafe {
         asm!("out dx, al", in("dx") port, in("al") value, options(nomem, nostack, preserves_flags));
     }
 }
 
+#[inline]
 pub fn inw(port: u16) -> u16 {
     let value: u16;
     unsafe {
@@ -22,12 +25,14 @@ pub fn inw(port: u16) -> u16 {
     value
 }
 
+#[inline]
 pub fn outw(port: u16, value: u16) {
     unsafe {
         asm!("out dx, ax", in("dx") port, in("ax") value, options(nomem, nostack, preserves_flags));
     }
 }
 
+#[inline]
 pub fn inl(port: u16) -> u32 {
     let value: u32;
     unsafe {
@@ -36,12 +41,14 @@ pub fn inl(port: u16) -> u32 {
     value
 }
 
+#[inline]
 pub fn outl(port: u16, value: u32) {
     unsafe {
         asm!("out dx, eax", in("dx") port, in("eax") value, options(nomem, nostack, preserves_flags));
     }
 }
 
+#[inline]
 pub fn delay(microseconds: usize) {
     for _ in 0..microseconds {
         inb(0x80);
