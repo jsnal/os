@@ -201,13 +201,6 @@ pub fn init() {
         asm!("lidt [{}]", in(reg) &descriptor, options(nomem, nostack));
     }
 
-    unsafe {
-        // Temporary to disable PIC interrupts
-        asm!("out 0x21, al", in("al") 0xFFu8, options(nomem, nostack, preserves_flags));
-        asm!("out 0xa1, al", in("al") 0xFFu8, options(nomem, nostack, preserves_flags));
-        asm!("sti");
-    }
-
     // Load all of the CPU exceptions into their interrupt handler
     set_interrupt_handler(0, division_error);
     set_interrupt_handler(1, debug);
@@ -230,5 +223,5 @@ pub fn init() {
     set_interrupt_handler(20, virtualization_exception);
     set_interrupt_handler(21, control_protection_exception);
 
-    dbgprintln!("loaded IDT: {:#016x}", descriptor.raw());
+    dbgprintln!("loaded IDT: idtr={:#016x}", descriptor.raw());
 }

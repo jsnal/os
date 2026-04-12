@@ -3,7 +3,7 @@
 
 use core::{arch::global_asm, panic::PanicInfo};
 use kernel::{
-    cpu::{self, gdt, idt},
+    cpu::{self, gdt, idt, pic},
     dbgprintln,
 };
 
@@ -15,6 +15,7 @@ static HELLO: &[u8] = b"Hello World!";
 pub extern "C" fn kmain() -> ! {
     gdt::init();
     idt::init();
+    pic::init();
 
     let vga_buffer = 0xb8000 as *mut u8;
     for (i, &byte) in HELLO.iter().enumerate() {
