@@ -1,10 +1,12 @@
 use crate::{cpu::io, dbgprintln};
 
+pub const PIT_IRQ: u8 = 0;
+
 const PIC1_COMMAND: u16 = 0x0020;
 const PIC1_DATA: u16 = 0x0021;
 const PIC2_COMMAND: u16 = 0x00A0;
 const PIC2_DATA: u16 = 0x00A1;
-const PIC1_OFFSET: u8 = 0x20;
+pub const PIC1_OFFSET: u8 = 0x20;
 const PIC2_OFFSET: u8 = 0x28;
 const PIC_EOI: u8 = 0x20;
 const ICW1_ICW4: u8 = 0x01;

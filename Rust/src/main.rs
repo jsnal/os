@@ -2,10 +2,7 @@
 #![no_main]
 
 use core::{arch::global_asm, panic::PanicInfo};
-use kernel::{
-    cpu::{self, gdt, idt, pic},
-    dbgprintln,
-};
+use kernel::{cpu, dbgprintln};
 
 global_asm!(include_str!("boot/boot.s"));
 
@@ -13,9 +10,7 @@ static HELLO: &[u8] = b"Hello World!";
 
 #[unsafe(no_mangle)]
 pub extern "C" fn kmain() -> ! {
-    gdt::init();
-    idt::init();
-    pic::init();
+    cpu::init();
 
     let vga_buffer = 0xb8000 as *mut u8;
     for (i, &byte) in HELLO.iter().enumerate() {

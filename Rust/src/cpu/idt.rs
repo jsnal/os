@@ -5,7 +5,10 @@ use core::{
 };
 
 use crate::{
-    cpu::gdt::{SegmentDescriptorIndex, SegmentRingLevel, SegmentSelector},
+    cpu::{
+        gdt::{SegmentDescriptorIndex, SegmentRingLevel, SegmentSelector},
+        pic,
+    },
     dbgprintln,
 };
 
@@ -163,6 +166,11 @@ define_exception_handler!(
 fn interrupt_handler_dispatcher(stack_frame: &mut InterruptStackFrame) {
     if let Some(handler) = unsafe { INTERRUPT_HANDLERS[stack_frame.int_no as usize] } {
         handler(stack_frame);
+
+        // Send the EOI for IRQs based on where the PIC was relocated
+        if (stack_frame.int_no as u8) >= pic::PIC1_OFFSET {
+            pic::eoi((stack_frame.int_no as u8) - pic::PIC1_OFFSET);
+        }
     } else {
         let int_no = stack_frame.int_no;
         dbgprintln!("unhandled interrupt: {}", int_no);
@@ -171,14 +179,29 @@ fn interrupt_handler_dispatcher(stack_frame: &mut InterruptStackFrame) {
 
 /// # Panics
 /// * If an interrupt already exists for the given interrupt index
-pub fn set_interrupt_handler(index: u8, handler: InterruptHandler) {
+fn set_interrupt_handler(index: u8, handler: InterruptHandler) {
     if let Some(_) = unsafe { INTERRUPT_HANDLERS[index as usize] } {
         panic!("interrupt handler already registered, index={}", index);
     }
-
     unsafe {
         INTERRUPT_HANDLERS[index as usize] = Some(handler);
     }
+}
+
+/// # Panics
+/// * If the interrupt index is too large
+/// * If an interrupt already exists for the given interrupt index
+pub fn set_exception_handler(index: u8, handler: InterruptHandler) {
+    if index >= 32 {
+        panic!("interrupt index is too large, index={}", index);
+    }
+    set_interrupt_handler(index, handler);
+}
+
+/// # Panics
+/// * If an interrupt already exists for the given interrupt index
+pub fn set_irq_handler(index: u8, handler: InterruptHandler) {
+    set_interrupt_handler(index + pic::PIC1_OFFSET, handler);
 }
 
 pub fn init() {
@@ -202,26 +225,26 @@ pub fn init() {
     }
 
     // Load all of the CPU exceptions into their interrupt handler
-    set_interrupt_handler(0, division_error);
-    set_interrupt_handler(1, debug);
-    set_interrupt_handler(2, non_maskable_interrupt);
-    set_interrupt_handler(3, breakpoint);
-    set_interrupt_handler(4, overflow);
-    set_interrupt_handler(5, bound_range_exceeded);
-    set_interrupt_handler(6, invalid_opcode);
-    set_interrupt_handler(7, device_not_available);
-    set_interrupt_handler(8, double_fault);
-    set_interrupt_handler(10, invalid_tss);
-    set_interrupt_handler(11, segment_not_present);
-    set_interrupt_handler(12, stack_segment_fault);
-    set_interrupt_handler(13, general_protection_fault);
-    set_interrupt_handler(14, page_fault);
-    set_interrupt_handler(16, x87_floating_point_exception);
-    set_interrupt_handler(17, alignment_check);
-    set_interrupt_handler(18, machine_check);
-    set_interrupt_handler(19, simd_floating_point_exception);
-    set_interrupt_handler(20, virtualization_exception);
-    set_interrupt_handler(21, control_protection_exception);
+    set_exception_handler(0, division_error);
+    set_exception_handler(1, debug);
+    set_exception_handler(2, non_maskable_interrupt);
+    set_exception_handler(3, breakpoint);
+    set_exception_handler(4, overflow);
+    set_exception_handler(5, bound_range_exceeded);
+    set_exception_handler(6, invalid_opcode);
+    set_exception_handler(7, device_not_available);
+    set_exception_handler(8, double_fault);
+    set_exception_handler(10, invalid_tss);
+    set_exception_handler(11, segment_not_present);
+    set_exception_handler(12, stack_segment_fault);
+    set_exception_handler(13, general_protection_fault);
+    set_exception_handler(14, page_fault);
+    set_exception_handler(16, x87_floating_point_exception);
+    set_exception_handler(17, alignment_check);
+    set_exception_handler(18, machine_check);
+    set_exception_handler(19, simd_floating_point_exception);
+    set_exception_handler(20, virtualization_exception);
+    set_exception_handler(21, control_protection_exception);
 
     dbgprintln!("loaded IDT: idtr={:#016x}", descriptor.raw());
 }
