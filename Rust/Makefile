@@ -6,7 +6,19 @@ LOCKFILE=$(SOURCE)/Cargo.lock
 MANIFEST=$(SOURCE)/Cargo.toml
 TARGET_SPEC=$(SOURCE)/i686-unknown-kernel.json
 
+QEMU=/mnt/c/Program\ Files/qemu/qemu-system-i386.exe
+IMGFILE:=$(shell wslpath -aw kernel.img)
+
 all: $(BUILD)/kernel.bin $(BUILD)/kernel.sym
+
+run: all
+	$(BUILD)/scripts/build_img.sh
+	$(QEMU) \
+		-rtc base=utc \
+		-m 128M \
+		-debugcon stdio \
+		-d cpu_reset,guest_errors \
+		-drive file='$(IMGFILE)',format=raw,index=0,media=disk
 
 $(BUILD)/kernel.all: $(LDFILE) $(LOCKFILE) $(MANIFEST) $(TARGET_SPEC) $(shell find $(SOURCE) -name "*.rs" -or -name "*.s" -type f)
 	cargo rustc \
