@@ -20,6 +20,9 @@ run: all
 		-d cpu_reset,guest_errors \
 		-drive file='$(IMGFILE)',format=raw,index=0,media=disk
 
+test:
+	cargo test --lib --manifest-path "$(MANIFEST)"
+
 $(BUILD)/kernel.all: $(LDFILE) $(LOCKFILE) $(MANIFEST) $(TARGET_SPEC) $(shell find $(SOURCE) -name "*.rs" -or -name "*.s" -type f)
 	cargo rustc \
 		-vv \
@@ -31,8 +34,10 @@ $(BUILD)/kernel.all: $(LDFILE) $(LOCKFILE) $(MANIFEST) $(TARGET_SPEC) $(shell fi
 		-Zbuild-std=core,alloc \
 		-Zbuild-std-features=compiler-builtins-mem \
 		-- \
-		-Clink-arg=-T -Clink-arg="$(LDFILE)" \
-		-C link-arg=-z -Clink-arg=max-page-size=0x1000 \
+		-Clink-arg=-T \
+		-Clink-arg="$(LDFILE)" \
+		-Clink-arg=-z \
+		-Clink-arg=max-page-size=0x1000 \
 		--emit link="$(BUILD)/kernel.all"
 
 $(BUILD)/kernel.sym: $(BUILD)/kernel.all

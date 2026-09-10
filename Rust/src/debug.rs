@@ -1,7 +1,5 @@
 use core::fmt;
 
-use crate::cpu::io;
-
 pub struct DebugConsole {
     port: u16,
 }
@@ -12,7 +10,17 @@ impl DebugConsole {
     }
 
     pub fn write_byte(&self, byte: u8) {
-        io::outb(self.port, byte);
+        #[cfg(not(test))]
+        crate::cpu::io::outb(self.port, byte);
+
+        // Test builds have no port I/O so write to stdout instead so `dbgprint!` / `dbgprintln!`
+        // output shows up in test runs.
+        #[cfg(test)]
+        {
+            use std::io::Write;
+            let _ = self.port;
+            let _ = std::io::stdout().write_all(&[byte]);
+        }
     }
 
     pub fn write_string(&self, s: &str) {
