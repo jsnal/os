@@ -2,14 +2,15 @@
 #![no_main]
 
 use core::{arch::global_asm, panic::PanicInfo};
-use kernel::{cpu, dbgprintln};
+use kernel::{boot::multiboot, cpu, dbgprintln};
 
 global_asm!(include_str!("boot/boot.s"));
 
 static HELLO: &[u8] = b"Hello World!";
 
+// const multiboot_information_t* multiboot, const u32 magic_number
 #[unsafe(no_mangle)]
-pub extern "C" fn kmain() -> ! {
+pub extern "C" fn kmain(mb: &multiboot::Info, magic_number: u32) -> ! {
     cpu::init();
 
     let vga_buffer = 0xb8000 as *mut u8;
@@ -19,6 +20,19 @@ pub extern "C" fn kmain() -> ! {
             *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
         }
     }
+
+    if magic_number != multiboot::BOOTLOADER_MAGIC {
+        panic!("invalid multiboot header magic number");
+    }
+
+    dbgprintln!("multiboot: magic_number={:#x}", magic_number);
+    let mem_lower = mb.mem_lower;
+    let mem_upper = mb.mem_upper;
+    dbgprintln!(
+        "multiboot: mem_lower={:#x}, mem_upper={:#x}",
+        mem_lower,
+        mem_upper
+    );
 
     loop {
         cpu::hlt();

@@ -49,7 +49,7 @@ pub fn init() {
     pic::unmask(pic::PIT_IRQ);
 
     dbgprintln!(
-        "loaded PIT: freq={} Hz, mode=square wave",
+        "initialized PIT: freq={}Hz, mode=square wave",
         PIT_TICKS_PER_SECOND
     );
 }

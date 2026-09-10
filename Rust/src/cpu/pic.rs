@@ -88,7 +88,7 @@ pub fn init() {
     super::sti();
 
     dbgprintln!(
-        "loaded PIC: master={:#08x}, slave={:#08x}",
+        "initialized PIC: master={:#08x}, slave={:#08x}",
         PIC1_OFFSET,
         PIC2_OFFSET
     )

@@ -246,5 +246,5 @@ pub fn init() {
     set_exception_handler(20, virtualization_exception);
     set_exception_handler(21, control_protection_exception);
 
-    dbgprintln!("loaded IDT: idtr={:#016x}", descriptor.raw());
+    dbgprintln!("initialized IDT: idtr={:#016x}", descriptor.raw());
 }
