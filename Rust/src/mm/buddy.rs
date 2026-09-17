@@ -1,6 +1,6 @@
-use core::{ops::DerefMut, ptr::NonNull};
+use core::ptr::NonNull;
 
-use crate::mm::{PAGE_SIZE, PhysAddr};
+use crate::mm::PAGE_SIZE;
 use crate::{dbgprint, dbgprintln};
 
 const BLK_SIZE: usize = PAGE_SIZE;
@@ -19,9 +19,9 @@ struct FreeBlock {
 }
 
 struct BuddyAllocator {
-    base_addr: usize,
     total_blks: usize,
-    usable_start_blk_idx: usize,
+    alloc_area_addr: usize,
+    alloc_area_blk_idx: usize,
     info: *mut BlockInfo,
     free_lists: [Option<NonNull<FreeBlock>>; MAX_ORDER + 1],
 }
@@ -46,21 +46,15 @@ impl BuddyAllocator {
         // Initialize the info list that lives at the start of the memory region.
         let info = base_addr as *mut BlockInfo;
         for i in 0..usable_blks {
-            unsafe {
-                core::ptr::write(
-                    info.add(i),
-                    BlockInfo {
-                        order: 0,
-                        free: false,
-                    },
-                );
-            }
+            let info = unsafe { &mut *info.add(i) };
+            info.order = 0;
+            info.free = false;
         }
 
         let mut allocator = Self {
-            base_addr,
             total_blks,
-            usable_start_blk_idx: info_blks,
+            alloc_area_addr: base_addr + (info_blks * BLK_SIZE),
+            alloc_area_blk_idx: info_blks,
             info,
             free_lists: [None; MAX_ORDER + 1],
         };
@@ -116,11 +110,7 @@ impl BuddyAllocator {
     pub fn free(&mut self, addr: usize, order: u8) {
         let mut blk_idx = self.addr_to_blk_idx(addr);
         assert!(
-            blk_idx >= self.usable_start_blk_idx,
-            "provided addr is outside of the memory region"
-        );
-        assert!(
-            blk_idx < self.total_blks,
+            blk_idx < self.total_blks - self.alloc_area_blk_idx,
             "provided addr is outside of the memory region"
         );
         assert!(
@@ -132,7 +122,7 @@ impl BuddyAllocator {
         let mut new_order = order;
         while (new_order as usize) < MAX_ORDER {
             let buddy_blk_idx = blk_idx ^ (1 << new_order);
-            let buddy_info = unsafe { &mut *self.info.add(blk_idx) };
+            let buddy_info = unsafe { &mut *self.info.add(buddy_blk_idx) };
 
             if buddy_blk_idx >= self.total_blks || !buddy_info.free || buddy_info.order != new_order
             {
@@ -165,11 +155,11 @@ impl BuddyAllocator {
     }
 
     fn blk_idx_to_addr(&self, blk_idx: usize) -> usize {
-        self.base_addr + (blk_idx * BLK_SIZE)
+        self.alloc_area_addr + (blk_idx * BLK_SIZE)
     }
 
     fn addr_to_blk_idx(&self, addr: usize) -> usize {
-        (addr - self.base_addr) / BLK_SIZE
+        (addr - self.alloc_area_addr) / BLK_SIZE
     }
 
     fn push_free_blk(&mut self, order: u8, blk_idx: usize) {
@@ -217,6 +207,54 @@ impl BuddyAllocator {
         self.remove_free_blk(order, blk_idx);
         Some(blk_idx)
     }
+
+    pub fn dbgdump(&self) {
+        dbgprintln!(
+            "total_blks={} alloc_area_addr={:#x} alloc_area_blk_idx={}",
+            self.total_blks,
+            self.alloc_area_addr,
+            self.alloc_area_blk_idx
+        );
+
+        dbgprintln!("blk info:");
+        let mut blk_idx = 0;
+        while blk_idx < self.total_blks - self.alloc_area_blk_idx {
+            let info = unsafe { &mut *self.info.add(blk_idx) };
+            let addr = self.blk_idx_to_addr(blk_idx);
+
+            // Step through the blocks by their coalesced size.
+            let blk_cnt = 1usize << info.order.min(MAX_ORDER as u8);
+            dbgprintln!(
+                "  {:#010x}-{:#010x}  order {:<2} ({:>7} bytes)  {}",
+                addr,
+                addr + blk_cnt * BLK_SIZE,
+                info.order,
+                blk_cnt * BLK_SIZE,
+                if info.free { "free" } else { "used" },
+            );
+            blk_idx += blk_cnt;
+        }
+
+        dbgprintln!("free lists:");
+        for order in 0..=(MAX_ORDER as u8) {
+            dbgprint!(
+                "  order {:<2} ({:>7} bytes):",
+                order,
+                (1usize << order) * BLK_SIZE
+            );
+            let mut cnt = 0usize;
+            let mut head = self.free_lists[order as usize];
+            while let Some(blk_ptr) = head {
+                head = unsafe { blk_ptr.as_ref().next };
+                cnt += 1;
+            }
+            if cnt == 0 {
+                dbgprintln!(" (empty)");
+            } else {
+                dbgprintln!(" {} block(s)", cnt);
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -238,8 +276,8 @@ mod tests {
             Self { ptr, layout }
         }
 
-        fn as_ptr(&self) -> *mut u8 {
-            self.ptr
+        fn base_addr(&self) -> usize {
+            self.ptr as usize
         }
     }
 
@@ -250,29 +288,113 @@ mod tests {
     }
 
     #[test]
-    fn basic_alloc_and_free() {
-        let region = TestRegion::new(16 * BLK_SIZE);
-        let mut allocator = BuddyAllocator::new(region.as_ptr() as usize, region.layout.size());
+    fn alloc_and_free_order() {
+        let region = TestRegion::new(8 * BLK_SIZE);
+        let mut allocator = BuddyAllocator::new(region.base_addr(), region.layout.size());
 
-        println!("region={:x}", region.as_ptr() as usize);
+        // Block 0 is used for info.
+        //
+        //          | 1234567
+        // start    | -------
+        // alloc p1 | ****---
+        // alloc p2 | ****-**
+        // alloc p3 | *******
+        // free p1  | ----***
+        // alloc p4 | *---***
+        // alloc p5 | *---*** - should fail
+        // free p4  | ----***
+        // free p3  | -----**
+        // free p2  | -------
 
-        let p1 = allocator.alloc_pages(2);
-        println!("p1={:x}", p1.unwrap());
+        let p1 = allocator.alloc(2).expect("failed to alloc p1");
+        assert_eq!(p1, region.base_addr() + (1 * BLK_SIZE));
 
-        assert_eq!(true, false);
+        let p2 = allocator.alloc(1).expect("failed to alloc p2");
+        assert_eq!(p2, region.base_addr() + (6 * BLK_SIZE));
+
+        let p3 = allocator.alloc(0).expect("failed to alloc p3");
+        assert_eq!(p3, region.base_addr() + (5 * BLK_SIZE));
+
+        allocator.free(p1, 2);
+
+        let p4 = allocator.alloc(0).expect("failed to alloc p4");
+        assert_eq!(p4, region.base_addr() + (1 * BLK_SIZE));
+
+        let p5 = allocator.alloc(2);
+        assert_eq!(p5, None);
+
+        allocator.free(p4, 0);
+        allocator.free(p3, 0);
+        allocator.free(p2, 1);
+
+        let count_list = |mut head: Option<NonNull<FreeBlock>>| {
+            let mut cnt = 0;
+            while let Some(blk_ptr) = head {
+                head = unsafe { blk_ptr.as_ref().next };
+                cnt += 1;
+            }
+            cnt
+        };
+
+        assert_eq!(1, count_list(allocator.free_lists[2]));
+        assert_eq!(1, count_list(allocator.free_lists[1]));
+        assert_eq!(1, count_list(allocator.free_lists[0]));
+    }
+
+    #[test]
+    fn alloc_and_free_pages() {
+        let region = TestRegion::new(8 * BLK_SIZE);
+        let mut allocator = BuddyAllocator::new(region.base_addr(), region.layout.size());
+
+        // Block 0 is used for info.
+        //
+        //          | 1234567
+        // start    | -------
+        // alloc p1 | ****--- - should round-up
+        // alloc p2 | ****-**
+        // alloc p3 | *******
+        // free p1  | ----*** - should round-up
+        // free p2  | ----*--
+        // free p3  | ----_--
+
+        let p1 = allocator.alloc_pages(3).expect("failed to alloc p1");
+        assert_eq!(p1, region.base_addr() + (1 * BLK_SIZE));
+
+        let p2 = allocator.alloc_pages(2).expect("failed to alloc p2");
+        assert_eq!(p2, region.base_addr() + (6 * BLK_SIZE));
+
+        let p3 = allocator.alloc_pages(1).expect("failed to alloc p3");
+        assert_eq!(p3, region.base_addr() + (5 * BLK_SIZE));
+
+        allocator.free_pages(p1, 3);
+        allocator.free_pages(p2, 2);
+        allocator.free_pages(p3, 1);
     }
 
     #[test]
     #[should_panic(expected = "block-aligned")]
     fn misaligned_base_panics() {
-        let region = TestRegion::new(16 * BLK_SIZE);
-        BuddyAllocator::new(region.as_ptr() as usize + 10, region.layout.size());
+        let region = TestRegion::new(8 * BLK_SIZE);
+        BuddyAllocator::new(region.base_addr() + 10, region.layout.size());
     }
 
     #[test]
     #[should_panic(expected = "too small")]
     fn region_too_small_panics() {
         let region = TestRegion::new(BLK_SIZE - 10);
-        BuddyAllocator::new(region.as_ptr() as usize, region.layout.size());
+        BuddyAllocator::new(region.base_addr(), region.layout.size());
+    }
+
+    #[test]
+    #[should_panic(expected = "double free")]
+    fn double_free_panics() {
+        let region = TestRegion::new(8 * BLK_SIZE);
+        let mut allocator = BuddyAllocator::new(region.base_addr(), region.layout.size());
+
+        let p1 = allocator.alloc(2).expect("failed to alloc p1");
+        assert_eq!(p1, region.base_addr() + (1 * BLK_SIZE));
+
+        allocator.free(p1, 2);
+        allocator.free(p1, 2);
     }
 }
