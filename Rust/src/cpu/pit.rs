@@ -31,8 +31,8 @@ pub fn get_uptime() -> usize {
     UPTIME_S.load(Ordering::SeqCst)
 }
 
-/// # Notes:
-/// * https://wiki.osdev.org/Programmable_Interval_Timer
+/// # Resources
+/// - https://wiki.osdev.org/Programmable_Interval_Timer
 pub fn init() {
     // Set channel 0 to use the square wave generator mode
     io::outb(
@@ -40,7 +40,8 @@ pub fn init() {
         PIT_SELECT_CHANNEL_0 | PIT_WRITE_WORD | PIT_MODE_SQUARE_WAVE,
     );
 
-    // Provide channel 0 with a timing that corresponds to a tick every millisecond
+    // Provide channel 0 with a timing that corresponds to a tick every
+    // millisecond
     io::outb(PIT_CHANNEL_0, (PIT_TIMER_RELOAD & 0xFF) as u8);
     io::outb(PIT_CHANNEL_0, ((PIT_TIMER_RELOAD >> 8) & 0xFF) as u8);
 

@@ -15,8 +15,8 @@ const ICW4_8086: u8 = 0x01;
 const PIC_READ_ISR: u8 = 0x0B;
 const PIC_CASCADE_IRQ: u8 = 2;
 
-/// # Notes
-/// * https://wiki.osdev.org/8259_PIC#Masking
+/// # Resources
+/// - https://wiki.osdev.org/8259_PIC#Masking
 pub fn mask(irq: u8) {
     let (port, mask) = if irq < 8 {
         (PIC1_DATA, irq)
@@ -28,8 +28,8 @@ pub fn mask(irq: u8) {
     io::outb(port, val);
 }
 
-/// # Notes
-/// * https://wiki.osdev.org/8259_PIC#Masking
+/// # Resources
+/// - https://wiki.osdev.org/8259_PIC#Masking
 pub fn unmask(irq: u8) {
     let (port, mask) = if irq < 8 {
         (PIC1_DATA, irq)
@@ -41,8 +41,8 @@ pub fn unmask(irq: u8) {
     io::outb(port, val);
 }
 
-/// # Notes
-/// * https://wiki.osdev.org/8259_PIC#End_of_Interrupt
+/// # Resources
+/// - https://wiki.osdev.org/8259_PIC#End_of_Interrupt
 pub fn eoi(irq: u8) {
     if irq >= 8 {
         io::outb(PIC2_COMMAND, PIC_EOI);
@@ -50,23 +50,23 @@ pub fn eoi(irq: u8) {
     io::outb(PIC1_COMMAND, PIC_EOI);
 }
 
-/// # Notes
-/// * https://wiki.osdev.org/8259_PIC#ISR_and_IRR
+/// # Resources
+/// - https://wiki.osdev.org/8259_PIC#ISR_and_IRR
 pub fn read_isr() -> u16 {
     io::outb(PIC1_COMMAND, PIC_READ_ISR);
     io::outb(PIC2_COMMAND, PIC_READ_ISR);
     ((io::inb(PIC2_COMMAND) as u16) << 8) | (io::inb(PIC1_COMMAND) as u16)
 }
 
-/// # Notes
-/// * https://wiki.osdev.org/8259_PIC#Initialisation
+/// # Resources
+/// - https://wiki.osdev.org/8259_PIC#Initialisation
 pub fn init() {
     // Start the initialization sequence in cascase mode
     io::outb(PIC1_COMMAND, ICW1_INIT | ICW1_ICW4);
     io::outb(PIC2_COMMAND, ICW1_INIT | ICW1_ICW4);
 
-    // Set the master and slave vector PIC offsets. All interrupts will start at 32 which is right
-    // after the CPU's exception interrupts
+    // Set the master and slave vector PIC offsets. All interrupts will start at
+    // 32 which is right after the CPU's exception interrupts
     io::outb(PIC1_DATA, PIC1_OFFSET);
     io::outb(PIC2_DATA, PIC2_OFFSET);
 

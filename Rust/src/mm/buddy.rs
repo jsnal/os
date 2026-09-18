@@ -1,3 +1,45 @@
+//! A binary buddy allocator is a memory allocation technique where every block
+//! is a power-of-two multiple of some base block size. This makes splitting
+//! and merging cheap and keeps fragmentation low over long usage.
+//!
+//! # The "buddy"
+//! A block of "order `k`" is `2^k` blocks large. Every order-`k` block  was
+//! produced by splitting exactly one order-`(k + 1)` block in half, and the two
+//! halves are each other's "buddy" for as long as both stay free. Because of
+//! how they were split, a block and its buddy are always adjacent in memory and
+//! their positions differ in exactly one bit. This bit corresponds to their
+//! order making it easy to compute the other's location directly with no
+//! separate bookkeeping.
+//!
+//! # Allocating
+//! A request for order `k` is returned straight from a free list of order-`k`
+//! blocks if one exists. Otherwise, the allocator takes the smallest
+//! available block of some larger order and repeatedly splits it in half,
+//! keeping one half and pushing the other, which is now a free buddy, onto its
+//! own order's free list, until it has shrunk a block down to the requested
+//! order.
+//!
+//! # Freeing
+//! Freeing does the exact opposite procedure as allocating. A freed block's
+//! buddy is checked and if that buddy is also entirely free, the two are merged
+//! back into a single block of the next order up. This repeats with the new
+//! block's buddy until one is found still in use, or the largest
+//! order is reached. This chain of merges is what keeps the allocator from
+//! fragmenting since memory freed in the right order always finds its way back
+//! into large, contiguous blocks.
+//!
+//! # Trade-offs
+//! Rounding every request up to a power-of-two block wastes up to nearly
+//! half a block per allocation to internal fragmentation, and two free
+//! neighbors that aren't buddies can never be merged, even if doing so would
+//! produce a useful contiguous block. That's the price paid for buddy
+//! lookups and split/merge chains that are cheap and bounded by the number
+//! of orders, instead of scanning a large free list.
+//!
+//! # Resources
+//! - https://wiki.osdev.org/Page_Frame_Allocation
+//! - https://www.kernel.org/doc/gorman/html/understand/understand009.html
+
 use core::ptr::NonNull;
 
 use crate::mm::PAGE_SIZE;
@@ -43,7 +85,8 @@ impl BuddyAllocator {
             "memory region is too small to hold block info"
         );
 
-        // Initialize the info list that lives at the start of the memory region.
+        // Initialize the info list that lives at the start of the memory
+        // region.
         let info = base_addr as *mut BlockInfo;
         for i in 0..usable_blks {
             let info = unsafe { &mut *info.add(i) };
@@ -59,7 +102,8 @@ impl BuddyAllocator {
             free_lists: [None; MAX_ORDER + 1],
         };
 
-        // Initialize the free list with the maximum number of power-of-two blocks that will fit.
+        // Initialize the free list with the maximum number of power-of-two
+        // blocks that will fit.
         let mut blk_idx = 0;
         while blk_idx < usable_blks {
             let blks_left = usable_blks - blk_idx;
@@ -92,7 +136,8 @@ impl BuddyAllocator {
             free_order += 1;
         };
 
-        // Continuously split blocks until the smallest possible order that will fit.
+        // Continuously split blocks until the smallest possible order that will
+        // fit.
         while free_order > order {
             free_order -= 1;
             let buddy_blk_idx = blk_idx + (1 << free_order);
