@@ -13,8 +13,8 @@ impl DebugConsole {
         #[cfg(not(test))]
         crate::cpu::io::outb(self.port, byte);
 
-        // Test builds have no port I/O so write to stdout instead so `dbgprint!` / `dbgprintln!`
-        // output shows up in test runs.
+        // Test builds have no port I/O so write to stdout instead so dbgprint!
+        // and dbgprintln` output shows up in test runs.
         #[cfg(test)]
         {
             use std::io::Write;
@@ -37,13 +37,26 @@ impl fmt::Write for DebugConsole {
     }
 }
 
+/// Get the last string of the module path.
+pub fn module_name(path: &str) -> &str {
+    path.rsplit("::").next().unwrap_or(path)
+}
+
 #[macro_export]
 macro_rules! dbgprint {
-    ($($args:tt)*) => {
+    ($fmt:expr) => {
+        $crate::dbgprint!($fmt,)
+    };
+    ($fmt:expr, $($args:tt)*) => {
         {
             use core::fmt::Write;
             let mut debug = $crate::debug::DebugConsole::new();
-            let _ = write!(debug, $($args)*);
+            let _ = write!(
+                debug,
+                concat!("{}: ", $fmt),
+                $crate::debug::module_name(module_path!()),
+                $($args)*
+            );
         }
     };
 }
@@ -54,4 +67,17 @@ macro_rules! dbgprintln {
     ($fmt:expr) => ($crate::dbgprint!(concat!($fmt, "\n")));
     ($fmt:expr, $($args:tt)*) => ($crate::dbgprint!(
         concat!($fmt, "\n"), $($args)*));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn module_format() {
+        assert_eq!(module_name("kernel::mm::buddy"), "buddy");
+        assert_eq!(module_name("kernel::mm"), "mm");
+        assert_eq!(module_name("kernel"), "kernel");
+        assert_eq!(module_name(""), "");
+    }
 }

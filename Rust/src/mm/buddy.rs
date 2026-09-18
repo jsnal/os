@@ -208,6 +208,7 @@ impl BuddyAllocator {
         Some(blk_idx)
     }
 
+    #[allow(dead_code)]
     pub fn dbgdump(&self) {
         dbgprintln!(
             "total_blks={} alloc_area_addr={:#x} alloc_area_blk_idx={}",
