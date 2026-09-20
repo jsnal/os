@@ -1,4 +1,7 @@
-pub mod buddy;
+mod buddy;
+mod bump;
+#[cfg(test)]
+mod test_util;
 
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]

@@ -316,38 +316,13 @@ impl BuddyAllocator {
 
 #[cfg(test)]
 mod tests {
-    use core::alloc::Layout;
-
     use super::*;
-
-    struct TestRegion {
-        ptr: *mut u8,
-        layout: Layout,
-    }
-
-    impl TestRegion {
-        fn new(size: usize) -> Self {
-            let layout = Layout::from_size_align(size, BLK_SIZE).expect("invalid layout");
-            let ptr = unsafe { std::alloc::alloc_zeroed(layout) };
-            assert!(!ptr.is_null(), "allocation failed");
-            Self { ptr, layout }
-        }
-
-        fn base_addr(&self) -> usize {
-            self.ptr as usize
-        }
-    }
-
-    impl Drop for TestRegion {
-        fn drop(&mut self) {
-            unsafe { std::alloc::dealloc(self.ptr, self.layout) };
-        }
-    }
+    use crate::mm::test_util::TestRegion;
 
     #[test]
     fn alloc_and_free_order() {
         let region = TestRegion::new(8 * BLK_SIZE);
-        let mut allocator = BuddyAllocator::new(region.base_addr(), region.layout.size());
+        let mut allocator = BuddyAllocator::new(region.base_addr(), region.size());
 
         // Block 0 is used for info.
         //
@@ -401,7 +376,7 @@ mod tests {
     #[test]
     fn alloc_and_free_pages() {
         let region = TestRegion::new(8 * BLK_SIZE);
-        let mut allocator = BuddyAllocator::new(region.base_addr(), region.layout.size());
+        let mut allocator = BuddyAllocator::new(region.base_addr(), region.size());
 
         // Block 0 is used for info.
         //
@@ -432,21 +407,21 @@ mod tests {
     #[should_panic(expected = "block-aligned")]
     fn misaligned_base_panics() {
         let region = TestRegion::new(8 * BLK_SIZE);
-        BuddyAllocator::new(region.base_addr() + 10, region.layout.size());
+        BuddyAllocator::new(region.base_addr() + 10, region.size());
     }
 
     #[test]
     #[should_panic(expected = "too small")]
     fn region_too_small_panics() {
         let region = TestRegion::new(BLK_SIZE - 10);
-        BuddyAllocator::new(region.base_addr(), region.layout.size());
+        BuddyAllocator::new(region.base_addr(), region.size());
     }
 
     #[test]
     #[should_panic(expected = "double free")]
     fn double_free_panics() {
         let region = TestRegion::new(8 * BLK_SIZE);
-        let mut allocator = BuddyAllocator::new(region.base_addr(), region.layout.size());
+        let mut allocator = BuddyAllocator::new(region.base_addr(), region.size());
 
         let p1 = allocator.alloc(2).expect("failed to alloc p1");
         assert_eq!(p1, region.base_addr() + (1 * BLK_SIZE));
