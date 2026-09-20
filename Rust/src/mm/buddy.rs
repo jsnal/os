@@ -36,6 +36,17 @@
 //! lookups and split/merge chains that are cheap and bounded by the number
 //! of orders, instead of scanning a large free list.
 //!
+//! # Limitations
+//! The free list is stored as an intrusive linked list, meaning that the next
+//! and prev pointers are stored at the beginning of each free block. This lets
+//! us avoid allocating a separate data structure for tracking free blocks, but
+//! means the entire memory region must fall inside the kernel's physical direct
+//! map. All blocks must be be dereferenceable just to link or unlink it
+//! from a free list. This could be fixed by making the free list aware of this
+//! possibility and temporarily mapping pages outside of the region so they can
+//! be edited. Usually this is done in a dedicated region at the top of the
+//! kernel's virtual memory space.
+//!
 //! # Resources
 //! - https://wiki.osdev.org/Page_Frame_Allocation
 //! - https://www.kernel.org/doc/gorman/html/understand/understand009.html

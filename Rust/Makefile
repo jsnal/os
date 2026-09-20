@@ -17,6 +17,7 @@ run: all
 		-rtc base=utc \
 		-m 128M \
 		-debugcon stdio \
+		-monitor telnet:0.0.0.0:4444,server,nowait \
 		-d cpu_reset,guest_errors \
 		-drive file='$(IMGFILE)',format=raw,index=0,media=disk
 
