@@ -6,7 +6,7 @@ use core::ptr::write_bytes;
 
 use crate::mm::PAGE_SIZE;
 
-struct BumpAllocator {
+pub struct BumpAllocator {
     current: usize,
     limit: usize,
 }

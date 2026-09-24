@@ -2,7 +2,7 @@
 #![no_main]
 
 use core::{arch::global_asm, panic::PanicInfo};
-use kernel::{boot::multiboot, cpu, dbgprintln};
+use kernel::{boot::multiboot, cpu, dbgprintln, mm};
 
 global_asm!(include_str!("boot/boot.s"));
 
@@ -33,6 +33,8 @@ pub extern "C" fn kmain(mb: &multiboot::Info, magic_number: u32) -> ! {
         mem_lower,
         mem_upper
     );
+
+    mm::early_init();
 
     loop {
         cpu::hlt();

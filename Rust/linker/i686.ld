@@ -1,23 +1,23 @@
 ENTRY(boot)
 
 SECTIONS {
-    /* Start the Boot code at 1 MB */
+    /* Start the boot code at 1MB. */
     . = 0x00100000;
 
-    /* Read-only data for the Boot code */
+    /* Read-only data for the boot code. */
     .boot.data : {
         KEEP(*(.boot.data))
     }
 
-    /* Text section for the Boot code */
+    /* Text section for the boot code. */
     .boot.text : {
         KEEP(*(.boot.text))
     }
 
-    /* Start the Kernel at 3 GB */
+    /* Start the kernel at 3GB. */
     . += 0xC0000000;
 
-    /* Text section */
+    /* Text section. */
     .text ALIGN(4K) : AT(ADDR(.text) - 0xC0000000)
     {
         *(.text)
@@ -29,13 +29,13 @@ SECTIONS {
         *(.rodata)
     }
 
-    /* Read-write data */
+    /* Read-write data. */
     .data ALIGN(4K) : AT(ADDR(.data) - 0xC0000000)
     {
         *(.data)
     }
 
-    /* Read-write data and stack */
+    /* Read-write data and stack. */
     .bss ALIGN(4K) (NOLOAD) : AT(ADDR(.bss) - 0xC0000000)
     {
         *(COMMON)
@@ -43,4 +43,7 @@ SECTIONS {
         . = ALIGN(4K);
         *(.heap)
     }
+
+    /* Remember the end of the kernel. */
+    __end = ALIGN(4K);
 }
